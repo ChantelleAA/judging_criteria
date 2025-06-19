@@ -27,7 +27,7 @@ SECRET_KEY = 'django-insecure-3_h53s4ii44o&(7fhc&rb3*o3*gi056(@5948vb382^tun(^2_
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['.up.railway.app']
 
 
 # Application definition
@@ -42,7 +42,6 @@ INSTALLED_APPS = [
     'judging',
 ]
 
-ALLOWED_HOSTS = ['*']
 
 # Email Configuration (choose one)
 # For development/testing - emails print to console:
