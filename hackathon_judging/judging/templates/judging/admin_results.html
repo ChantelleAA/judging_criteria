@@ -1,0 +1,395 @@
+{% extends 'judging/base.html' %}
+
+{% block title %}Results Dashboard - Hackathon Judging{% endblock %}
+
+{% block content %}
+<!-- Header -->
+<div class="row mb-4">
+    <div class="col-lg-8">
+        <h2 class="mb-0">
+            <i class="bi bi-trophy-fill text-warning me-3"></i>
+            Competition Results
+        </h2>
+        <p class="text-muted">Live rankings and detailed scoring breakdown</p>
+    </div>
+    <div class="col-lg-4 text-lg-end">
+        <div class="btn-group" role="group">
+            <a href="{% url 'export_results' %}" class="btn btn-outline-primary">
+                <i class="bi bi-download me-2"></i>Export JSON
+            </a>
+            <button class="btn btn-outline-secondary" onclick="refreshResults()">
+                <i class="bi bi-arrow-clockwise me-2"></i>Refresh
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Summary Stats -->
+<div class="row mb-4">
+    <div class="col-md-4 mb-3">
+        <div class="card bg-primary bg-opacity-10 border-primary">
+            <div class="card-body text-center">
+                <div class="display-6 text-primary fw-bold">{{ teams_with_scores.count }}</div>
+                <div class="text-muted">Teams Competing</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-3">
+        <div class="card bg-success bg-opacity-10 border-success">
+            <div class="card-body text-center">
+                <div class="display-6 text-success fw-bold">{{ total_submissions }}</div>
+                <div class="text-muted">Total Submissions</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-3">
+        <div class="card bg-info bg-opacity-10 border-info">
+            <div class="card-body text-center">
+                <div class="display-6 text-info fw-bold">{{ total_judges }}</div>
+                <div class="text-muted">Active Judges</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Top 3 Winners -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="mb-0">
+                    <i class="bi bi-award-fill me-2"></i>
+                    Top 3 Winners
+                </h4>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    {% for team_score in teams_with_scores|slice:":3" %}
+                        <div class="col-lg-4 mb-3">
+                            <div class="card h-100 {% if team_score.rank == 1 %}border-warning bg-warning bg-opacity-10{% elif team_score.rank == 2 %}border-secondary bg-secondary bg-opacity-10{% elif team_score.rank == 3 %}border-warning bg-warning bg-opacity-5{% endif %}">
+                                <div class="card-body">
+                                    <div class="mb-3">
+                                        {% if team_score.rank == 1 %}
+                                            <i class="bi bi-trophy-fill display-3 text-warning"></i>
+                                        {% elif team_score.rank == 2 %}
+                                            <i class="bi bi-award-fill display-3 text-secondary"></i>
+                                        {% elif team_score.rank == 3 %}
+                                            <i class="bi bi-award display-3 text-warning"></i>
+                                        {% endif %}
+                                    </div>
+                                    <h5 class="card-title">{{ team_score.team.name }}</h5>
+                                    <div class="display-6 fw-bold mb-2">{{ team_score.final_weighted_score|floatformat:2 }}</div>
+                                    <p class="text-muted mb-0">
+                                        {% if team_score.rank == 1 %}🥇 First Place
+                                        {% elif team_score.rank == 2 %}🥈 Second Place  
+                                        {% elif team_score.rank == 3 %}🥉 Third Place
+                                        {% endif %}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Complete Rankings -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h4 class="mb-0">
+                    <i class="bi bi-list-ol me-2"></i>
+                    Complete Rankings
+                </h4>
+                <small class="text-muted">Last updated: {{ "now"|date:"M d, Y g:i A" }}</small>
+            </div>
+            <div class="card-body p-0">
+                {% if teams_with_scores %}
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th class="text-center" width="60">Rank</th>
+                                    <th>Team Name</th>
+                                    <th class="text-center">Quantum Tech<br><small>(40%)</small></th>
+                                    <th class="text-center">Social Impact<br><small>(25%)</small></th>
+                                    <th class="text-center">Innovation<br><small>(20%)</small></th>
+                                    <th class="text-center">Presentation<br><small>(10%)</small></th>
+                                    <th class="text-center">Business<br><small>(5%)</small></th>
+                                    <th class="text-center"><strong>Final Score</strong></th>
+                                    <th class="text-center">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for team_score in teams_with_scores %}
+                                    <tr class="{% if team_score.rank <= 3 %}table-warning{% endif %}">
+                                        <td class="text-center fw-bold">
+                                            {% if team_score.rank == 1 %}
+                                                <span class="badge bg-warning text-dark fs-6">🥇 {{ team_score.rank }}</span>
+                                            {% elif team_score.rank == 2 %}
+                                                <span class="badge bg-secondary fs-6">🥈 {{ team_score.rank }}</span>
+                                            {% elif team_score.rank == 3 %}
+                                                <span class="badge bg-warning bg-opacity-50 text-dark fs-6">🥉 {{ team_score.rank }}</span>
+                                            {% else %}
+                                                <span class="badge bg-light text-dark fs-6">{{ team_score.rank }}</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <div>
+                                                <strong>{{ team_score.team.name }}</strong>
+                                                <br>
+                                                <small class="text-muted">{{ team_score.team.members|truncatewords:5 }}</small>
+                                            </div>
+                                        </td>
+                                        <td class="text-center">
+                                            <span class="badge bg-primary bg-opacity-20 text-dark">
+                                                {{ team_score.quantum_tech_score|floatformat:1 }}
+                                            </span>
+                                        </td>
+                                        <td class="text-center">
+                                            <span class="badge bg-success bg-opacity-20 text-dark">
+                                                {{ team_score.social_impact_score|floatformat:1 }}
+                                            </span>
+                                        </td>
+                                        <td class="text-center">
+                                            <span class="badge bg-info bg-opacity-20 text-dark">
+                                                {{ team_score.innovation_score|floatformat:1 }}
+                                            </span>
+                                        </td>
+                                        <td class="text-center">
+                                            <span class="badge bg-warning bg-opacity-20 text-dark">
+                                                {{ team_score.presentation_score|floatformat:1 }}
+                                            </span>
+                                        </td>
+                                        <td class="text-center">
+                                            <span class="badge bg-secondary bg-opacity-20 text-dark">
+                                                {{ team_score.business_viability_score|floatformat:1 }}
+                                            </span>
+                                        </td>
+                                        <td class="text-center">
+                                            <strong class="fs-5 text-primary">{{ team_score.final_weighted_score|floatformat:2 }}</strong>
+                                        </td>
+                                        <td class="text-center">
+                                            <div class="btn-group btn-group-sm">
+                                                <button class="btn btn-outline-info btn-sm" 
+                                                        onclick="showTeamDetails({{ team_score.team.id }}, '{{ team_score.team.name|escapejs }}')">
+                                                    <i class="bi bi-eye"></i>
+                                                </button>
+                                                {% if team_score.team.presentation_link %}
+                                                    <a href="{{ team_score.team.presentation_link }}" 
+                                                       target="_blank" 
+                                                       class="btn btn-outline-success btn-sm">
+                                                        <i class="bi bi-play-circle"></i>
+                                                    </a>
+                                                {% endif %}
+                                            </div>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-5">
+                        <i class="bi bi-inbox display-1 text-muted"></i>
+                        <h5 class="mt-3 text-muted">No results available yet</h5>
+                        <p class="text-muted">Results will appear here as judges submit their evaluations.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Statistics Summary -->
+<div class="row mt-4">
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header">
+                <i class="bi bi-bar-chart me-2"></i>
+                Score Distribution
+            </div>
+            <div class="card-body">
+                <canvas id="scoreChart" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header">
+                <i class="bi bi-pie-chart me-2"></i>
+                Criteria Breakdown
+            </div>
+            <div class="card-body">
+                <div class="criteria-stats">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span>Quantum Tech Quality (40%)</span>
+                        <strong>Most weighted</strong>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span>Social Impact (25%)</span>
+                        <strong>High impact</strong>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span>Innovation (20%)</span>
+                        <strong>Creative factor</strong>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span>Presentation (10%)</span>
+                        <strong>Communication</strong>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span>Business Viability (5%)</span>
+                        <strong>Commercial potential</strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Team Details Modal -->
+<div class="modal fade" id="teamModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Team Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="teamDetails">
+                    <!-- Content will be loaded here -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+<script>
+    // Refresh results
+    function refreshResults() {
+        location.reload();
+    }
+
+    // Show team details
+    function showTeamDetails(teamId, teamName) {
+        document.querySelector('#teamModal .modal-title').textContent = `${teamName} - Detailed Scores`;
+        
+        // You can make an AJAX call here to get detailed team information
+        const detailsContent = `
+            <div class="text-center">
+                <div class="spinner-border" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <p class="mt-2">Loading team details...</p>
+            </div>
+        `;
+        
+        document.getElementById('teamDetails').innerHTML = detailsContent;
+        
+        const modal = new bootstrap.Modal(document.getElementById('teamModal'));
+        modal.show();
+        
+        // Simulate loading (replace with actual AJAX call)
+        setTimeout(() => {
+            document.getElementById('teamDetails').innerHTML = `
+                <div class="alert alert-info">
+                    <strong>Team ID:</strong> ${teamId}<br>
+                    <strong>Team Name:</strong> ${teamName}<br>
+                    <em>Detailed scoring breakdown would be displayed here.</em>
+                </div>
+            `;
+        }, 1000);
+    }
+
+    // Create score distribution chart
+    document.addEventListener('DOMContentLoaded', function() {
+        const ctx = document.getElementById('scoreChart');
+        if (ctx) {
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: [
+                        {% for team_score in teams_with_scores|slice:":10" %}
+                            '{{ team_score.team.name|truncatechars:10 }}'{% if not forloop.last %},{% endif %}
+                        {% endfor %}
+                    ],
+                    datasets: [{
+                        label: 'Final Score',
+                        data: [
+                            {% for team_score in teams_with_scores|slice:":10" %}
+                                {{ team_score.final_weighted_score }}{% if not forloop.last %},{% endif %}
+                            {% endfor %}
+                        ],
+                        backgroundColor: 'rgba(111, 66, 193, 0.6)',
+                        borderColor: 'rgba(111, 66, 193, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 10
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        title: {
+                            display: true,
+                            text: 'Top 10 Teams - Final Scores'
+                        }
+                    }
+                }
+            });
+        }
+    });
+
+    // Auto-refresh every 30 seconds
+    setInterval(refreshResults, 30000);
+
+    // Print functionality
+    function printResults() {
+        window.print();
+    }
+
+    // Export functionality
+    function exportToCSV() {
+        const data = [
+            ['Rank', 'Team Name', 'Quantum Tech', 'Social Impact', 'Innovation', 'Presentation', 'Business', 'Final Score']
+        ];
+        
+        {% for team_score in teams_with_scores %}
+            data.push([
+                {{ team_score.rank }},
+                '{{ team_score.team.name|escapejs }}',
+                {{ team_score.quantum_tech_score }},
+                {{ team_score.social_impact_score }},
+                {{ team_score.innovation_score }},
+                {{ team_score.presentation_score }},
+                {{ team_score.business_viability_score }},
+                {{ team_score.final_weighted_score }}
+            ]);
+        {% endfor %}
+        
+        const csvContent = data.map(row => row.join(',')).join('\n');
+        const blob = new Blob([csvContent], { type: 'text/csv' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'hackathon_results.csv';
+        a.click();
+        window.URL.revokeObjectURL(url);
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,307 @@
+{% extends 'judging/base.html' %}
+
+{% block title %}Judge {{ team.name }} - Hackathon Judging{% endblock %}
+
+{% block content %}
+<!-- Back Navigation -->
+<div class="row mb-4">
+    <div class="col-12">
+        <a href="{% url 'judge_dashboard' %}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-2"></i>Back to Dashboard
+        </a>
+    </div>
+</div>
+
+<!-- Team Information -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card border-0" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+            <div class="card-body text-white p-4">
+                <div class="row align-items-center">
+                    <div class="col-lg-8">
+                        <h2 class="card-title mb-3">
+                            <i class="bi bi-people-fill me-3"></i>
+                            {{ team.name }}
+                        </h2>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6><i class="bi bi-person-lines-fill me-2"></i>Team Members:</h6>
+                                <p class="mb-3">{{ team.members }}</p>
+                            </div>
+                            <div class="col-md-6">
+                                {% if team.presentation_link %}
+                                    <a href="{{ team.presentation_link }}" 
+                                       target="_blank" 
+                                       class="btn btn-light btn-lg">
+                                        <i class="bi bi-play-circle-fill me-2"></i>
+                                        View Presentation
+                                    </a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-4 text-lg-end">
+                        <div class="bg-white bg-opacity-20 rounded-3 p-3">
+                            <h6 class="mb-2">Your Expertise Areas:</h6>
+                            {% for area in judge.expertise_areas.all %}
+                                <span class="badge bg-light text-dark me-1 mb-1">{{ area.name }}</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Team Description -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <i class="bi bi-file-text me-2"></i>
+                Project Description
+            </div>
+            <div class="card-body">
+                <p class="card-text">{{ team.description|linebreaks }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Judging Form -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <i class="bi bi-clipboard-check me-2"></i>
+                Evaluation Form
+            </div>
+            <div class="card-body">
+                <form method="post" id="judgingForm">
+                    {% csrf_token %}
+                    
+                    <!-- Scoring Criteria -->
+                    <div class="criteria-sections">
+                        {% for field in form %}
+                            {% if 'score_' in field.name %}
+                                {% with criteria_id=field.name|slice:"6:" %}
+                                    <div class="criteria-section mb-4">
+                                        <div class="row align-items-center">
+                                            <div class="col-lg-6">
+                                                <h5 class="text-primary mb-2">
+                                                    <i class="bi bi-star-fill me-2"></i>
+                                                    {{ field.label|cut:" (Weight:" |cut:")" }}
+                                                </h5>
+                                                <p class="text-muted mb-3">{{ field.help_text }}</p>
+                                            </div>
+                                            <div class="col-lg-6">
+                                                <div class="d-flex align-items-center justify-content-lg-end">
+                                                    <label class="form-label me-3 mb-0">Score (1-10):</label>
+                                                    <div class="score-input-wrapper">
+                                                        {{ field }}
+                                                        {% if field.errors %}
+                                                            <div class="text-danger small mt-1">{{ field.errors.0 }}</div>
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Comments for this criteria -->
+                                        {% for comment_field in form %}
+                                            {% if comment_field.name == "comment_"|add:criteria_id %}
+                                                <div class="mt-3">
+                                                    <label class="form-label">{{ comment_field.label }}:</label>
+                                                    {{ comment_field }}
+                                                    {% if comment_field.errors %}
+                                                        <div class="text-danger small">{{ comment_field.errors.0 }}</div>
+                                                    {% endif %}
+                                                </div>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </div>
+                                {% endwith %}
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+
+                    <!-- Overall Comments -->
+                    <div class="criteria-section mb-4">
+                        <h5 class="text-primary mb-3">
+                            <i class="bi bi-chat-text me-2"></i>
+                            Overall Comments
+                        </h5>
+                        <div class="mb-3">
+                            {{ form.comments }}
+                            {% if form.comments.errors %}
+                                <div class="text-danger small">{{ form.comments.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Submission Controls -->
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="text-muted">
+                                    <i class="bi bi-info-circle me-2"></i>
+                                    <small>You can only submit your judgment once. Please review carefully.</small>
+                                </div>
+                                <div>
+                                    <button type="button" class="btn btn-outline-secondary me-2" onclick="resetForm()">
+                                        <i class="bi bi-arrow-clockwise me-2"></i>Reset Form
+                                    </button>
+                                    <button type="submit" class="btn btn-success btn-lg" id="submitBtn">
+                                        <i class="bi bi-check-circle me-2"></i>Submit Judgment
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Scoring Guide -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card border-info">
+            <div class="card-header bg-info bg-opacity-10">
+                <i class="bi bi-lightbulb me-2"></i>
+                Scoring Guide
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3 text-center mb-3">
+                        <div class="p-3 bg-danger bg-opacity-10 rounded-3">
+                            <h5 class="text-danger">1-3</h5>
+                            <small class="text-muted">Poor / Below Average</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3 text-center mb-3">
+                        <div class="p-3 bg-warning bg-opacity-10 rounded-3">
+                            <h5 class="text-warning">4-5</h5>
+                            <small class="text-muted">Average / Satisfactory</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3 text-center mb-3">
+                        <div class="p-3 bg-info bg-opacity-10 rounded-3">
+                            <h5 class="text-info">6-7</h5>
+                            <small class="text-muted">Good / Above Average</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3 text-center mb-3">
+                        <div class="p-3 bg-success bg-opacity-10 rounded-3">
+                            <h5 class="text-success">8-10</h5>
+                            <small class="text-muted">Excellent / Outstanding</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Form validation
+    document.getElementById('judgingForm').addEventListener('submit', function(e) {
+        const scoreInputs = this.querySelectorAll('input[type="number"]');
+        let allValid = true;
+        let emptyFields = [];
+
+        scoreInputs.forEach(input => {
+            if (!input.value || input.value < 1 || input.value > 10) {
+                allValid = false;
+                input.classList.add('is-invalid');
+                emptyFields.push(input.closest('.criteria-section').querySelector('h5').textContent.trim());
+            } else {
+                input.classList.remove('is-invalid');
+            }
+        });
+
+        if (!allValid) {
+            e.preventDefault();
+            alert('Please fill in all score fields with values between 1-10.\n\nMissing or invalid: ' + emptyFields.join(', '));
+            return false;
+        }
+
+        // Confirmation dialog
+        if (!confirm('Are you sure you want to submit your judgment? You cannot change it after submission.')) {
+            e.preventDefault();
+            return false;
+        }
+    });
+
+    // Reset form function
+    function resetForm() {
+        if (confirm('Are you sure you want to reset all fields? This will clear all your scores and comments.')) {
+            document.getElementById('judgingForm').reset();
+            document.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
+        }
+    }
+
+    // Real-time score validation
+    document.querySelectorAll('input[type="number"]').forEach(input => {
+        input.addEventListener('input', function() {
+            const value = parseInt(this.value);
+            if (value >= 1 && value <= 10) {
+                this.classList.remove('is-invalid');
+                this.classList.add('is-valid');
+            } else if (this.value) {
+                this.classList.add('is-invalid');
+                this.classList.remove('is-valid');
+            } else {
+                this.classList.remove('is-invalid', 'is-valid');
+            }
+        });
+
+        // Add visual feedback
+        input.addEventListener('change', function() {
+            const value = parseInt(this.value);
+            const wrapper = this.closest('.criteria-section');
+            
+            if (value >= 8) {
+                wrapper.style.borderLeft = '4px solid #198754'; // Green
+            } else if (value >= 6) {
+                wrapper.style.borderLeft = '4px solid #0dcaf0'; // Blue
+            } else if (value >= 4) {
+                wrapper.style.borderLeft = '4px solid #ffc107'; // Yellow
+            } else if (value >= 1) {
+                wrapper.style.borderLeft = '4px solid #dc3545'; // Red
+            } else {
+                wrapper.style.borderLeft = '4px solid #20c997'; // Default
+            }
+        });
+    });
+
+    // Auto-save to localStorage
+    const formElements = document.querySelectorAll('#judgingForm input, #judgingForm textarea');
+    const teamId = {{ team.id }};
+    
+    formElements.forEach(element => {
+        // Load saved values
+        const savedValue = localStorage.getItem(`judge_${teamId}_${element.name}`);
+        if (savedValue && !element.value) {
+            element.value = savedValue;
+            element.dispatchEvent(new Event('change'));
+        }
+
+        // Save on change
+        element.addEventListener('input', function() {
+            localStorage.setItem(`judge_${teamId}_${this.name}`, this.value);
+        });
+    });
+
+    // Clear localStorage on form submit
+    document.getElementById('judgingForm').addEventListener('submit', function() {
+        formElements.forEach(element => {
+            localStorage.removeItem(`judge_${teamId}_${element.name}`);
+        });
+    });
+</script>
+{% endblock %}

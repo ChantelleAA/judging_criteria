@@ -1,0 +1,274 @@
+{% extends 'judging/base.html' %}
+
+{% block title %}Judge Registration - Hackathon Judging{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <!-- Header -->
+        <div class="text-center mb-5">
+            <div class="display-1 text-primary mb-3">
+                <i class="bi bi-person-plus-fill"></i>
+            </div>
+            <h2 class="mb-3">Judge Registration</h2>
+            <p class="text-muted lead">Join our expert panel of judges for the hackathon evaluation process.</p>
+        </div>
+
+        <!-- Registration Form -->
+        <div class="card shadow-lg border-0">
+            <div class="card-header text-center">
+                <h4 class="mb-0">
+                    <i class="bi bi-clipboard-check me-2"></i>
+                    Create Your Judge Account
+                </h4>
+            </div>
+            <div class="card-body p-4">
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <!-- Personal Information -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <h5 class="text-primary mb-3">
+                                <i class="bi bi-person me-2"></i>Personal Information
+                            </h5>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="id_first_name" class="form-label">First Name *</label>
+                            <input type="text" class="form-control" id="id_first_name" name="first_name" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="id_last_name" class="form-label">Last Name *</label>
+                            <input type="text" class="form-control" id="id_last_name" name="last_name" required>
+                        </div>
+                        <div class="col-12 mb-3">
+                            <label for="id_email" class="form-label">Email Address *</label>
+                            <input type="email" class="form-control" id="id_email" name="email" required>
+                            <div class="form-text">This will be used for your login credentials.</div>
+                        </div>
+                    </div>
+
+                    <!-- Expertise Areas -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <h5 class="text-primary mb-3">
+                                <i class="bi bi-star me-2"></i>Areas of Expertise
+                            </h5>
+                            <p class="text-muted mb-3">Select all areas where you have relevant expertise. You will only judge teams in your selected areas.</p>
+                            
+                            <div class="expertise-grid">
+                                {{ form.expertise_areas }}
+                                {% if form.expertise_areas.errors %}
+                                    <div class="text-danger small mt-2">{{ form.expertise_areas.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Judging Criteria Information -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <div class="card bg-light border-0">
+                                <div class="card-body">
+                                    <h6 class="text-primary mb-3">
+                                        <i class="bi bi-info-circle me-2"></i>
+                                        Judging Criteria Overview
+                                    </h6>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <ul class="list-unstyled">
+                                                <li class="mb-2">
+                                                    <i class="bi bi-check-circle text-success me-2"></i>
+                                                    <strong>Quantum Tech Quality (40%)</strong>
+                                                </li>
+                                                <li class="mb-2">
+                                                    <i class="bi bi-check-circle text-success me-2"></i>
+                                                    <strong>Social Impact (25%)</strong>
+                                                </li>
+                                                <li class="mb-2">
+                                                    <i class="bi bi-check-circle text-success me-2"></i>
+                                                    <strong>Innovation (20%)</strong>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <ul class="list-unstyled">
+                                                <li class="mb-2">
+                                                    <i class="bi bi-check-circle text-success me-2"></i>
+                                                    <strong>Presentation (10%)</strong>
+                                                </li>
+                                                <li class="mb-2">
+                                                    <i class="bi bi-check-circle text-success me-2"></i>
+                                                    <strong>Business Viability (5%)</strong>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Terms and Conditions -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="agreeTerms" required>
+                                <label class="form-check-label" for="agreeTerms">
+                                    I agree to participate as a judge and understand that:
+                                    <ul class="mt-2 mb-0">
+                                        <li>I will evaluate teams fairly and objectively</li>
+                                        <li>I can only submit my judgment once per team</li>
+                                        <li>My scores will contribute to the final rankings</li>
+                                        <li>I will maintain confidentiality about the judging process</li>
+                                    </ul>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <div class="row">
+                        <div class="col-12 text-center">
+                            <button type="submit" class="btn btn-primary btn-lg px-5">
+                                <i class="bi bi-person-check me-2"></i>
+                                Register as Judge
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Already Registered -->
+        <div class="text-center mt-4">
+            <p class="text-muted">
+                Already registered? 
+                <a href="{% url 'admin:login' %}" class="text-decoration-none">
+                    <i class="bi bi-box-arrow-in-right me-1"></i>Login here
+                </a>
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Style the expertise checkboxes
+    document.addEventListener('DOMContentLoaded', function() {
+        const expertiseContainer = document.querySelector('#id_expertise_areas');
+        if (expertiseContainer) {
+            expertiseContainer.className = 'row';
+            
+            const checkboxes = expertiseContainer.querySelectorAll('input[type="checkbox"]');
+            checkboxes.forEach((checkbox, index) => {
+                const wrapper = checkbox.closest('li') || checkbox.parentElement;
+                wrapper.className = 'col-md-6 mb-3';
+                
+                const label = wrapper.querySelector('label');
+                if (label) {
+                    label.className = 'form-check-label';
+                    checkbox.className = 'form-check-input me-2';
+                    
+                    // Create a styled container
+                    const cardDiv = document.createElement('div');
+                    cardDiv.className = 'card h-100 border-2 expertise-card';
+                    cardDiv.style.cursor = 'pointer';
+                    
+                    const cardBody = document.createElement('div');
+                    cardBody.className = 'card-body p-3 d-flex align-items-center';
+                    
+                    cardBody.appendChild(checkbox);
+                    cardBody.appendChild(label);
+                    cardDiv.appendChild(cardBody);
+                    
+                    wrapper.innerHTML = '';
+                    wrapper.appendChild(cardDiv);
+                    
+                    // Add click handler for the card
+                    cardDiv.addEventListener('click', function() {
+                        checkbox.checked = !checkbox.checked;
+                        updateCardStyle(cardDiv, checkbox.checked);
+                        validateExpertise();
+                    });
+                    
+                    // Add change handler for the checkbox
+                    checkbox.addEventListener('change', function() {
+                        updateCardStyle(cardDiv, this.checked);
+                        validateExpertise();
+                    });
+                    
+                    // Initial style
+                    updateCardStyle(cardDiv, checkbox.checked);
+                }
+            });
+        }
+    });
+
+    function updateCardStyle(card, isChecked) {
+        if (isChecked) {
+            card.classList.add('border-primary', 'bg-primary', 'bg-opacity-10');
+            card.classList.remove('border-secondary');
+        } else {
+            card.classList.remove('border-primary', 'bg-primary', 'bg-opacity-10');
+            card.classList.add('border-secondary');
+        }
+    }
+
+    function validateExpertise() {
+        const checkboxes = document.querySelectorAll('input[name="expertise_areas"]:checked');
+        const submitBtn = document.querySelector('button[type="submit"]');
+        
+        if (checkboxes.length === 0) {
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="bi bi-exclamation-triangle me-2"></i>Select at least one expertise area';
+        } else {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<i class="bi bi-person-check me-2"></i>Register as Judge';
+        }
+    }
+
+    // Form validation
+    document.querySelector('form').addEventListener('submit', function(e) {
+        const checkboxes = document.querySelectorAll('input[name="expertise_areas"]:checked');
+        if (checkboxes.length === 0) {
+            e.preventDefault();
+            alert('Please select at least one area of expertise.');
+            return false;
+        }
+        
+        const agreeTerms = document.getElementById('agreeTerms');
+        if (!agreeTerms.checked) {
+            e.preventDefault();
+            alert('Please agree to the terms and conditions.');
+            return false;
+        }
+    });
+
+    // Initial validation
+    validateExpertise();
+</script>
+
+<style>
+    .expertise-card {
+        transition: all 0.3s ease;
+    }
+
+    .expertise-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+    }
+
+    .expertise-grid ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .form-check-input:checked {
+        background-color: var(--primary-color);
+        border-color: var(--primary-color);
+    }
+</style>
+{% endblock %}
