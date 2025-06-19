@@ -38,6 +38,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'judging',
+    '.railway.app',
+    '.up.railway.app',
 ]
 
 
@@ -59,6 +61,7 @@ JUDGING_PORTAL_URL = 'http://127.0.0.1:8000/'  # Change for production
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',  # Add this for static files
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
