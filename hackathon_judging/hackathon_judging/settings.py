@@ -27,15 +27,15 @@ SECRET_KEY = 'django-insecure-3_h53s4ii44o&(7fhc&rb3*o3*gi056(@5948vb382^tun(^2_
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
+ALLOWED_HOSTS = [
+    "judgingcriteria-production.up.railway.app",
+    "localhost",
+    "127.0.0.1"
+]
+
 CSRF_TRUSTED_ORIGINS = [
     "https://judgingcriteria-production.up.railway.app"
 ]
-ALLOWED_HOSTS = [
-    "judgingcriteria-production.up.railway.app",
-    "127.0.0.1",  # Optional, for local dev
-    "localhost"
-]
-
 
 # Application definition
 
