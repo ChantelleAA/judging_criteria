@@ -1,90 +1,124 @@
 {% extends 'judging/base.html' %}
 
-{% block title %}Results Dashboard - Hackathon Judging{% endblock %}
+{% block title %}Analytics Dashboard - Quantathon{% endblock %}
 
 {% block content %}
-<!-- Header -->
+<!-- Header with Controls -->
 <div class="row mb-4">
     <div class="col-lg-8">
-        <h2 class="mb-0">
-            <i class="bi bi-trophy-fill text-warning me-3"></i>
-            Competition Results
-        </h2>
-        <p class="text-muted">Live rankings and detailed scoring breakdown</p>
+        <h1 class="display-6 fw-bold mb-2">
+            <i class="bi bi-bar-chart-fill me-3" style="color: var(--quantum-purple);"></i>
+            Quantum Analytics Dashboard
+        </h1>
+        <p class="text-muted lead">Real-time competition insights and detailed scoring analysis</p>
     </div>
     <div class="col-lg-4 text-lg-end">
-        <div class="btn-group" role="group">
-            <a href="{% url 'export_results' %}" class="btn btn-outline-primary">
-                <i class="bi bi-download me-2"></i>Export JSON
-            </a>
-            <button class="btn btn-outline-secondary" onclick="refreshResults()">
+        <div class="btn-group mb-2" role="group">
+            <button class="btn btn-outline-primary" onclick="refreshDashboard()">
                 <i class="bi bi-arrow-clockwise me-2"></i>Refresh
             </button>
+            <a href="{% url 'export_results' %}" class="btn btn-outline-success">
+                <i class="bi bi-download me-2"></i>Export
+            </a>
+        </div>
+        <div class="small text-muted">
+            <i class="bi bi-clock me-1"></i>Last updated: {{ "now"|date:"g:i A" }}
         </div>
     </div>
 </div>
 
-<!-- Summary Stats -->
+<!-- Summary Statistics -->
 <div class="row mb-4">
-    <div class="col-md-4 mb-3">
-        <div class="card bg-primary bg-opacity-10 border-primary">
-            <div class="card-body text-center">
-                <div class="display-6 text-primary fw-bold">{{ teams_with_scores.count }}</div>
-                <div class="text-muted">Teams Competing</div>
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="stat-card border-start border-primary border-4">
+            <div class="stat-number text-primary">{{ teams_with_scores.count }}</div>
+            <div class="stat-label">Competing Teams</div>
+            <div class="small text-muted mt-1">
+                <i class="bi bi-people me-1"></i>Active participants
             </div>
         </div>
     </div>
-    <div class="col-md-4 mb-3">
-        <div class="card bg-success bg-opacity-10 border-success">
-            <div class="card-body text-center">
-                <div class="display-6 text-success fw-bold">{{ total_submissions }}</div>
-                <div class="text-muted">Total Submissions</div>
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="stat-card border-start border-success border-4">
+            <div class="stat-number text-success">{{ total_submissions }}</div>
+            <div class="stat-label">Total Judgments</div>
+            <div class="small text-muted mt-1">
+                <i class="bi bi-check-circle me-1"></i>Submitted evaluations
             </div>
         </div>
     </div>
-    <div class="col-md-4 mb-3">
-        <div class="card bg-info bg-opacity-10 border-info">
-            <div class="card-body text-center">
-                <div class="display-6 text-info fw-bold">{{ total_judges }}</div>
-                <div class="text-muted">Active Judges</div>
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="stat-card border-start border-info border-4">
+            <div class="stat-number text-info">{{ total_judges }}</div>
+            <div class="stat-label">Expert Judges</div>
+            <div class="small text-muted mt-1">
+                <i class="bi bi-award me-1"></i>Industry professionals
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="stat-card border-start border-warning border-4">
+            <div class="stat-number text-warning">{% widthratio total_submissions total_judges 1 %}%</div>
+            <div class="stat-label">Completion Rate</div>
+            <div class="small text-muted mt-1">
+                <i class="bi bi-graph-up me-1"></i>Overall progress
             </div>
         </div>
     </div>
 </div>
 
-<!-- Top 3 Winners -->
+<!-- Winners Podium -->
 <div class="row mb-4">
     <div class="col-12">
         <div class="card">
             <div class="card-header">
                 <h4 class="mb-0">
-                    <i class="bi bi-award-fill me-2"></i>
-                    Top 3 Winners
+                    <i class="bi bi-trophy-fill me-2" style="color: gold;"></i>
+                    Quantum Champions
                 </h4>
             </div>
             <div class="card-body">
                 <div class="row text-center">
                     {% for team_score in teams_with_scores|slice:":3" %}
                         <div class="col-lg-4 mb-3">
-                            <div class="card h-100 {% if team_score.rank == 1 %}border-warning bg-warning bg-opacity-10{% elif team_score.rank == 2 %}border-secondary bg-secondary bg-opacity-10{% elif team_score.rank == 3 %}border-warning bg-warning bg-opacity-5{% endif %}">
-                                <div class="card-body">
-                                    <div class="mb-3">
+                            <div class="position-relative">
+                                <div class="card h-100 {% if team_score.rank == 1 %}border-warning bg-warning bg-opacity-10{% elif team_score.rank == 2 %}border-secondary bg-secondary bg-opacity-10{% elif team_score.rank == 3 %}border-warning bg-warning bg-opacity-5{% endif %}" 
+                                     style="border-width: 3px !important;">
+                                    <div class="card-body position-relative">
                                         {% if team_score.rank == 1 %}
-                                            <i class="bi bi-trophy-fill display-3 text-warning"></i>
-                                        {% elif team_score.rank == 2 %}
-                                            <i class="bi bi-award-fill display-3 text-secondary"></i>
-                                        {% elif team_score.rank == 3 %}
-                                            <i class="bi bi-award display-3 text-warning"></i>
+                                            <div class="position-absolute top-0 start-50 translate-middle">
+                                                <span class="badge bg-warning text-dark fs-4 rounded-circle p-2">
+                                                    <i class="bi bi-crown-fill"></i>
+                                                </span>
+                                            </div>
                                         {% endif %}
+                                        
+                                        <div class="mt-3 mb-3">
+                                            {% if team_score.rank == 1 %}
+                                                <div class="display-1 text-warning">🥇</div>
+                                            {% elif team_score.rank == 2 %}
+                                                <div class="display-1 text-secondary">🥈</div>
+                                            {% elif team_score.rank == 3 %}
+                                                <div class="display-1" style="color: #CD7F32;">🥉</div>
+                                            {% endif %}
+                                        </div>
+                                        
+                                        <h5 class="fw-bold">{{ team_score.team.name }}</h5>
+                                        <div class="display-6 fw-bold mb-2 bg-quantum-gradient" 
+                                             style="-webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;">
+                                            {{ team_score.final_weighted_score|floatformat:2 }}
+                                        </div>
+                                        <p class="text-muted mb-0">
+                                            {% if team_score.rank == 1 %}Champion
+                                            {% elif team_score.rank == 2 %}Runner-up  
+                                            {% elif team_score.rank == 3 %}Third Place
+                                            {% endif %}
+                                        </p>
+                                        
+                                        <div class="mt-3">
+                                            <canvas id="podiumChart{{ team_score.rank }}" width="200" height="100"></canvas>
+                                        </div>
                                     </div>
-                                    <h5 class="card-title">{{ team_score.team.name }}</h5>
-                                    <div class="display-6 fw-bold mb-2">{{ team_score.final_weighted_score|floatformat:2 }}</div>
-                                    <p class="text-muted mb-0">
-                                        {% if team_score.rank == 1 %}🥇 First Place
-                                        {% elif team_score.rank == 2 %}🥈 Second Place  
-                                        {% elif team_score.rank == 3 %}🥉 Third Place
-                                        {% endif %}
-                                    </p>
                                 </div>
                             </div>
                         </div>
@@ -95,7 +129,151 @@
     </div>
 </div>
 
-<!-- Complete Rankings -->
+<!-- Data Visualization Section -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="viz-card">
+            <div class="viz-tabs">
+                <button class="viz-tab active" onclick="showChart('overview')" id="tab-overview">
+                    <i class="bi bi-bar-chart me-2"></i>Score Overview
+                </button>
+                <button class="viz-tab" onclick="showChart('criteria')" id="tab-criteria">
+                    <i class="bi bi-pie-chart me-2"></i>Criteria Analysis
+                </button>
+                <button class="viz-tab" onclick="showChart('judges')" id="tab-judges">
+                    <i class="bi bi-people me-2"></i>Judge Distribution
+                </button>
+                <button class="viz-tab" onclick="showChart('aggregated')" id="tab-aggregated">
+                    <i class="bi bi-graph-up me-2"></i>Aggregated Votes
+                </button>
+                <button class="viz-tab" onclick="showChart('comparison')" id="tab-comparison">
+                    <i class="bi bi-layers me-2"></i>Team Comparison
+                </button>
+            </div>
+            
+            <!-- Score Overview Chart -->
+            <div id="chart-overview" class="chart-container">
+                <h6 class="fw-bold mb-3">Final Scores - Top 10 Teams</h6>
+                <canvas id="scoreDistributionChart" height="400"></canvas>
+            </div>
+            
+            <!-- Criteria Analysis Chart -->
+            <div id="chart-criteria" class="chart-container" style="display: none;">
+                <h6 class="fw-bold mb-3">Judging Criteria Weights</h6>
+                <div class="row">
+                    <div class="col-lg-6">
+                        <canvas id="criteriaChart" height="300"></canvas>
+                    </div>
+                    <div class="col-lg-6">
+                        <div class="criteria-breakdown">
+                            <div class="p-3 border rounded mb-2">
+                                <strong>Quantum Tech Quality (40%)</strong>
+                                <div class="progress mt-2">
+                                    <div class="progress-bar" style="width: 40%; background: #6B46C1;"></div>
+                                </div>
+                            </div>
+                            <div class="p-3 border rounded mb-2">
+                                <strong>Social Impact (25%)</strong>
+                                <div class="progress mt-2">
+                                    <div class="progress-bar" style="width: 25%; background: #06B6D4;"></div>
+                                </div>
+                            </div>
+                            <div class="p-3 border rounded mb-2">
+                                <strong>Innovation (20%)</strong>
+                                <div class="progress mt-2">
+                                    <div class="progress-bar" style="width: 20%; background: #3B82F6;"></div>
+                                </div>
+                            </div>
+                            <div class="p-3 border rounded mb-2">
+                                <strong>Presentation (10%)</strong>
+                                <div class="progress mt-2">
+                                    <div class="progress-bar" style="width: 10%; background: #8B5CF6;"></div>
+                                </div>
+                            </div>
+                            <div class="p-3 border rounded">
+                                <strong>Business Viability (5%)</strong>
+                                <div class="progress mt-2">
+                                    <div class="progress-bar" style="width: 5%; background: #EC4899;"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Judge Distribution Chart -->
+            <div id="chart-judges" class="chart-container" style="display: none;">
+                <h6 class="fw-bold mb-3">Judge Expertise Distribution</h6>
+                <canvas id="judgesChart" height="400"></canvas>
+            </div>
+            
+            <!-- Aggregated Votes Chart -->
+            <div id="chart-aggregated" class="chart-container" style="display: none;">
+                <h6 class="fw-bold mb-3">Aggregated Votes by Criteria - All Teams</h6>
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <select class="form-select" id="aggregatedCriteriaSelect" onchange="updateAggregatedChart()">
+                            <option value="all">All Criteria</option>
+                            <option value="quantum">Quantum Tech Quality</option>
+                            <option value="social">Social Impact</option>
+                            <option value="innovation">Innovation</option>
+                            <option value="presentation">Presentation</option>
+                            <option value="business">Business Viability</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <select class="form-select" id="aggregatedChartType" onchange="updateAggregatedChart()">
+                            <option value="bar">Bar Chart</option>
+                            <option value="radar">Radar Chart</option>
+                            <option value="line">Line Chart</option>
+                        </select>
+                    </div>
+                </div>
+                <canvas id="aggregatedChart" height="400"></canvas>
+            </div>
+            
+            <!-- Team Comparison Chart -->
+            <div id="chart-comparison" class="chart-container" style="display: none;">
+                <h6 class="fw-bold mb-3">Team Performance Comparison</h6>
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <select class="form-select" id="comparisonTeam1" onchange="updateComparisonChart()">
+                            <option value="">Select Team 1</option>
+                            {% for team_score in teams_with_scores %}
+                                <option value="{{ forloop.counter0 }}" {% if forloop.first %}selected{% endif %}>
+                                    {{ team_score.team.name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <select class="form-select" id="comparisonTeam2" onchange="updateComparisonChart()">
+                            <option value="">Select Team 2</option>
+                            {% for team_score in teams_with_scores %}
+                                <option value="{{ forloop.counter0 }}" {% if forloop.counter == 2 %}selected{% endif %}>
+                                    {{ team_score.team.name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <select class="form-select" id="comparisonTeam3" onchange="updateComparisonChart()">
+                            <option value="">Select Team 3 (Optional)</option>
+                            {% for team_score in teams_with_scores %}
+                                <option value="{{ forloop.counter0 }}" {% if forloop.counter == 3 %}selected{% endif %}>
+                                    {{ team_score.team.name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <canvas id="comparisonChart" height="400"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Detailed Rankings Table -->
 <div class="row">
     <div class="col-12">
         <div class="card">
@@ -104,84 +282,133 @@
                     <i class="bi bi-list-ol me-2"></i>
                     Complete Rankings
                 </h4>
-                <small class="text-muted">Last updated: {{ "now"|date:"M d, Y g:i A" }}</small>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-sm btn-outline-primary" onclick="exportTableCSV()">
+                        <i class="bi bi-filetype-csv me-1"></i>CSV
+                    </button>
+                    <button class="btn btn-sm btn-outline-success" onclick="window.print()">
+                        <i class="bi bi-printer me-1"></i>Print
+                    </button>
+                </div>
             </div>
             <div class="card-body p-0">
                 {% if teams_with_scores %}
                     <div class="table-responsive">
-                        <table class="table table-hover mb-0">
+                        <table class="table table-hover mb-0" id="rankingsTable">
                             <thead class="table-dark">
                                 <tr>
-                                    <th class="text-center" width="60">Rank</th>
-                                    <th>Team Name</th>
+                                    <th class="text-center" width="80">Rank</th>
+                                    <th>Team</th>
                                     <th class="text-center">Quantum Tech<br><small>(40%)</small></th>
                                     <th class="text-center">Social Impact<br><small>(25%)</small></th>
                                     <th class="text-center">Innovation<br><small>(20%)</small></th>
                                     <th class="text-center">Presentation<br><small>(10%)</small></th>
                                     <th class="text-center">Business<br><small>(5%)</small></th>
-                                    <th class="text-center"><strong>Final Score</strong></th>
-                                    <th class="text-center">Actions</th>
+                                    <th class="text-center" width="120"><strong>Final Score</strong></th>
+                                    <th class="text-center" width="100">Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {% for team_score in teams_with_scores %}
-                                    <tr class="{% if team_score.rank <= 3 %}table-warning{% endif %}">
+                                    <tr class="{% if team_score.rank <= 3 %}table-warning{% endif %} team-row" 
+                                        onclick="showTeamDetails({{ team_score.team.id }}, '{{ team_score.team.name|escapejs }}')">
                                         <td class="text-center fw-bold">
                                             {% if team_score.rank == 1 %}
-                                                <span class="badge bg-warning text-dark fs-6">🥇 {{ team_score.rank }}</span>
+                                                <span class="badge bg-warning text-dark fs-6 p-2">🥇 {{ team_score.rank }}</span>
                                             {% elif team_score.rank == 2 %}
-                                                <span class="badge bg-secondary fs-6">🥈 {{ team_score.rank }}</span>
+                                                <span class="badge bg-secondary fs-6 p-2">🥈 {{ team_score.rank }}</span>
                                             {% elif team_score.rank == 3 %}
-                                                <span class="badge bg-warning bg-opacity-50 text-dark fs-6">🥉 {{ team_score.rank }}</span>
+                                                <span class="badge bg-warning bg-opacity-50 text-dark fs-6 p-2">🥉 {{ team_score.rank }}</span>
                                             {% else %}
-                                                <span class="badge bg-light text-dark fs-6">{{ team_score.rank }}</span>
+                                                <span class="badge bg-light text-dark fs-6 p-2">{{ team_score.rank }}</span>
                                             {% endif %}
                                         </td>
                                         <td>
-                                            <div>
-                                                <strong>{{ team_score.team.name }}</strong>
-                                                <br>
-                                                <small class="text-muted">{{ team_score.team.members|truncatewords:5 }}</small>
+                                            <div class="d-flex align-items-center">
+                                                <div class="me-3">
+                                                    <div class="bg-quantum-gradient rounded-circle d-flex align-items-center justify-content-center" 
+                                                         style="width: 40px; height: 40px;">
+                                                        <i class="bi bi-cpu text-white"></i>
+                                                    </div>
+                                                </div>
+                                                <div>
+                                                    <h6 class="mb-1 fw-bold">{{ team_score.team.name }}</h6>
+                                                    <small class="text-muted">{{ team_score.team.members|truncatewords:4 }}</small>
+                                                </div>
                                             </div>
                                         </td>
                                         <td class="text-center">
-                                            <span class="badge bg-primary bg-opacity-20 text-dark">
-                                                {{ team_score.quantum_tech_score|floatformat:1 }}
-                                            </span>
+                                            <div class="score-cell">
+                                                <span class="badge bg-primary bg-opacity-20 text-dark fw-bold fs-6 p-2">
+                                                    {{ team_score.quantum_tech_score|floatformat:1 }}
+                                                </span>
+                                                <div class="progress mt-1" style="height: 4px;">
+                                                    <div class="progress-bar bg-primary" style="width: {% widthratio team_score.quantum_tech_score 10 100 %}%"></div>
+                                                </div>
+                                            </div>
                                         </td>
                                         <td class="text-center">
-                                            <span class="badge bg-success bg-opacity-20 text-dark">
-                                                {{ team_score.social_impact_score|floatformat:1 }}
-                                            </span>
+                                            <div class="score-cell">
+                                                <span class="badge bg-success bg-opacity-20 text-dark fw-bold fs-6 p-2">
+                                                    {{ team_score.social_impact_score|floatformat:1 }}
+                                                </span>
+                                                <div class="progress mt-1" style="height: 4px;">
+                                                    <div class="progress-bar bg-success" style="width: {% widthratio team_score.social_impact_score 10 100 %}%"></div>
+                                                </div>
+                                            </div>
                                         </td>
                                         <td class="text-center">
-                                            <span class="badge bg-info bg-opacity-20 text-dark">
-                                                {{ team_score.innovation_score|floatformat:1 }}
-                                            </span>
+                                            <div class="score-cell">
+                                                <span class="badge bg-info bg-opacity-20 text-dark fw-bold fs-6 p-2">
+                                                    {{ team_score.innovation_score|floatformat:1 }}
+                                                </span>
+                                                <div class="progress mt-1" style="height: 4px;">
+                                                    <div class="progress-bar bg-info" style="width: {% widthratio team_score.innovation_score 10 100 %}%"></div>
+                                                </div>
+                                            </div>
                                         </td>
                                         <td class="text-center">
-                                            <span class="badge bg-warning bg-opacity-20 text-dark">
-                                                {{ team_score.presentation_score|floatformat:1 }}
-                                            </span>
+                                            <div class="score-cell">
+                                                <span class="badge bg-warning bg-opacity-20 text-dark fw-bold fs-6 p-2">
+                                                    {{ team_score.presentation_score|floatformat:1 }}
+                                                </span>
+                                                <div class="progress mt-1" style="height: 4px;">
+                                                    <div class="progress-bar bg-warning" style="width: {% widthratio team_score.presentation_score 10 100 %}%"></div>
+                                                </div>
+                                            </div>
                                         </td>
                                         <td class="text-center">
-                                            <span class="badge bg-secondary bg-opacity-20 text-dark">
-                                                {{ team_score.business_viability_score|floatformat:1 }}
-                                            </span>
+                                            <div class="score-cell">
+                                                <span class="badge bg-secondary bg-opacity-20 text-dark fw-bold fs-6 p-2">
+                                                    {{ team_score.business_viability_score|floatformat:1 }}
+                                                </span>
+                                                <div class="progress mt-1" style="height: 4px;">
+                                                    <div class="progress-bar bg-secondary" style="width: {% widthratio team_score.business_viability_score 10 100 %}%"></div>
+                                                </div>
+                                            </div>
                                         </td>
                                         <td class="text-center">
-                                            <strong class="fs-5 text-primary">{{ team_score.final_weighted_score|floatformat:2 }}</strong>
+                                            <div class="final-score">
+                                                <div class="display-6 fw-bold bg-quantum-gradient" 
+                                                     style="-webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;">
+                                                    {{ team_score.final_weighted_score|floatformat:2 }}
+                                                </div>
+                                                <div class="progress mt-1" style="height: 6px;">
+                                                    <div class="progress-bar" style="width: {% widthratio team_score.final_weighted_score 10 100 %}%"></div>
+                                                </div>
+                                            </div>
                                         </td>
                                         <td class="text-center">
                                             <div class="btn-group btn-group-sm">
-                                                <button class="btn btn-outline-info btn-sm" 
-                                                        onclick="showTeamDetails({{ team_score.team.id }}, '{{ team_score.team.name|escapejs }}')">
+                                                <button class="btn btn-outline-info" 
+                                                        onclick="event.stopPropagation(); showTeamDetails({{ team_score.team.id }}, '{{ team_score.team.name|escapejs }}')">
                                                     <i class="bi bi-eye"></i>
                                                 </button>
                                                 {% if team_score.team.presentation_link %}
                                                     <a href="{{ team_score.team.presentation_link }}" 
                                                        target="_blank" 
-                                                       class="btn btn-outline-success btn-sm">
+                                                       class="btn btn-outline-success"
+                                                       onclick="event.stopPropagation();">
                                                         <i class="bi bi-play-circle"></i>
                                                     </a>
                                                 {% endif %}
@@ -194,8 +421,10 @@
                     </div>
                 {% else %}
                     <div class="text-center py-5">
-                        <i class="bi bi-inbox display-1 text-muted"></i>
-                        <h5 class="mt-3 text-muted">No results available yet</h5>
+                        <div class="mb-4" style="font-size: 4rem; color: var(--quantum-purple); opacity: 0.5;">
+                            <i class="bi bi-cpu"></i>
+                        </div>
+                        <h5 class="text-muted">No Results Available Yet</h5>
                         <p class="text-muted">Results will appear here as judges submit their evaluations.</p>
                     </div>
                 {% endif %}
@@ -204,64 +433,25 @@
     </div>
 </div>
 
-<!-- Statistics Summary -->
-<div class="row mt-4">
-    <div class="col-lg-6">
-        <div class="card">
-            <div class="card-header">
-                <i class="bi bi-bar-chart me-2"></i>
-                Score Distribution
-            </div>
-            <div class="card-body">
-                <canvas id="scoreChart" height="200"></canvas>
-            </div>
-        </div>
-    </div>
-    <div class="col-lg-6">
-        <div class="card">
-            <div class="card-header">
-                <i class="bi bi-pie-chart me-2"></i>
-                Criteria Breakdown
-            </div>
-            <div class="card-body">
-                <div class="criteria-stats">
-                    <div class="d-flex justify-content-between align-items-center mb-2">
-                        <span>Quantum Tech Quality (40%)</span>
-                        <strong>Most weighted</strong>
-                    </div>
-                    <div class="d-flex justify-content-between align-items-center mb-2">
-                        <span>Social Impact (25%)</span>
-                        <strong>High impact</strong>
-                    </div>
-                    <div class="d-flex justify-content-between align-items-center mb-2">
-                        <span>Innovation (20%)</span>
-                        <strong>Creative factor</strong>
-                    </div>
-                    <div class="d-flex justify-content-between align-items-center mb-2">
-                        <span>Presentation (10%)</span>
-                        <strong>Communication</strong>
-                    </div>
-                    <div class="d-flex justify-content-between align-items-center">
-                        <span>Business Viability (5%)</span>
-                        <strong>Commercial potential</strong>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
 <!-- Team Details Modal -->
 <div class="modal fade" id="teamModal" tabindex="-1">
-    <div class="modal-dialog modal-lg">
+    <div class="modal-dialog modal-xl">
         <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Team Details</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            <div class="modal-header bg-quantum-gradient text-white">
+                <h5 class="modal-title">
+                    <i class="bi bi-cpu me-2"></i>
+                    <span id="modalTeamName">Team Details</span>
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-                <div id="teamDetails">
-                    <!-- Content will be loaded here -->
+                <div id="teamDetails" class="p-3">
+                    <div class="text-center">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <p class="mt-2">Loading team analytics...</p>
+                    </div>
                 </div>
             </div>
         </div>
@@ -272,124 +462,520 @@
 {% block extra_js %}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
 <script>
-    // Refresh results
-    function refreshResults() {
-        location.reload();
-    }
+    // Chart configurations and data
+    const chartColors = {
+        quantum: '#6B46C1',
+        pink: '#EC4899',
+        cyan: '#06B6D4',
+        blue: '#3B82F6',
+        violet: '#8B5CF6'
+    };
 
-    // Show team details
-    function showTeamDetails(teamId, teamName) {
-        document.querySelector('#teamModal .modal-title').textContent = `${teamName} - Detailed Scores`;
-        
-        // You can make an AJAX call here to get detailed team information
-        const detailsContent = `
-            <div class="text-center">
-                <div class="spinner-border" role="status">
-                    <span class="visually-hidden">Loading...</span>
-                </div>
-                <p class="mt-2">Loading team details...</p>
-            </div>
-        `;
-        
-        document.getElementById('teamDetails').innerHTML = detailsContent;
-        
-        const modal = new bootstrap.Modal(document.getElementById('teamModal'));
-        modal.show();
-        
-        // Simulate loading (replace with actual AJAX call)
-        setTimeout(() => {
-            document.getElementById('teamDetails').innerHTML = `
-                <div class="alert alert-info">
-                    <strong>Team ID:</strong> ${teamId}<br>
-                    <strong>Team Name:</strong> ${teamName}<br>
-                    <em>Detailed scoring breakdown would be displayed here.</em>
-                </div>
-            `;
-        }, 1000);
-    }
+    let scoreChart, criteriaChart, judgesChart, aggregatedChart, comparisonChart;
+    const teamsData = [
+        {% for team_score in teams_with_scores %}
+        {
+            name: "{{ team_score.team.name|escapejs }}",
+            quantum: {{ team_score.quantum_tech_score|default:0 }},
+            social: {{ team_score.social_impact_score|default:0 }},
+            innovation: {{ team_score.innovation_score|default:0 }},
+            presentation: {{ team_score.presentation_score|default:0 }},
+            business: {{ team_score.business_viability_score|default:0 }},
+            final: {{ team_score.final_weighted_score|default:0 }},
+            rank: {{ team_score.rank|default:0 }}
+        }{% if not forloop.last %},{% endif %}
+        {% endfor %}
+    ];
 
-    // Create score distribution chart
+    // Initialize all charts when page loads
     document.addEventListener('DOMContentLoaded', function() {
-        const ctx = document.getElementById('scoreChart');
-        if (ctx) {
-            new Chart(ctx, {
+        initializeCharts();
+        createPodiumCharts();
+        updateAggregatedChart();
+        updateComparisonChart();
+    });
+
+    function initializeCharts() {
+        // Score Distribution Chart
+        const scoreCtx = document.getElementById('scoreDistributionChart');
+        if (scoreCtx) {
+            scoreChart = new Chart(scoreCtx.getContext('2d'), {
                 type: 'bar',
                 data: {
-                    labels: [
-                        {% for team_score in teams_with_scores|slice:":10" %}
-                            '{{ team_score.team.name|truncatechars:10 }}'{% if not forloop.last %},{% endif %}
-                        {% endfor %}
-                    ],
+                    labels: teamsData.slice(0, 10).map(t => t.name),
                     datasets: [{
                         label: 'Final Score',
-                        data: [
-                            {% for team_score in teams_with_scores|slice:":10" %}
-                                {{ team_score.final_weighted_score }}{% if not forloop.last %},{% endif %}
-                            {% endfor %}
+                        data: teamsData.slice(0, 10).map(t => t.final),
+                        backgroundColor: createGradient(scoreCtx.getContext('2d'), chartColors.quantum, chartColors.pink),
+                        borderColor: chartColors.quantum,
+                        borderWidth: 2,
+                        borderRadius: 8,
+                        borderSkipped: false,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        title: {
+                            display: true,
+                            text: 'Top 10 Teams - Final Scores',
+                            font: { size: 18, weight: 'bold' }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 10,
+                            grid: { color: 'rgba(0,0,0,0.1)' }
+                        },
+                        x: {
+                            grid: { display: false }
+                        }
+                    },
+                    animation: {
+                        duration: 2000,
+                        easing: 'easeOutQuart'
+                    }
+                }
+            });
+        }
+
+        // Criteria Analysis Chart
+        const criteriaCtx = document.getElementById('criteriaChart');
+        if (criteriaCtx) {
+            criteriaChart = new Chart(criteriaCtx.getContext('2d'), {
+                type: 'doughnut',
+                data: {
+                    labels: ['Quantum Tech (40%)', 'Social Impact (25%)', 'Innovation (20%)', 'Presentation (10%)', 'Business (5%)'],
+                    datasets: [{
+                        data: [40, 25, 20, 10, 5],
+                        backgroundColor: [
+                            chartColors.quantum,
+                            chartColors.cyan,
+                            chartColors.blue,
+                            chartColors.violet,
+                            chartColors.pink
                         ],
-                        backgroundColor: 'rgba(111, 66, 193, 0.6)',
-                        borderColor: 'rgba(111, 66, 193, 1)',
-                        borderWidth: 1
+                        borderWidth: 3,
+                        borderColor: '#fff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom' }
+                    },
+                    animation: {
+                        animateRotate: true,
+                        duration: 2000
+                    }
+                }
+            });
+        }
+
+        // Judges Distribution Chart
+        const judgesCtx = document.getElementById('judgesChart');
+        if (judgesCtx) {
+            judgesChart = new Chart(judgesCtx.getContext('2d'), {
+                type: 'radar',
+                data: {
+                    labels: ['Quantum Physics', 'Computer Science', 'Innovation', 'Education', 'Climate Science'],
+                    datasets: [{
+                        label: 'Judge Expertise Distribution',
+                        data: [8, 5, 6, 7, 3],
+                        backgroundColor: 'rgba(107, 70, 193, 0.2)',
+                        borderColor: chartColors.quantum,
+                        borderWidth: 3,
+                        pointBackgroundColor: chartColors.pink,
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2,
+                        pointRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Judge Expertise Areas',
+                            font: { size: 18, weight: 'bold' }
+                        }
+                    },
+                    scales: {
+                        r: {
+                            beginAtZero: true,
+                            max: 10,
+                            grid: { color: 'rgba(0,0,0,0.1)' }
+                        }
+                    }
+                }
+            });
+        }
+    }
+
+    function updateAggregatedChart() {
+        const criteria = document.getElementById('aggregatedCriteriaSelect')?.value || 'all';
+        const chartType = document.getElementById('aggregatedChartType')?.value || 'bar';
+        
+        if (aggregatedChart) aggregatedChart.destroy();
+
+        const ctx = document.getElementById('aggregatedChart');
+        if (!ctx) return;
+
+        let datasets = [];
+        let labels = teamsData.map(t => t.name);
+
+        if (criteria === 'all') {
+            datasets = [
+                {
+                    label: 'Quantum Tech',
+                    data: teamsData.map(t => t.quantum),
+                    backgroundColor: chartColors.quantum + '80',
+                    borderColor: chartColors.quantum,
+                    borderWidth: 2
+                },
+                {
+                    label: 'Social Impact',
+                    data: teamsData.map(t => t.social),
+                    backgroundColor: chartColors.cyan + '80',
+                    borderColor: chartColors.cyan,
+                    borderWidth: 2
+                },
+                {
+                    label: 'Innovation',
+                    data: teamsData.map(t => t.innovation),
+                    backgroundColor: chartColors.blue + '80',
+                    borderColor: chartColors.blue,
+                    borderWidth: 2
+                },
+                {
+                    label: 'Presentation',
+                    data: teamsData.map(t => t.presentation),
+                    backgroundColor: chartColors.violet + '80',
+                    borderColor: chartColors.violet,
+                    borderWidth: 2
+                },
+                {
+                    label: 'Business',
+                    data: teamsData.map(t => t.business),
+                    backgroundColor: chartColors.pink + '80',
+                    borderColor: chartColors.pink,
+                    borderWidth: 2
+                }
+            ];
+        } else {
+            const criteriaMap = {
+                quantum: { data: 'quantum', label: 'Quantum Tech Quality', color: chartColors.quantum },
+                social: { data: 'social', label: 'Social Impact', color: chartColors.cyan },
+                innovation: { data: 'innovation', label: 'Innovation', color: chartColors.blue },
+                presentation: { data: 'presentation', label: 'Presentation', color: chartColors.violet },
+                business: { data: 'business', label: 'Business Viability', color: chartColors.pink }
+            };
+            
+            const selected = criteriaMap[criteria];
+            datasets = [{
+                label: selected.label,
+                data: teamsData.map(t => t[selected.data]),
+                backgroundColor: selected.color + '80',
+                borderColor: selected.color,
+                borderWidth: 2,
+                borderRadius: chartType === 'bar' ? 8 : 0
+            }];
+        }
+
+        aggregatedChart = new Chart(ctx.getContext('2d'), {
+            type: chartType,
+            data: { labels, datasets },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'top' },
+                    title: {
+                        display: true,
+                        text: criteria === 'all' ? 'All Criteria Comparison' : criteriaMap[criteria]?.label || 'Aggregated Scores'
+                    }
+                },
+                scales: chartType !== 'radar' ? {
+                    y: { beginAtZero: true, max: 10 }
+                } : {
+                    r: { beginAtZero: true, max: 10 }
+                }
+            }
+        });
+    }
+
+    function updateComparisonChart() {
+        const team1Index = parseInt(document.getElementById('comparisonTeam1')?.value);
+        const team2Index = parseInt(document.getElementById('comparisonTeam2')?.value);
+        const team3Index = parseInt(document.getElementById('comparisonTeam3')?.value);
+        
+        if (comparisonChart) comparisonChart.destroy();
+
+        const ctx = document.getElementById('comparisonChart');
+        if (!ctx || isNaN(team1Index) || isNaN(team2Index)) return;
+
+        const datasets = [];
+        const labels = ['Quantum Tech', 'Social Impact', 'Innovation', 'Presentation', 'Business'];
+
+        if (!isNaN(team1Index) && teamsData[team1Index]) {
+            const team1 = teamsData[team1Index];
+            datasets.push({
+                label: team1.name,
+                data: [team1.quantum, team1.social, team1.innovation, team1.presentation, team1.business],
+                backgroundColor: chartColors.quantum + '40',
+                borderColor: chartColors.quantum,
+                borderWidth: 3,
+                pointBackgroundColor: chartColors.quantum
+            });
+        }
+
+        if (!isNaN(team2Index) && teamsData[team2Index]) {
+            const team2 = teamsData[team2Index];
+            datasets.push({
+                label: team2.name,
+                data: [team2.quantum, team2.social, team2.innovation, team2.presentation, team2.business],
+                backgroundColor: chartColors.cyan + '40',
+                borderColor: chartColors.cyan,
+                borderWidth: 3,
+                pointBackgroundColor: chartColors.cyan
+            });
+        }
+
+        if (!isNaN(team3Index) && teamsData[team3Index]) {
+            const team3 = teamsData[team3Index];
+            datasets.push({
+                label: team3.name,
+                data: [team3.quantum, team3.social, team3.innovation, team3.presentation, team3.business],
+                backgroundColor: chartColors.pink + '40',
+                borderColor: chartColors.pink,
+                borderWidth: 3,
+                pointBackgroundColor: chartColors.pink
+            });
+        }
+
+        comparisonChart = new Chart(ctx.getContext('2d'), {
+            type: 'radar',
+            data: { labels, datasets },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'top' },
+                    title: {
+                        display: true,
+                        text: 'Team Performance Comparison'
+                    }
+                },
+                scales: {
+                    r: {
+                        beginAtZero: true,
+                        max: 10,
+                        ticks: { stepSize: 2 }
+                    }
+                }
+            }
+        });
+    }
+
+    function createPodiumCharts() {
+        for (let i = 1; i <= 3; i++) {
+            const team = teamsData[i-1];
+            if (!team) continue;
+
+            const ctx = document.getElementById(`podiumChart${i}`);
+            if (!ctx) continue;
+
+            new Chart(ctx.getContext('2d'), {
+                type: 'doughnut',
+                data: {
+                    labels: ['Quantum', 'Social', 'Innovation', 'Present.', 'Business'],
+                    datasets: [{
+                        data: [team.quantum, team.social, team.innovation, team.presentation, team.business],
+                        backgroundColor: [
+                            chartColors.quantum,
+                            chartColors.cyan,
+                            chartColors.blue,
+                            chartColors.violet,
+                            chartColors.pink
+                        ],
+                        borderWidth: 2,
+                        borderColor: '#fff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    cutout: '70%'
+                }
+            });
+        }
+    }
+
+    function updateRadarChart() {
+        const selector = document.getElementById('teamSelector');
+        if (!selector || teamsData.length === 0) return;
+        
+        const teamIndex = parseInt(selector.value) || 0;
+        const team = teamsData[teamIndex];
+        if (!team) return;
+
+        if (radarChart) radarChart.destroy();
+
+        const radarCtx = document.getElementById('radarChart');
+        if (radarCtx) {
+            radarChart = new Chart(radarCtx.getContext('2d'), {
+                type: 'radar',
+                data: {
+                    labels: ['Quantum Tech', 'Social Impact', 'Innovation', 'Presentation', 'Business'],
+                    datasets: [{
+                        label: team.name,
+                        data: [team.quantum, team.social, team.innovation, team.presentation, team.business],
+                        backgroundColor: 'rgba(107, 70, 193, 0.2)',
+                        borderColor: chartColors.quantum,
+                        borderWidth: 3,
+                        pointBackgroundColor: chartColors.pink,
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2,
+                        pointRadius: 6
                     }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
                     scales: {
-                        y: {
+                        r: {
                             beginAtZero: true,
-                            max: 10
+                            max: 10,
+                            ticks: { stepSize: 2 }
                         }
                     },
                     plugins: {
-                        legend: {
-                            display: false
-                        },
-                        title: {
-                            display: true,
-                            text: 'Top 10 Teams - Final Scores'
-                        }
+                        legend: { display: false }
                     }
                 }
             });
         }
-    });
-
-    // Auto-refresh every 30 seconds
-    setInterval(refreshResults, 30000);
-
-    // Print functionality
-    function printResults() {
-        window.print();
     }
 
-    // Export functionality
-    function exportToCSV() {
-        const data = [
-            ['Rank', 'Team Name', 'Quantum Tech', 'Social Impact', 'Innovation', 'Presentation', 'Business', 'Final Score']
-        ];
+    function showChart(type) {
+        document.querySelectorAll('.viz-tab').forEach(tab => tab.classList.remove('active'));
+        event.target.classList.add('active');
+
+        document.querySelectorAll('.chart-container').forEach(container => {
+            container.style.display = 'none';
+        });
+        const targetChart = document.getElementById(`chart-${type}`);
+        if (targetChart) {
+            targetChart.style.display = 'block';
+        }
+    }
+
+    function createGradient(ctx, color1, color2) {
+        const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+        gradient.addColorStop(0, color1);
+        gradient.addColorStop(1, color2);
+        return gradient;
+    }
+
+    function showTeamDetails(teamId, teamName) {
+        document.getElementById('modalTeamName').textContent = teamName;
         
-        {% for team_score in teams_with_scores %}
-            data.push([
-                {{ team_score.rank }},
-                '{{ team_score.team.name|escapejs }}',
-                {{ team_score.quantum_tech_score }},
-                {{ team_score.social_impact_score }},
-                {{ team_score.innovation_score }},
-                {{ team_score.presentation_score }},
-                {{ team_score.business_viability_score }},
-                {{ team_score.final_weighted_score }}
-            ]);
-        {% endfor %}
+        const detailsHtml = `
+            <div class="row">
+                <div class="col-md-6">
+                    <h6 class="fw-bold">Team Information</h6>
+                    <p><strong>Team ID:</strong> ${teamId}</p>
+                    <p><strong>Name:</strong> ${teamName}</p>
+                    <p class="text-muted">Detailed scoring breakdown and judge feedback would be displayed here in a production system.</p>
+                </div>
+                <div class="col-md-6">
+                    <h6 class="fw-bold">Judge Feedback</h6>
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle me-2"></i>
+                        Individual judge comments and detailed scoring analysis would appear here.
+                    </div>
+                </div>
+            </div>
+        `;
         
-        const csvContent = data.map(row => row.join(',')).join('\n');
+        document.getElementById('teamDetails').innerHTML = detailsHtml;
+        
+        const modal = new bootstrap.Modal(document.getElementById('teamModal'));
+        modal.show();
+    }
+
+    function refreshDashboard() {
+        location.reload();
+    }
+
+    function exportTableCSV() {
+        const table = document.getElementById('rankingsTable');
+        if (!table) return;
+        
+        const rows = table.querySelectorAll('tr');
+        let csv = [];
+
+        rows.forEach(row => {
+            const cols = row.querySelectorAll('td, th');
+            const rowData = Array.from(cols).map(col => 
+                col.textContent.trim().replace(/,/g, ';')
+            );
+            csv.push(rowData.join(','));
+        });
+
+        const csvContent = csv.join('\n');
         const blob = new Blob([csvContent], { type: 'text/csv' });
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = 'hackathon_results.csv';
+        a.download = 'quantathon_results.csv';
         a.click();
         window.URL.revokeObjectURL(url);
     }
+
+    // Auto-refresh every 60 seconds
+    setInterval(refreshDashboard, 60000);
+
+    // Add hover effects to table rows
+    document.querySelectorAll('.team-row').forEach(row => {
+        row.style.cursor = 'pointer';
+        row.addEventListener('mouseenter', function() {
+            this.style.backgroundColor = 'rgba(107, 70, 193, 0.05)';
+        });
+        row.addEventListener('mouseleave', function() {
+            this.style.backgroundColor = '';
+        });
+    });
 </script>
+
+<style>
+    .score-cell {
+        min-width: 80px;
+    }
+    
+    .final-score {
+        min-width: 100px;
+    }
+    
+    .team-row {
+        transition: all 0.2s ease;
+    }
+    
+    .chart-container canvas {
+        max-height: 400px;
+    }
+    
+    @media print {
+        .btn, .viz-tabs, .modal { display: none !important; }
+        .card { border: 1px solid #000 !important; }
+    }
+</style>
 {% endblock %}

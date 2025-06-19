@@ -1,0 +1,159 @@
+{% extends 'judging/base.html' %}
+
+{% block title %}Judge Login - Hackathon Judging{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-6 col-md-8">
+        <!-- Header -->
+        <div class="text-center mb-5">
+            <div class="display-1 text-primary mb-3">
+                <i class="bi bi-shield-lock-fill"></i>
+            </div>
+            <h2 class="mb-3">Judge Login</h2>
+            <p class="text-muted lead">Access the hackathon judging portal</p>
+        </div>
+
+        <!-- Login Form -->
+        <div class="card shadow-lg border-0">
+            <div class="card-header text-center">
+                <h4 class="mb-0">
+                    <i class="bi bi-person-check me-2"></i>
+                    Login to Judge Portal
+                </h4>
+            </div>
+            <div class="card-body p-4">
+                {% if form.errors %}
+                    <div class="alert alert-danger">
+                        <i class="bi bi-exclamation-triangle me-2"></i>
+                        {% for field, errors in form.errors.items %}
+                            {% for error in errors %}
+                                {% if field == '__all__' %}
+                                    {{ error }}
+                                {% else %}
+                                    {{ field|capfirst }}: {{ error }}
+                                {% endif %}
+                            {% endfor %}
+                        {% endfor %}
+                    </div>
+                {% endif %}
+
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.username.id_for_label }}" class="form-label">
+                            <i class="bi bi-envelope me-2"></i>Email Address
+                        </label>
+                        <input type="email" 
+                               class="form-control {% if form.username.errors %}is-invalid{% endif %}" 
+                               id="{{ form.username.id_for_label }}" 
+                               name="{{ form.username.html_name }}"
+                               value="{{ form.username.value|default:'' }}"
+                               placeholder="Enter your email address"
+                               required>
+                        {% if form.username.errors %}
+                            <div class="invalid-feedback">{{ form.username.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="{{ form.password.id_for_label }}" class="form-label">
+                            <i class="bi bi-key me-2"></i>Password
+                        </label>
+                        <input type="password" 
+                               class="form-control {% if form.password.errors %}is-invalid{% endif %}" 
+                               id="{{ form.password.id_for_label }}" 
+                               name="{{ form.password.html_name }}"
+                               placeholder="Enter your password"
+                               required>
+                        {% if form.password.errors %}
+                            <div class="invalid-feedback">{{ form.password.errors.0 }}</div>
+                        {% endif %}
+                        <div class="form-text">
+                            Default password: <code>hackathon2025!</code> (change after first login)
+                        </div>
+                    </div>
+
+                    <div class="d-grid mb-3">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="bi bi-box-arrow-in-right me-2"></i>
+                            Login to Judge Portal
+                        </button>
+                    </div>
+
+                    {% if next %}
+                        <input type="hidden" name="next" value="{{ next }}">
+                    {% endif %}
+                </form>
+            </div>
+        </div>
+
+        <!-- Help Section -->
+        <div class="card mt-4 border-info">
+            <div class="card-header bg-info bg-opacity-10">
+                <i class="bi bi-info-circle me-2"></i>
+                Login Help
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>For Pre-Defined Judges:</h6>
+                        <ul class="list-unstyled">
+                            <li><i class="bi bi-check-circle text-success me-2"></i>Use your email as username</li>
+                            <li><i class="bi bi-check-circle text-success me-2"></i>Default password: <code>hackathon2025!</code></li>
+                            <li><i class="bi bi-check-circle text-success me-2"></i>Change password after first login</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Need Help?</h6>
+                        <ul class="list-unstyled">
+                            <li><i class="bi bi-envelope text-primary me-2"></i>
+                                Contact: <a href="mailto:support@hackathon.com" class="text-decoration-none">support@hackathon.com</a>
+                            </li>
+                            <li><i class="bi bi-gear text-secondary me-2"></i>
+                                <a href="/admin/" class="text-decoration-none">Admin access</a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Contact Support -->
+        <div class="text-center mt-4">
+            <small class="text-muted">
+                Having trouble logging in? Contact support at 
+                <a href="mailto:support@hackathon.com" class="text-decoration-none">support@hackathon.com</a>
+            </small>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Auto-focus on username field
+    document.addEventListener('DOMContentLoaded', function() {
+        document.getElementById('{{ form.username.id_for_label }}').focus();
+    });
+
+    // Show/hide password toggle
+    const passwordField = document.getElementById('{{ form.password.id_for_label }}');
+    const toggleButton = document.createElement('button');
+    toggleButton.type = 'button';
+    toggleButton.className = 'btn btn-outline-secondary';
+    toggleButton.innerHTML = '<i class="bi bi-eye"></i>';
+    
+    // Add password toggle functionality
+    toggleButton.addEventListener('click', function() {
+        if (passwordField.type === 'password') {
+            passwordField.type = 'text';
+            this.innerHTML = '<i class="bi bi-eye-slash"></i>';
+        } else {
+            passwordField.type = 'password';
+            this.innerHTML = '<i class="bi bi-eye"></i>';
+        }
+    });
+</script>
+{% endblock %}

@@ -213,3 +213,8 @@ class Command(BaseCommand):
         business_criteria.expertise_areas.add(business_expert)
         
         self.stdout.write(self.style.SUCCESS('Successfully set up judging criteria and expertise areas'))
+
+# At the end of admin.py, keep only this:
+admin.site.site_header = "Hackathon Judging System"
+admin.site.site_title = "Judging Admin"
+admin.site.index_title = "Welcome to Hackathon Judging Administration"

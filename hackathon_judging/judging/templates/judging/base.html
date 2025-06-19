@@ -3,190 +3,459 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Hackathon Judging System{% endblock %}</title>
+    <title>{% block title %}Quantathon Judging System{% endblock %}</title>
     
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
     <!-- Bootstrap Icons -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.10.0/font/bootstrap-icons.min.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
     <!-- Custom CSS -->
     <style>
         :root {
-            --primary-color: #6f42c1;
-            --secondary-color: #e83e8c;
-            --accent-color: #20c997;
-            --dark-color: #212529;
-            --light-color: #f8f9fa;
-            --gradient-primary: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-            --gradient-accent: linear-gradient(135deg, var(--accent-color), #17a2b8);
+            /* Quantum-inspired color palette */
+            --quantum-purple: #6B46C1;
+            --quantum-blue: #3B82F6;
+            --quantum-cyan: #06B6D4;
+            --quantum-pink: #EC4899;
+            --quantum-violet: #8B5CF6;
+            --quantum-indigo: #4F46E5;
+            
+            /* Neutral colors */
+            --quantum-dark: #0F172A;
+            --quantum-gray-900: #1E293B;
+            --quantum-gray-800: #334155;
+            --quantum-gray-700: #475569;
+            --quantum-gray-100: #F1F5F9;
+            --quantum-gray-50: #F8FAFC;
+            
+            /* Gradients */
+            --gradient-quantum: linear-gradient(135deg, var(--quantum-purple) 0%, var(--quantum-pink) 50%, var(--quantum-cyan) 100%);
+            --gradient-dark: linear-gradient(135deg, var(--quantum-dark) 0%, var(--quantum-gray-900) 100%);
+            --gradient-card: linear-gradient(145deg, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.7) 100%);
+            
+            /* Glass morphism */
+            --glass-bg: rgba(255, 255, 255, 0.1);
+            --glass-border: rgba(255, 255, 255, 0.2);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
 
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: var(--gradient-quantum);
             min-height: 100vh;
-            color: var(--dark-color);
+            color: var(--quantum-dark);
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* Animated background particles */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(120, 219, 255, 0.3) 0%, transparent 50%);
+            z-index: -2;
+            animation: float 20s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            33% { transform: translateY(-20px) rotate(120deg); }
+            66% { transform: translateY(-10px) rotate(240deg); }
+        }
+
+        /* Quantum grid overlay */
+        body::after {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px);
+            background-size: 50px 50px;
+            z-index: -1;
+            opacity: 0.3;
         }
 
         .main-container {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
-            margin: 20px auto;
+            background: rgba(255, 255, 255, 0.95) !important;
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            box-shadow: 
+                0 25px 50px rgba(0, 0, 0, 0.1),
+                0 0 0 1px rgba(255, 255, 255, 0.1);
+            margin: 20px;
             overflow: hidden;
+            position: relative;
         }
 
+        /* Navigation */
         .navbar {
-            background: var(--gradient-primary) !important;
-            padding: 1rem 0;
-            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+            background: rgba(15, 23, 42, 0.9) !important;
+            backdrop-filter: blur(20px);
+            padding: 1.2rem 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
         }
 
         .navbar-brand {
+            font-family: 'Space Grotesk', sans-serif;
             font-weight: 700;
-            font-size: 1.5rem;
+            font-size: 1.8rem;
             color: white !important;
+            text-shadow: 0 0 20px rgba(107, 70, 193, 0.5);
         }
 
         .navbar-nav .nav-link {
             color: rgba(255, 255, 255, 0.9) !important;
             font-weight: 500;
-            margin: 0 10px;
-            border-radius: 8px;
-            padding: 8px 16px !important;
+            margin: 0 15px;
+            border-radius: 12px;
+            padding: 10px 20px !important;
             transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .navbar-nav .nav-link::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: var(--gradient-quantum);
+            transition: left 0.3s ease;
+            z-index: -1;
+        }
+
+        .navbar-nav .nav-link:hover::before {
+            left: 0;
         }
 
         .navbar-nav .nav-link:hover {
-            background: rgba(255, 255, 255, 0.2);
             color: white !important;
+            transform: translateY(-2px);
         }
 
+        /* Cards - Fixed for better visibility */
         .card {
-            border: none;
-            border-radius: 16px;
-            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
-            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.98) !important;
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(0, 0, 0, 0.1) !important;
+            border-radius: 20px;
+            box-shadow: 
+                0 20px 40px rgba(0, 0, 0, 0.1),
+                0 0 0 1px rgba(255, 255, 255, 0.1);
+            transition: all 0.4s ease;
+            overflow: hidden;
+            position: relative;
+            color: #1E293B !important;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: var(--gradient-quantum);
+            opacity: 0.6;
         }
 
         .card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+            transform: translateY(-8px);
+            box-shadow: 
+                0 30px 60px rgba(0, 0, 0, 0.15),
+                0 0 0 1px rgba(255, 255, 255, 0.2);
         }
 
         .card-header {
-            background: var(--gradient-primary);
-            color: white;
+            background: rgba(15, 23, 42, 0.95) !important;
+            color: white !important;
             border: none;
-            padding: 1.5rem;
+            padding: 1.5rem 2rem;
             font-weight: 600;
-            font-size: 1.2rem;
+            font-size: 1.3rem;
+            font-family: 'Space Grotesk', sans-serif;
+            position: relative;
+        }
+
+        .card-header::before {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: var(--gradient-quantum);
+        }
+
+        .card-body {
+            background: rgba(255, 255, 255, 0.98) !important;
+            padding: 2rem;
+            color: #1E293B !important;
+        }
+
+        /* Buttons */
+        .btn {
+            border-radius: 12px;
+            padding: 12px 28px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+            border: none;
+            position: relative;
+            overflow: hidden;
         }
 
         .btn-primary {
-            background: var(--gradient-primary);
-            border: none;
-            border-radius: 12px;
-            padding: 12px 24px;
-            font-weight: 600;
-            transition: all 0.3s ease;
+            background: var(--gradient-quantum);
+            color: white;
+            box-shadow: 0 8px 25px rgba(107, 70, 193, 0.3);
         }
 
         .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(111, 66, 193, 0.3);
+            transform: translateY(-3px);
+            box-shadow: 0 12px 35px rgba(107, 70, 193, 0.4);
+            color: white;
         }
 
         .btn-success {
-            background: var(--gradient-accent);
-            border: none;
-            border-radius: 12px;
-            padding: 12px 24px;
-            font-weight: 600;
+            background: linear-gradient(135deg, #10B981, #34D399);
+            color: white;
+            box-shadow: 0 8px 25px rgba(16, 185, 129, 0.3);
         }
 
+        .btn-outline-info {
+            border: 2px solid var(--quantum-cyan);
+            color: var(--quantum-cyan);
+            background: transparent;
+        }
+
+        .btn-outline-info:hover {
+            background: var(--quantum-cyan);
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        /* Form Controls */
         .form-control, .form-select {
-            border: 2px solid #e9ecef;
+            border: 2px solid var(--quantum-gray-100);
             border-radius: 12px;
-            padding: 12px 16px;
+            padding: 15px 20px;
             transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
         }
 
         .form-control:focus, .form-select:focus {
-            border-color: var(--primary-color);
-            box-shadow: 0 0 0 0.2rem rgba(111, 66, 193, 0.25);
+            border-color: var(--quantum-purple);
+            box-shadow: 0 0 0 0.2rem rgba(107, 70, 193, 0.25);
+            background: white;
         }
 
+        /* Progress Bars */
         .progress {
-            height: 12px;
-            border-radius: 10px;
-            background: #e9ecef;
+            height: 16px;
+            border-radius: 12px;
+            background: var(--quantum-gray-100) !important;
+            overflow: hidden;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
         }
 
         .progress-bar {
-            background: var(--gradient-accent);
-            border-radius: 10px;
+            background: var(--gradient-quantum);
+            border-radius: 12px;
+            transition: width 0.6s ease;
+            position: relative;
         }
 
+        .progress-bar::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.3) 50%, transparent 70%);
+            animation: shine 2s infinite;
+        }
+
+        @keyframes shine {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        /* Alerts */
         .alert {
             border: none;
-            border-radius: 12px;
-            padding: 16px 20px;
-            margin-bottom: 20px;
+            border-radius: 16px;
+            padding: 20px 24px;
+            margin-bottom: 24px;
+            backdrop-filter: blur(10px);
+            border-left: 4px solid;
         }
 
         .alert-success {
-            background: linear-gradient(135deg, #d4edda, #c3e6cb);
-            color: #155724;
+            background: rgba(16, 185, 129, 0.1);
+            color: #065F46;
+            border-left-color: #10B981;
+        }
+
+        .alert-info {
+            background: rgba(59, 130, 246, 0.1);
+            color: #1E3A8A;
+            border-left-color: #3B82F6;
         }
 
         .alert-warning {
-            background: linear-gradient(135deg, #fff3cd, #fdeaa7);
-            color: #856404;
+            background: rgba(245, 158, 11, 0.1);
+            color: #92400E;
+            border-left-color: #F59E0B;
         }
 
         .alert-danger {
-            background: linear-gradient(135deg, #f8d7da, #f1aeb5);
-            color: #721c24;
+            background: rgba(239, 68, 68, 0.1);
+            color: #991B1B;
+            border-left-color: #EF4444;
         }
 
+        /* Badges */
         .badge {
-            border-radius: 8px;
-            padding: 6px 12px;
+            border-radius: 10px;
+            padding: 8px 16px;
             font-weight: 500;
+            font-size: 0.85rem;
         }
 
-        .team-card {
+        .badge.text-dark {
+            color: #1F2937 !important;
+        }
+
+        .bg-quantum-gradient {
+            background: var(--gradient-quantum) !important;
+            color: white;
+        }
+
+        /* Statistics Cards - Fixed colors */
+        .stat-card {
+            background: rgba(255, 255, 255, 0.98) !important;
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 2rem;
+            text-align: center;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            position: relative;
+            overflow: hidden;
             transition: all 0.3s ease;
-            border-left: 4px solid var(--accent-color);
+            color: #1E293B !important;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--gradient-quantum);
+        }
+
+        .stat-number {
+            font-size: 3rem;
+            font-weight: 700;
+            font-family: 'Space Grotesk', sans-serif;
+            background: var(--gradient-quantum);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            color: var(--quantum-gray-700);
+            font-weight: 500;
+            font-size: 0.95rem;
+        }
+
+        /* Team Cards */
+        .team-card {
+            background: rgba(255, 255, 255, 0.98) !important;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            border-radius: 16px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            color: #1E293B !important;
         }
 
         .team-card:hover {
-            border-left-color: var(--primary-color);
+            transform: translateX(8px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
         }
 
-        .criteria-section {
-            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 20px;
-            border-left: 4px solid var(--accent-color);
+        .team-card::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: var(--gradient-quantum);
+            transform: scaleY(0);
+            transition: transform 0.3s ease;
         }
 
-        .score-input {
-            width: 80px;
-            text-align: center;
-            font-weight: 600;
+        .team-card:hover::before {
+            transform: scaleY(1);
         }
 
-        .footer {
-            background: var(--dark-color);
-            color: white;
-            padding: 2rem 0;
-            margin-top: 3rem;
+        /* Tables - Fixed for better contrast */
+        .table {
+            background: white !important;
+            color: #1E293B !important;
         }
 
+        .table-dark {
+            background: #1E293B !important;
+            color: white !important;
+        }
+
+        .table-warning {
+            background: rgba(255, 193, 7, 0.1) !important;
+        }
+
+        /* Text colors - Fixed */
+        .text-muted {
+            color: #6B7280 !important;
+        }
+
+        /* Loading Animations */
         .loading-spinner {
             display: none;
         }
@@ -195,25 +464,119 @@
             display: inline-block;
         }
 
+        /* Responsive Design */
         @media (max-width: 768px) {
             .main-container {
                 margin: 10px;
-                border-radius: 16px;
+                border-radius: 20px;
             }
             
-            .card {
-                margin-bottom: 20px;
+            .navbar-brand {
+                font-size: 1.5rem;
+            }
+            
+            .stat-number {
+                font-size: 2.5rem;
+            }
+            
+            .card-body {
+                padding: 1.5rem;
+            }
+            
+            .navbar-nav .nav-link {
+                margin: 0 5px;
+                padding: 8px 12px !important;
             }
         }
+
+        /* Chart Container Styles - Fixed */
+        .chart-container {
+            background: rgba(255, 255, 255, 0.98) !important;
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            color: #1E293B !important;
+        }
+
+        /* Data Visualization Enhancements - Fixed */
+        .viz-card {
+            background: rgba(255, 255, 255, 0.98) !important;
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            color: #1E293B !important;
+        }
+
+        .viz-tabs {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .viz-tab {
+            padding: 12px 24px;
+            border-radius: 12px;
+            background: transparent;
+            border: 2px solid var(--quantum-gray-100);
+            color: var(--quantum-gray-700);
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .viz-tab.active {
+            background: var(--gradient-quantum);
+            color: white;
+            border-color: transparent;
+        }
+
+        /* Footer */
+        .footer {
+            background: rgba(15, 23, 42, 0.95);
+            color: white;
+            padding: 3rem 0;
+            margin-top: 4rem;
+            backdrop-filter: blur(20px);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* Additional fixes for color consistency */
+        .score-cell {
+            min-width: 80px;
+        }
+        
+        .final-score {
+            min-width: 100px;
+        }
+        
+        .team-row {
+            transition: all 0.2s ease;
+        }
+        
+        .chart-container canvas {
+            max-height: 400px;
+        }
+        
+        @media print {
+            .btn, .viz-tabs, .modal { display: none !important; }
+            .card { border: 1px solid #000 !important; }
+        }
     </style>
+    
+    {% block extra_css %}
+    {% endblock %}
 </head>
 <body>
     <!-- Navigation -->
     <nav class="navbar navbar-expand-lg">
         <div class="container">
-            <a class="navbar-brand" href="{% url 'judge_dashboard' %}">
-                <i class="bi bi-award-fill me-2"></i>
-                Hackathon Judging
+            <a class="navbar-brand" href="{% url 'home' %}">
+                <i class="bi bi-cpu-fill me-2"></i>
+                QUANTATHON
             </a>
             
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
@@ -231,34 +594,35 @@
                         {% if user.is_staff %}
                             <li class="nav-item">
                                 <a class="nav-link" href="{% url 'admin_results' %}">
-                                    <i class="bi bi-bar-chart me-1"></i>Results
+                                    <i class="bi bi-bar-chart-fill me-1"></i>Analytics
                                 </a>
                             </li>
                             <li class="nav-item">
                                 <a class="nav-link" href="/admin/">
-                                    <i class="bi bi-gear me-1"></i>Admin
+                                    <i class="bi bi-gear-fill me-1"></i>Admin
+                                </a>
+                            </li>
+                        {% else %}
+                            <li class="nav-item">
+                                <a class="nav-link" href="{% url 'admin_results' %}">
+                                    <i class="bi bi-graph-up me-1"></i>Results
                                 </a>
                             </li>
                         {% endif %}
                         <li class="nav-item">
                             <span class="nav-link">
                                 <i class="bi bi-person-circle me-1"></i>
-                                Welcome, {{ user.get_full_name|default:user.username }}
+                                {{ user.get_full_name|default:user.username }}
                             </span>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="{% url 'admin:logout' %}">
+                            <a class="nav-link" href="{% url 'logout' %}">
                                 <i class="bi bi-box-arrow-right me-1"></i>Logout
                             </a>
                         </li>
                     {% else %}
                         <li class="nav-item">
-                            <a class="nav-link" href="{% url 'judge_registration' %}">
-                                <i class="bi bi-person-plus me-1"></i>Register
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{% url 'admin:login' %}">
+                            <a class="nav-link" href="{% url 'judge_login' %}">
                                 <i class="bi bi-box-arrow-in-right me-1"></i>Login
                             </a>
                         </li>
@@ -269,14 +633,14 @@
     </nav>
 
     <!-- Main Content -->
-    <div class="container my-4">
+    <div class="container-fluid">
         <div class="main-container">
             <!-- Messages -->
             {% if messages %}
                 <div class="container pt-4">
                     {% for message in messages %}
                         <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
-                            <i class="bi bi-{% if message.tags == 'success' %}check-circle{% elif message.tags == 'warning' %}exclamation-triangle{% elif message.tags == 'error' %}x-circle{% else %}info-circle{% endif %} me-2"></i>
+                            <i class="bi bi-{% if message.tags == 'success' %}check-circle-fill{% elif message.tags == 'warning' %}exclamation-triangle-fill{% elif message.tags == 'error' or message.tags == 'danger' %}x-circle-fill{% else %}info-circle-fill{% endif %} me-2"></i>
                             {{ message }}
                             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                         </div>
@@ -297,7 +661,7 @@
         <div class="container text-center">
             <p class="mb-0">
                 <i class="bi bi-c-circle me-1"></i>
-                2025 Hackathon Judging System | Built with Django
+                2025 Quantathon Judging System | Powered by Quantum Innovation
             </p>
         </div>
     </footer>
@@ -307,14 +671,14 @@
     
     <!-- Custom JavaScript -->
     <script>
-        // Auto-hide alerts after 5 seconds
+        // Auto-hide alerts after 6 seconds
         setTimeout(() => {
             const alerts = document.querySelectorAll('.alert');
             alerts.forEach(alert => {
                 const bsAlert = new bootstrap.Alert(alert);
                 bsAlert.close();
             });
-        }, 5000);
+        }, 6000);
 
         // Form submission loading states
         document.querySelectorAll('form').forEach(form => {
@@ -343,6 +707,43 @@
                 }
             });
         });
+
+        // Add quantum particle effect on click
+        document.addEventListener('click', function(e) {
+            const particle = document.createElement('div');
+            particle.style.cssText = `
+                position: fixed;
+                width: 6px;
+                height: 6px;
+                background: radial-gradient(circle, #8B5CF6, #EC4899);
+                border-radius: 50%;
+                pointer-events: none;
+                z-index: 9999;
+                left: ${e.clientX - 3}px;
+                top: ${e.clientY - 3}px;
+                animation: quantum-burst 0.6s ease-out forwards;
+            `;
+            
+            document.body.appendChild(particle);
+            
+            setTimeout(() => particle.remove(), 600);
+        });
+
+        // Add quantum burst animation
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes quantum-burst {
+                0% {
+                    transform: scale(1);
+                    opacity: 1;
+                }
+                100% {
+                    transform: scale(8);
+                    opacity: 0;
+                }
+            }
+        `;
+        document.head.appendChild(style);
     </script>
 
     {% block extra_js %}

@@ -140,7 +140,7 @@ class Command(BaseCommand):
             },
             {
                 'name': 'Patrick Dorey',
-                'email': 'patrick.dorey@judges.hackathon.com',
+                'email': 'chantelleope@gmail.com',
                 'expertise': ['Mathematical & Theoretical Physics', 'Quantum Physics & Materials']
             },
             {
