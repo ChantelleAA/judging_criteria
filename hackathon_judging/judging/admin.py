@@ -10,16 +10,16 @@ class JudgeExpertiseAdmin(admin.ModelAdmin):
     list_display = ['name', 'description']
     search_fields = ['name']
 
-@admin.register(JudgingCriteria)
-class JudgingCriteriaAdmin(admin.ModelAdmin):
-    list_display = ['name', 'weight', 'get_expertise_areas']
-    list_filter = ['expertise_areas']
-    search_fields = ['name']
-    filter_horizontal = ['expertise_areas']
+# @admin.register(JudgingCriteria)
+# class JudgingCriteriaAdmin(admin.ModelAdmin):
+#     list_display = ['name', 'weight', 'get_expertise_areas']
+#     list_filter = ['expertise_areas']
+#     search_fields = ['name']
+#     filter_horizontal = ['expertise_areas']
     
-    def get_expertise_areas(self, obj):
-        return ", ".join([area.name for area in obj.expertise_areas.all()])
-    get_expertise_areas.short_description = 'Expertise Areas'
+#     def get_expertise_areas(self, obj):
+#         return ", ".join([area.name for area in obj.expertise_areas.all()])
+#     get_expertise_areas.short_description = 'Expertise Areas'
 
 @admin.register(Judge)
 class JudgeAdmin(admin.ModelAdmin):
@@ -98,6 +98,11 @@ class ScoreAdmin(admin.ModelAdmin):
     def get_submission_date(self, obj):
         return obj.submission.submitted_at
     get_submission_date.short_description = 'Submitted'
+
+@admin.register(JudgingCriteria)
+class JudgingCriteriaAdmin(admin.ModelAdmin):
+    list_display = ('name', 'weight')
+    search_fields = ('name',)
 
 @admin.register(TeamFinalScore)
 class TeamFinalScoreAdmin(admin.ModelAdmin):

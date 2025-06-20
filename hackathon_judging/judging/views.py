@@ -12,6 +12,7 @@ from django.contrib.auth import authenticate, login as auth_login
 from django.contrib.auth.views import LoginView
 from django.urls import reverse_lazy
 from django.contrib.auth import logout
+from collections import defaultdict
 
 
 def judge_registration(request):
@@ -66,64 +67,57 @@ def judge_dashboard(request):
     }
     return render(request, 'judging/dashboard.html', context)
 
+
 def judge_team(request, team_id):
     """Judge a specific team - UPDATED VERSION"""
-    # Check if user is authenticated
     if not request.user.is_authenticated:
-        return redirect('/admin/login/')
-        
+        return redirect('judge_login')
+
     judge = get_object_or_404(Judge, user=request.user)
     team = get_object_or_404(Team, id=team_id)
-    
-    # Check if already judged
+
     if Submission.objects.filter(judge=judge, team=team).exists():
         messages.warning(request, f'You have already judged {team.name}.')
         return redirect('judge_dashboard')
-    
+
     if request.method == 'POST':
         form = TeamScoreForm(request.POST, judge=judge, team=team)
         if form.is_valid():
             with transaction.atomic():
-                # Create submission
                 submission = Submission.objects.create(
                     judge=judge,
                     team=team,
                     comments=form.cleaned_data.get('comments', '')
                 )
-                
-                # Save individual scores
-                judge_expertise = judge.expertise_areas.all()
-                criteria = JudgingCriteria.objects.filter(
-                    expertise_areas__in=judge_expertise
-                ).distinct()
-                
-                for criterion in criteria:
-                    score_value = form.cleaned_data.get(f'score_{criterion.id}')
-                    score_comment = form.cleaned_data.get(f'comment_{criterion.id}', '')
-                    
-                    if score_value:
-                        Score.objects.create(
-                            submission=submission,
-                            criteria=criterion,
-                            score=score_value,
-                            comments=score_comment
-                        )
-                
-                # Update final scores
+
+                # Determine which criteria the judge scored based on form fields
+                for key in form.cleaned_data:
+                    if key.startswith("score_"):
+                        criterion_id = key.split("_")[1]
+                        criterion = get_object_or_404(JudgingCriteria, id=criterion_id)
+                        score_value = form.cleaned_data.get(key)
+                        score_comment = form.cleaned_data.get(f'comment_{criterion_id}', '')
+
+                        if score_value:
+                            Score.objects.create(
+                                submission=submission,
+                                criteria=criterion,
+                                score=score_value,
+                                comments=score_comment
+                            )
+
                 update_team_final_scores(team)
-                
-            messages.success(request, f'Successfully submitted judgment for {team.name}!')
-            return redirect('judge_dashboard')
+                messages.success(request, f'Successfully submitted judgment for {team.name}!')
+                return redirect('judge_dashboard')
     else:
         form = TeamScoreForm(judge=judge, team=team)
-    
+
     context = {
         'form': form,
         'team': team,
         'judge': judge,
     }
     return render(request, 'judging/judge_team.html', context)
-
 
 def update_team_final_scores(team):
     """Update calculated scores for a team"""
@@ -155,32 +149,45 @@ def custom_logout_view(request):
     # Now render the template (user will be anonymous)
     return render(request, 'judging/logout.html')
 
+
 def admin_results(request):
-    """Admin view for results and rankings - Updated to allow judge access"""
-    # Allow both staff and judges to access results
+    """Admin view for results and rankings with per-criterion breakdowns"""
     if not request.user.is_authenticated:
         return redirect('judge_login')
     
-    # Check if user is staff OR a judge
-    is_judge = False
-    if hasattr(request.user, 'judge'):
-        is_judge = True
-    elif not request.user.is_staff:
+    # Allow both staff and judges
+    is_judge = hasattr(request.user, 'judge') or request.user.is_staff
+
+    if not is_judge:
         messages.error(request, 'You must be an administrator or judge to view results.')
         return redirect('judge_dashboard')
-    
+
     teams_with_scores = TeamFinalScore.objects.select_related('team').order_by('-final_weighted_score')
-    
+
     # Update rankings
     for i, team_score in enumerate(teams_with_scores, 1):
         team_score.rank = i
         team_score.save()
-    
+
+    # Aggregate per-criterion average scores per team
+    team_criterion_breakdown = defaultdict(dict)
+    criteria_list = JudgingCriteria.objects.all()
+
+    for team_score in teams_with_scores:
+        for criterion in criteria_list:
+            avg = Score.objects.filter(
+                submission__team=team_score.team,
+                criteria=criterion
+            ).aggregate(avg=Avg('score'))['avg'] or 0
+            team_criterion_breakdown[team_score.team.id][criterion.name] = round(avg, 2)
+
     context = {
         'teams_with_scores': teams_with_scores,
         'total_submissions': Submission.objects.count(),
         'total_judges': Judge.objects.count(),
-        'is_judge_view': is_judge,  # Add this to distinguish between admin and judge views
+        'is_judge_view': is_judge,
+        'criteria_list': criteria_list,  #for template header
+        'team_criterion_breakdown': dict(team_criterion_breakdown),  #for team rows
     }
     return render(request, 'judging/admin_results.html', context)
 

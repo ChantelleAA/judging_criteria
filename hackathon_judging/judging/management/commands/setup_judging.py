@@ -25,48 +25,89 @@ class Command(BaseCommand):
             name="Presentation & Communication",
             defaults={'description': "Experts in communication, public speaking, and presentation skills"}
         )[0]
-        
-        # Create judging criteria
-        quantum_criteria = JudgingCriteria.objects.get_or_create(
-            name="Quantum Tech Quality",
-            defaults={
-                'description': "Technical implementation and quantum computing excellence",
-                'weight': 40.00
-            })[0]
-        quantum_criteria.expertise_areas.add(quantum_expert)
-        
-        social_criteria = JudgingCriteria.objects.get_or_create(
+
+        # Social Impact
+        social_criteria, _ = JudgingCriteria.objects.update_or_create(
             name="Social Impact",
             defaults={
-                'description': "Alignment with SDGs and potential social benefit",
-                'weight': 25.00
-            })[0]
-        social_criteria.expertise_areas.add(sustainability_expert)
-        
-        innovation_criteria = JudgingCriteria.objects.get_or_create(
+                "description": (
+                    "• Does the idea address one or more Sustainable Development Goal(s) relevant to Africa?\n"
+                    "• Is the social impact clearly articulated and supported with data or projections?\n"
+                    "• How scalable is the impact — local (community), national, continental, or global?\n"
+                    "• How urgent is the problem being addressed, and how timely is the solution?"
+                ),
+                "weight": 25.00
+            }
+        )
+        social_criteria.expertise_areas.set([sustainability_expert])
+
+        # Innovation
+        innovation_criteria, _ = JudgingCriteria.objects.update_or_create(
             name="Innovation",
             defaults={
-                'description': "Novelty and creative approach to problem-solving",
-                'weight': 20.00
-            })[0]
-        innovation_criteria.expertise_areas.add(quantum_expert, business_expert)
-        
-        presentation_criteria = JudgingCriteria.objects.get_or_create(
-            name="Presentation",
+                "description": (
+                    "• Is the idea bringing something new and valuable to Africa or the global community?\n"
+                    "• Does it explore unconventional or underrepresented problem spaces?\n"
+                    "• Can we clearly understand the proposed innovation and how it differs from existing approaches?\n"
+                    "• Is the idea reframing or solving a known issue in a fresh, meaningful way?"
+                ),
+                "weight": 20.00
+            }
+        )
+        innovation_criteria.expertise_areas.set([quantum_expert, business_expert])
+
+        # Quantum Tech Quality
+        quantum_criteria, _ = JudgingCriteria.objects.update_or_create(
+            name="Quantum Tech Quality",
             defaults={
-                'description': "Quality of presentation and communication",
-                'weight': 10.00
-            })[0]
-        presentation_criteria.expertise_areas.add(presentation_expert)
-        
-        business_criteria = JudgingCriteria.objects.get_or_create(
+                "description": (
+                    "• What aspect of Quantum Computing is being utilized in the project?\n"
+                    "• How complex and technically rigorous is the solution or algorithm?\n"
+                    "• Is the solution theoretically sound, practically implementable, or both?\n"
+                    "• Were modern tools or methods used (e.g., AI, ML, Quantum simulation, NLP, Web, Mobile)?\n"
+                    "• Can the prototype be expanded into research or education use in Africa?\n"
+                    "• Will this help other learners in Africa build understanding in Quantum Computing?"
+                ),
+                "weight": 40.00
+            }
+        )
+        quantum_criteria.expertise_areas.set([quantum_expert])
+
+        # Business Viability
+        business_criteria, _ = JudgingCriteria.objects.update_or_create(
             name="Business Viability",
             defaults={
-                'description': "Commercial potential and scalability",
-                'weight': 5.00
-            })[0]
-        business_criteria.expertise_areas.add(business_expert)
-        
+                "description": (
+                    "• Is the product useful, usable, and relevant to African or global markets?\n"
+                    "• How well does the project consider ROI, adoption, and real-world traction?\n"
+                    "• Can the solution be developed into a viable startup or scalable initiative?\n"
+                    "• Is the proof of concept implementable in real communities or industries?\n"
+                    "• What types of investors or partners would support this idea in Africa?"
+                ),
+                "weight": 5.00
+            }
+        )
+        business_criteria.expertise_areas.set([business_expert])
+
+        # Presentation
+        presentation_criteria, _ = JudgingCriteria.objects.update_or_create(
+            name="Presentation",
+            defaults={
+                "description": (
+                    "• Is the problem clearly communicated with data, context, or real-life examples?\n"
+                    "• Does the presentation or demo effectively show the solution’s value?\n"
+                    "• Is the pitch inclusive, clear, and engaging for a diverse audience?\n"
+                    "• Did all team members contribute to the delivery?\n"
+                    "• Can the team deliver the core message within the time limit?\n"
+                    "• Did the content include short- and long-term roadmaps or vision?\n"
+                    "• Were success metrics, obstacles, and next steps addressed?\n"
+                    "• Did the team anticipate and respond to possible judge questions?"
+                ),
+                "weight": 10.00
+            }
+        )
+        presentation_criteria.expertise_areas.set([presentation_expert])
+
         self.stdout.write(
-            self.style.SUCCESS('Successfully set up judging criteria and expertise areas')
+            self.style.SUCCESS('Successfully set up judging criteria and expertise areas with contextual guiding questions.')
         )

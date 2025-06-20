@@ -18,6 +18,10 @@ class JudgingCriteria(models.Model):
     description = models.TextField()
     weight = models.DecimalField(max_digits=5, decimal_places=2)  # e.g., 40.00 for 40%
     expertise_areas = models.ManyToManyField(JudgeExpertise, blank=True)
+    guide_questions = models.TextField(
+        blank=True,
+        help_text="Optional guiding questions to assist judges in scoring this criterion"
+    )
     
     class Meta:
         verbose_name_plural = "Judging Criteria"
@@ -65,9 +69,9 @@ class Score(models.Model):
     submission = models.ForeignKey(Submission, on_delete=models.CASCADE, related_name='scores')
     criteria = models.ForeignKey(JudgingCriteria, on_delete=models.CASCADE)
     score = models.IntegerField(
-        validators=[MinValueValidator(1), MaxValueValidator(10)],
-        help_text="Score from 1-10"
-    )
+    validators=[MinValueValidator(1), MaxValueValidator(5)],
+    help_text="Score from 1–5"
+)
     comments = models.TextField(blank=True)
     
     class Meta:

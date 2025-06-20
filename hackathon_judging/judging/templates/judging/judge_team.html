@@ -97,7 +97,7 @@
                                             </div>
                                             <div class="col-lg-6">
                                                 <div class="d-flex align-items-center justify-content-lg-end">
-                                                    <label class="form-label me-3 mb-0">Score (1-10):</label>
+                                                    <label class="form-label me-3 mb-0">Score (1-5):</label>
                                                     <div class="score-input-wrapper">
                                                         {{ field }}
                                                         {% if field.errors %}
@@ -226,7 +226,7 @@
 
         if (!allValid) {
             e.preventDefault();
-            alert('Please fill in all score fields with values between 1-10.\n\nMissing or invalid: ' + emptyFields.join(', '));
+            alert('Please fill in all score fields with values between 1-5.\n\nMissing or invalid: ' + emptyFields.join(', '));
             return false;
         }
 
