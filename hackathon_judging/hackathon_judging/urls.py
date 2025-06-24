@@ -1,23 +1,22 @@
 """
 URL configuration for hackathon_judging project.
-
-The `urlpatterns` list routes URLs to views. For more information please see:
-    https://docs.djangoproject.com/en/5.2/topics/http/urls/
-Examples:
-Function views
-    1. Add an import:  from my_app import views
-    2. Add a URL to urlpatterns:  path('', views.home, name='home')
-Class-based views
-    1. Add an import:  from other_app.views import Home
-    2. Add a URL to urlpatterns:  path('', Home.as_view(), name='home')
-Including another URLconf
-    1. Import the include() function: from django.urls import include, path
-    2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
 from django.urls import path, include
+from judging import views  
 
 urlpatterns = [
+    # Put custom admin URLs BEFORE the main admin/ path
+    path('admin/generate-links/', views.generate_judge_links, name='generate_judge_links'),
+    
+    # Main admin (this catches all admin/ URLs, so it must come after custom ones)
     path('admin/', admin.site.urls),
+    
+    # Anonymous judge URLs:
+    path('judge/<uuid:judge_token>/', views.judge_dashboard_anonymous, name='judge_dashboard_anonymous'),
+    path('judge/<uuid:judge_token>/team/<int:team_id>/', views.judge_team_anonymous, name='judge_team_anonymous'),
+    path('results/<str:admin_token>/', views.admin_results_anonymous, name='admin_results_anonymous'),
+    
+    # Your existing app URLs:
     path('', include('judging.urls')),
 ]

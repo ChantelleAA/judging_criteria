@@ -15,7 +15,8 @@ from django.contrib.auth import logout
 from collections import defaultdict
 import json
 from django.core.serializers.json import DjangoJSONEncoder
-
+import uuid
+from django.http import HttpResponse
 
 def judge_registration(request):
     """Register new judges"""
@@ -124,77 +125,6 @@ def custom_logout_view(request):
     
     # Now render the template (user will be anonymous)
     return render(request, 'judging/logout.html')
-
-
-# def admin_results(request):
-#     """Results dashboard – supplies JSON blobs for Chart.js"""
-#     if not request.user.is_authenticated:
-#         return redirect('judge_login')
-
-#     # allow staff or judges                     ↓ same logic, simpler
-#     if not (request.user.is_staff or hasattr(request.user, 'judge')):
-#         messages.error(request, "You don't have permission to view results.")
-#         return redirect('judge_dashboard')
-
-#     # ---------- 1. Final-score queryset -----------------
-#     teams_with_scores = (
-#         TeamFinalScore.objects
-#         .select_related('team')
-#         .order_by('-final_weighted_score')
-#     )
-
-#     # update rank, if changed
-#     for idx, tfs in enumerate(teams_with_scores, 1):
-#         if tfs.rank != idx:
-#             tfs.rank = idx
-#             tfs.save(update_fields=['rank'])
-
-#     # ---------- 2. Per-criterion averages ---------------
-#     criteria_qs = JudgingCriteria.objects.all()
-#     team_crit_avg = defaultdict(dict)          # {team_id:{crit:avg}}
-
-#     for crit in criteria_qs:
-#         for row in (Score.objects
-#                     .filter(criteria=crit)
-#                     .values('submission__team')
-#                     .annotate(avg=Avg('score'))):
-#             team_id = row['submission__team']
-#             team_crit_avg[team_id][crit.name] = float(row['avg'])
-
-#     # fill in missing criteria with 0
-#     for t_id in team_crit_avg:
-#         for crit in criteria_qs:
-#             team_crit_avg[t_id].setdefault(crit.name, 0)
-
-#     # ---------- 3. Pack teams_json ----------------------
-#     teams_json = [{
-#         'team':  tfs.team.name,
-#         'final_weighted_score': float(tfs.final_weighted_score),
-#         'scores': team_crit_avg.get(tfs.team.id, {c.name:0 for c in criteria_qs})
-#     } for tfs in teams_with_scores]
-
-#     # ---------- 4. Raw per-judge scores -----------------
-#     all_scores = list(
-#         Score.objects.values(
-#             'criteria__name',          # e.g. "Innovation"
-#             'submission__team__name',  # e.g. "QBits"
-#             'submission__judge__id',   # judge id (int)
-#             'score'                    # 1-5
-#         )
-#     )
-
-#     # ---------- 5. Context sent to template -------------
-#     context = {
-#         'teams_with_scores': teams_with_scores,
-#         'total_submissions': Submission.objects.count(),
-#         'total_judges':      Judge.objects.count(),
-
-#         # JSON blobs for JavaScript
-#         'criteria_labels': json.dumps([c.name for c in criteria_qs]),
-#         'teams_json':      json.dumps(teams_json,  cls=DjangoJSONEncoder),
-#         'all_scores_json': json.dumps(all_scores,  cls=DjangoJSONEncoder),
-#     }
-#     return render(request, 'judging/admin_results.html', context)
 
 
 def admin_results(request):
@@ -428,3 +358,208 @@ class JudgeLoginView(LoginView):
         else:
             messages.error(self.request, 'You are not registered as a judge. Please contact the administrator.')
             return reverse_lazy('judge_login')
+        
+
+def judge_dashboard_anonymous(request, judge_token):
+    """Anonymous judge dashboard using unique token"""
+    try:
+        judge = get_object_or_404(Judge, unique_token=judge_token)
+    except:
+        messages.error(request, 'Invalid or expired judge link. Please contact the administrator.')
+        return render(request, 'judging/invalid_link.html')
+    
+    teams = Team.objects.all()
+    judged_teams = Submission.objects.filter(judge=judge).values_list('team_id', flat=True)
+    
+    # Store judge in session for form submissions
+    request.session['judge_id'] = judge.id
+    request.session['judge_name'] = judge.user.get_full_name()
+    
+    context = {
+        'judge': judge,
+        'teams': teams,
+        'judged_teams': judged_teams,
+        'total_teams': teams.count(),
+        'completed_judgments': len(judged_teams),
+        'remaining_teams': teams.count() - len(judged_teams),
+        'is_anonymous': True,
+        'judge_token': judge_token,
+    }
+    return render(request, 'judging/dashboard.html', context)
+
+def judge_team_anonymous(request, judge_token, team_id):
+    """Anonymous team judging using unique token"""
+    try:
+        judge = get_object_or_404(Judge, unique_token=judge_token)
+        team = get_object_or_404(Team, id=team_id)
+    except:
+        messages.error(request, 'Invalid link. Please contact the administrator.')
+        return redirect('home_anonymous')
+
+    if Submission.objects.filter(judge=judge, team=team).exists():
+        messages.warning(request, f'You have already judged {team.name}.')
+        return redirect('judge_dashboard_anonymous', judge_token=judge_token)
+
+    if request.method == 'POST':
+        form = TeamScoreForm(request.POST, judge=judge, team=team)
+        if form.is_valid():
+            with transaction.atomic():
+                submission = Submission.objects.create(
+                    judge=judge,
+                    team=team,
+                    comments=form.cleaned_data.get('comments', '')
+                )
+
+                # Save scores
+                for key in form.cleaned_data:
+                    if key.startswith("score_"):
+                        criterion_id = key.split("_")[1]
+                        criterion = get_object_or_404(JudgingCriteria, id=criterion_id)
+                        score_value = form.cleaned_data.get(key)
+                        score_comment = form.cleaned_data.get(f'comment_{criterion_id}', '')
+
+                        if score_value:
+                            Score.objects.create(
+                                submission=submission,
+                                criteria=criterion,
+                                score=score_value,
+                                comments=score_comment
+                            )
+
+                update_team_final_scores(team)
+                messages.success(request, f'Successfully submitted judgment for {team.name}!')
+                return redirect('judge_dashboard_anonymous', judge_token=judge_token)
+    else:
+        form = TeamScoreForm(judge=judge, team=team)
+
+    context = {
+        'form': form,
+        'team': team,
+        'judge': judge,
+        'judge_token': judge_token,
+        'is_anonymous': True,
+    }
+    return render(request, 'judging/judge_team.html', context)
+
+def admin_results_anonymous(request, admin_token=None):
+    """Anonymous admin results - accessible to all judges or specific admin token"""
+    # Check if it's a valid admin token or any judge token
+    valid_access = False
+    judge_name = "Administrator"
+    
+    if admin_token:
+        if admin_token == "all-judges":
+            # Master link for all judges
+            valid_access = True
+            judge_name = "All Judges View"
+        else:
+            # Check if it's a valid judge token
+            try:
+                judge = Judge.objects.get(unique_token=admin_token)
+                valid_access = True
+                judge_name = f"{judge.user.get_full_name()} (Results View)"
+            except Judge.DoesNotExist:
+                pass
+    
+    if not valid_access:
+        messages.error(request, 'Invalid results link. Please contact the administrator.')
+        return render(request, 'judging/invalid_link.html')
+
+    # Same results logic as your existing admin_results function
+    teams_with_scores = (
+        TeamFinalScore.objects
+        .select_related('team')
+        .order_by('-final_weighted_score')
+    )
+
+    # Update ranks
+    for idx, tfs in enumerate(teams_with_scores, 1):
+        if tfs.rank != idx:
+            tfs.rank = idx
+            tfs.save(update_fields=['rank'])
+
+    # Per-criterion averages
+    criteria_qs = JudgingCriteria.objects.all()
+    team_crit_avg = defaultdict(dict)
+
+    for crit in criteria_qs:
+        for row in (Score.objects
+                    .filter(criteria=crit)
+                    .values('submission__team')
+                    .annotate(avg=Avg('score'))):
+            team_id = row['submission__team']
+            team_crit_avg[team_id][crit.name] = float(row['avg'])
+
+    for t_id in team_crit_avg:
+        for crit in criteria_qs:
+            team_crit_avg[t_id].setdefault(crit.name, 0)
+
+    # Pack teams_json
+    teams_json = []
+    for tfs in teams_with_scores:
+        team_scores = team_crit_avg.get(tfs.team.id, {})
+        scores_dict = {}
+        for crit in criteria_qs:
+            scores_dict[crit.name] = team_scores.get(crit.name, 0)
+        
+        teams_json.append({
+            'team': tfs.team.name,
+            'final_weighted_score': float(tfs.final_weighted_score),
+            'rank': tfs.rank,
+            'scores': scores_dict,
+            'members': getattr(tfs.team, 'members', 'Team Members'),
+            'description': getattr(tfs.team, 'description', ''),
+            'presentation_link': getattr(tfs.team, 'presentation_link', ''),
+        })
+
+    # Raw scores
+    all_scores = list(
+        Score.objects.values(
+            'criteria__name',
+            'submission__team__name',
+            'submission__judge__id',
+            'score'
+        )
+    )
+
+    context = {
+        'teams_with_scores': teams_with_scores,
+        'total_submissions': Submission.objects.count(),
+        'total_judges': Judge.objects.count(),
+        'criteria_labels': json.dumps([c.name for c in criteria_qs]),
+        'teams_json': json.dumps(teams_json, cls=DjangoJSONEncoder),
+        'all_scores_json': json.dumps(all_scores, cls=DjangoJSONEncoder),
+        'is_anonymous': True,
+        'viewer_name': judge_name,
+    }
+    
+    return render(request, 'judging/admin_results.html', context)
+
+def generate_judge_links(request):
+    """Admin utility to generate and display all judge links"""
+    if not request.user.is_staff:
+        return redirect('admin:index')
+    
+    judges = Judge.objects.all()
+    
+    # Generate master results link
+    master_results_url = request.build_absolute_uri(f'/results/all-judges/')
+    
+    judge_links = []
+    for judge in judges:
+        judge_links.append({
+            'judge': judge,
+            'dashboard_url': request.build_absolute_uri(f'/judge/{judge.unique_token}/'),
+            'results_url': request.build_absolute_uri(f'/results/{judge.unique_token}/'),
+        })
+    
+    context = {
+        'judge_links': judge_links,
+        'master_results_url': master_results_url,
+    }
+    
+    return render(request, 'judging/judge_links.html', context)
+
+def home_anonymous(request):
+    """Simple home page for anonymous users"""
+    return render(request, 'judging/home_anonymous.html')

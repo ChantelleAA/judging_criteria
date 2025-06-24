@@ -1,0 +1,21 @@
+{% extends 'judging/base.html' %}
+
+{% block title %}Invalid Link - Quantathon{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="text-center">
+        <div class="mb-4" style="font-size: 4rem; color: var(--quantum-purple); opacity: 0.5;">
+            <i class="bi bi-exclamation-triangle"></i>
+        </div>
+        <h1 class="display-4 fw-bold mb-3">Invalid Link</h1>
+        <p class="lead text-muted mb-4">
+            The link you used is invalid or has expired. 
+            Please contact the hackathon administrator for a new link.
+        </p>
+        <a href="mailto:admin@quantathon.com" class="btn btn-primary">
+            <i class="bi bi-envelope me-2"></i>Contact Administrator
+        </a>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,121 @@
+{% extends 'judging/base.html' %}
+
+{% block title %}Judge Links - Quantathon{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <h1 class="display-5 fw-bold mb-4">
+        <i class="bi bi-link-45deg me-3"></i>
+        Judge Access Links
+    </h1>
+    
+    <div class="alert alert-info">
+        <i class="bi bi-info-circle me-2"></i>
+        <strong>Instructions:</strong> Copy and share these links with your judges. No login required!
+    </div>
+    
+    <!-- Master Results Link -->
+    <div class="card mb-4">
+        <div class="card-header bg-success text-white">
+            <h5 class="mb-0">
+                <i class="bi bi-bar-chart-fill me-2"></i>
+                Master Results Link (For Everyone)
+            </h5>
+        </div>
+        <div class="card-body">
+            <p class="mb-2">Share this link with anyone who needs to view live results:</p>
+            <div class="input-group">
+                <input type="text" class="form-control" value="{{ master_results_url }}" readonly>
+                <button class="btn btn-outline-secondary" onclick="copyToClipboard('{{ master_results_url }}')">
+                    <i class="bi bi-clipboard"></i> Copy
+                </button>
+                <a href="{{ master_results_url }}" target="_blank" class="btn btn-outline-primary">
+                    <i class="bi bi-box-arrow-up-right"></i> Open
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Individual Judge Links -->
+    <div class="card">
+        <div class="card-header">
+            <h5 class="mb-0">
+                <i class="bi bi-people-fill me-2"></i>
+                Individual Judge Links ({{ judge_links|length }} judges)
+            </h5>
+        </div>
+        <div class="card-body">
+            {% for link in judge_links %}
+                <div class="border rounded p-3 mb-3 bg-light">
+                    <div class="row align-items-center">
+                        <div class="col-md-3">
+                            <h6 class="fw-bold mb-1">{{ link.judge.user.get_full_name }}</h6>
+                            <p class="text-muted small mb-0">{{ link.judge.user.email }}</p>
+                        </div>
+                        <div class="col-md-4 mb-2">
+                            <label class="small fw-bold text-primary">Judging Dashboard:</label>
+                            <div class="input-group input-group-sm">
+                                <input type="text" class="form-control" value="{{ link.dashboard_url }}" readonly>
+                                <button class="btn btn-outline-primary btn-sm" onclick="copyToClipboard('{{ link.dashboard_url }}')">
+                                    <i class="bi bi-clipboard"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-2">
+                            <label class="small fw-bold text-success">Results View:</label>
+                            <div class="input-group input-group-sm">
+                                <input type="text" class="form-control" value="{{ link.results_url }}" readonly>
+                                <button class="btn btn-outline-success btn-sm" onclick="copyToClipboard('{{ link.results_url }}')">
+                                    <i class="bi bi-clipboard"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col-md-1 text-end">
+                            <div class="btn-group-vertical btn-group-sm">
+                                <a href="{{ link.dashboard_url }}" target="_blank" class="btn btn-outline-primary btn-sm">
+                                    <i class="bi bi-box-arrow-up-right"></i>
+                                </a>
+                                <a href="{{ link.results_url }}" target="_blank" class="btn btn-outline-success btn-sm">
+                                    <i class="bi bi-bar-chart"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% empty %}
+                <div class="text-center py-4">
+                    <p class="text-muted">No judges found. Create judges in the admin panel first.</p>
+                    <a href="/admin/judging/judge/add/" class="btn btn-primary">
+                        <i class="bi bi-plus-circle me-2"></i>Add Judges
+                    </a>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+    
+    <div class="mt-4">
+        <a href="/admin/" class="btn btn-secondary">
+            <i class="bi bi-arrow-left me-2"></i>Back to Admin
+        </a>
+    </div>
+</div>
+
+<script>
+function copyToClipboard(text) {
+    navigator.clipboard.writeText(text).then(function() {
+        // Create a temporary success message
+        const toast = document.createElement('div');
+        toast.className = 'alert alert-success position-fixed';
+        toast.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 250px;';
+        toast.innerHTML = '<i class="bi bi-check-circle me-2"></i>Link copied to clipboard!';
+        document.body.appendChild(toast);
+        
+        setTimeout(() => {
+            toast.remove();
+        }, 2000);
+    }).catch(function() {
+        alert('Failed to copy. Please select and copy manually.');
+    });
+}
+</script>
+{% endblock %}
