@@ -35,6 +35,27 @@
             </div>
         </div>
     </div>
+
+    <div class="card mb-4">
+        <div class="card-header bg-success text-white">
+            <h5 class="mb-0">
+                <i class="bi bi-bar-chart-fill me-2"></i>
+                Public Judge Link (For Everyone)
+            </h5>
+        </div>
+        <div class="card-body">
+            <p class="mb-2">Share this link with anyone (among the public) who wants to submit a vote:</p>
+            <div class="input-group">
+                <input type="text" class="form-control" value="{{ public_judge_url }}" readonly>
+                <button class="btn btn-outline-secondary" onclick="copyToClipboard('{{ public_judge_url }}')">
+                    <i class="bi bi-clipboard"></i> Copy
+                </button>
+                <a href="{{ public_judge_url }}" target="_blank" class="btn btn-outline-primary">
+                    <i class="bi bi-box-arrow-up-right"></i> Open
+                </a>
+            </div>
+        </div>
+    </div>
     
     <!-- Individual Judge Links -->
     <div class="card">

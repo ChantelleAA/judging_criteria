@@ -1,0 +1,448 @@
+{% extends 'judging/base.html' %}
+
+{% block title %}Public Judge Dashboard - Quantathon{% endblock %}
+
+{% block extra_css %}
+<style>
+/* Force gradient background with higher specificity */
+.gradient-welcome-card.card {
+    background: linear-gradient(135deg, #16a085 0%, #f4d03f 100%) !important;
+    background-color: #16a085 !important;
+    background-image: linear-gradient(135deg, #16a085 0%, #f4d03f 100%) !important;
+}
+
+.gradient-welcome-card {
+    background: linear-gradient(135deg, #16a085 0%, #f4d03f 100%) !important;
+    background-color: #16a085 !important;
+    background-image: linear-gradient(135deg, #16a085 0%, #f4d03f 100%) !important;
+}
+
+/* Ensure no Bootstrap overrides */
+.card.gradient-welcome-card {
+    background: linear-gradient(135deg, #16a085 0%, #f4d03f 100%) !important;
+    background-color: #16a085 !important;
+    background-image: linear-gradient(135deg, #16a085 0%, #f4d03f 100%) !important;
+}
+
+/* Additional specificity */
+div.card.gradient-welcome-card.border-0 {
+    background: linear-gradient(135deg, #16a085 0%, #f4d03f 100%) !important;
+    background-color: #16a085 !important;
+    background-image: linear-gradient(135deg, #16a085 0%, #f4d03f 100%) !important;
+}
+
+/* Nuclear option - target any element with this class */
+* .gradient-welcome-card,
+*[class*="gradient-welcome-card"] {
+    background: linear-gradient(135deg, #16a085 0%, #f4d03f 100%) !important;
+    background-color: #16a085 !important;
+    background-image: linear-gradient(135deg, #16a085 0%, #f4d03f 100%) !important;
+}
+
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Public Judge Welcome Section -->
+<div class="row">
+    <div class="col-12 mb-4">
+        <div class="card border-0 gradient-welcome-card debug-bg" style="background-image: linear-gradient(135deg, #16a085 0%, #f4d03f 100%) !important; color: rgb(255, 255, 255); position: relative; min-height: 140px; box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3) !important;">
+            <div class="card-body p-4" style="position: relative; z-index: 3; background: transparent !important;">
+                <div class="row align-items-center">
+                    <div class="col-lg-8">
+                        <h1 class="display-6 fw-bold mb-3" style="color: white !important;">
+                            <i class="bi bi-globe me-3" style="color: white !important;"></i>
+                            Welcome, Public Judge!
+                        </h1>
+                        <div class="d-flex flex-wrap gap-2 mb-3">
+                            <span class="badge bg-light text-dark px-3 py-2">
+                                <i class="bi bi-people-fill me-1"></i>Community Voting
+                            </span>
+                            <span class="badge bg-light text-dark px-3 py-2">
+                                <i class="bi bi-star-fill me-1"></i>All Criteria
+                            </span>
+                        </div>
+                        <p class="lead mb-0" style="color: white !important; opacity: 1;">
+                            Help shape the future of quantum innovation by judging these amazing teams!
+                        </p>
+                    </div>
+                    <div class="col-lg-4 text-lg-end">
+                        <div class="quantum-logo" style="font-size: 4rem; opacity: 0.6; color: white !important;">
+                            <i class="bi bi-heart-fill" style="color: white !important;"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Accent border -->
+            <div style="position: absolute; bottom: 0; left: 0; right: 0; height: 4px; background: linear-gradient(90deg, #e74c3c, #f39c12, #2ecc71); z-index: 4;"></div>
+        </div>
+    </div>
+</div>
+
+<!-- Public Judge Instructions -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="alert alert-info border-0" style="background: rgba(52, 152, 219, 0.1);">
+            <div class="d-flex align-items-start">
+                <div class="me-3">
+                    <i class="bi bi-info-circle-fill fs-4 text-info"></i>
+                </div>
+                <div>
+                    <h5 class="fw-bold text-info mb-2">Public Judging Instructions</h5>
+                    <p class="mb-2">
+                        As a public judge, you get to evaluate teams on <strong>all criteria</strong>. Your voice matters in determining the winners!
+                    </p>
+                    <ul class="mb-0 small">
+                        <li>You can judge each team only <strong>once</strong></li>
+                        <li>Please be fair and considerate in your scoring</li>
+                        <li>Consider the potential <strong>impact</strong> and <strong>innovation</strong> of each project</li>
+                        <li>Your judgments are anonymous and help create a balanced result</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Statistics Dashboard -->
+<div class="row mb-4">
+    <!-- Progress Circle -->
+    <div class="col-lg-4 mb-4">
+        <div class="stat-card h-100">
+            <div class="position-relative d-inline-block mb-3">
+                <svg width="120" height="120" class="progress-ring">
+                    <circle cx="60" cy="60" r="54" stroke="#e5e7eb" stroke-width="8" fill="transparent"/>
+                    <circle cx="60" cy="60" r="54" stroke="url(#publicGradient)" stroke-width="8" fill="transparent"
+                            stroke-dasharray="339.292" 
+                            stroke-dashoffset="{% widthratio remaining_teams total_teams 339.292 %}"
+                            stroke-linecap="round"
+                            style="transform: rotate(-90deg); transform-origin: center;"
+                            id="progress-circle"/>
+                    <defs>
+                        <linearGradient id="publicGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" style="stop-color:#16a085"/>
+                            <stop offset="100%" style="stop-color:#f4d03f"/>
+                        </linearGradient>
+                    </defs>
+                </svg>
+                <div class="position-absolute top-50 start-50 translate-middle text-center">
+                    <div class="stat-number" style="font-size: 2rem;">{{ completed_judgments }}</div>
+                    <small class="text-muted">of {{ total_teams }}</small>
+                </div>
+            </div>
+            <h6 class="fw-bold text-center">Your Progress</h6>
+            <div class="progress mt-2" style="height: 8px;">
+                <div class="progress-bar bg-info" style="width: {% widthratio completed_judgments total_teams 100 %}%"></div>
+            </div>
+            <p class="text-center mt-2 mb-0">
+                <small class="text-muted">{% widthratio completed_judgments total_teams 100 %}% Complete</small>
+            </p>
+        </div>
+    </div>
+
+    <!-- Quick Stats Grid -->
+    <div class="col-lg-8">
+        <div class="row h-100">
+            <div class="col-md-4 mb-3">
+                <div class="stat-card h-100 d-flex flex-column justify-content-center">
+                    <div class="stat-number text-info">{{ total_teams }}</div>
+                    <div class="stat-label">Total Teams</div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-3">
+                <div class="stat-card h-100 d-flex flex-column justify-content-center">
+                    <div class="stat-number text-success">{{ completed_judgments }}</div>
+                    <div class="stat-label">Judged by You</div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-3">
+                <div class="stat-card h-100 d-flex flex-column justify-content-center">
+                    <div class="stat-number text-warning">{{ remaining_teams|default:0 }}</div>
+                    <div class="stat-label">Remaining</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Teams Section -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <div>
+                    <i class="bi bi-people-fill me-2"></i>
+                    Quantum Teams
+                </div>
+                <div class="d-flex gap-2">
+                    <span class="badge bg-info text-white px-4 py-3">
+                        {{ teams.count }} Teams
+                    </span>
+                    <div class="btn-group btn-group-sm">
+                        <button class="btn btn-outline-light" onclick="filterTeams('all')">All</button>
+                        <button class="btn btn-outline-light" onclick="filterTeams('pending')">Pending</button>
+                        <button class="btn btn-outline-light" onclick="filterTeams('completed')">Completed</button>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body p-0">
+                {% if teams %}
+                    <div class="row g-0">
+                        {% for team in teams %}
+                            <div class="col-12 team-item" data-status="{% if team.id in judged_teams %}completed{% else %}pending{% endif %}">
+                                <div class="team-card p-4 m-3">
+                                    <div class="row align-items-center">
+                                        <div class="col-lg-1 text-center">
+                                            {% if team.id in judged_teams %}
+                                                <div class="badge bg-success p-3 rounded-circle">
+                                                    <i class="bi bi-check-circle-fill fs-4"></i>
+                                                </div>
+                                            {% else %}
+                                                <div class="badge bg-info p-3 rounded-circle">
+                                                    <i class="bi bi-star-fill fs-4"></i>
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                        
+                                        <div class="col-lg-5">
+                                            <h5 class="fw-bold text-dark mb-2">{{ team.name }}</h5>
+                                            <p class="text-secondary mb-2">
+                                                <i class="bi bi-people me-1"></i>{{ team.members }}
+                                            </p>
+                                            <p class="text-dark mb-0">{{ team.description|truncatewords:20 }}</p>
+                                        </div>
+                                        
+                                        <div class="col-lg-3">
+                                            <!-- {% if team.presentation_link %}
+                                                <a href="{{ team.presentation_link }}" target="_blank" class="btn btn-outline-info btn-sm">
+                                                    <i class="bi bi-play-circle me-1"></i>View Presentation
+                                                </a>
+                                            {% endif %} -->
+                                        </div>
+                                        
+                                        <div class="col-lg-3 text-end">
+                                            {% if team.id in judged_teams %}
+                                                <span class="badge bg-success-subtle text-success px-4 py-3">
+                                                    <i class="bi bi-check-circle me-1"></i>You Judged This
+                                                </span>
+                                            {% else %}
+                                                <a href="{% url 'public_judge_team' team.id %}" 
+                                                   class="btn btn-info">
+                                                    <i class="bi bi-star me-1"></i>Judge Team
+                                                </a>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="text-center py-5">
+                        <div class="mb-4" style="font-size: 4rem; color: #16a085; opacity: 0.5;">
+                            <i class="bi bi-cpu"></i>
+                        </div>
+                        <h4 class="text-muted">No Teams Available</h4>
+                        <p class="text-muted">Teams will appear here once they're added to the competition.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Public Judging Guidelines -->
+{% if completed_judgments < total_teams %}
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card border-info" style="background: rgba(22, 160, 133, 0.05);">
+                <div class="card-header bg-transparent border-0">
+                    <h5 class="text-info mb-0">
+                        <i class="bi bi-heart-fill me-2"></i>Public Judging Guidelines
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-lg-6">
+                            <h6 class="fw-bold">Scoring Scale</h6>
+                            <div class="mb-2">
+                                <span class="badge bg-danger">1</span>
+                                <span><strong>Poor</strong> - Needs significant improvement</span>
+                            </div>
+                            <div class="mb-2">
+                                <span class="badge" style="background-color: #ff6600;">2</span>
+                                <span><strong>Below Average</strong> - Some potential</span>
+                            </div>
+                            <div class="mb-2">
+                                <span class="badge bg-warning">3</span>
+                                <span><strong>Average</strong> - Solid effort</span>
+                            </div>
+                            <div class="mb-2">
+                                <span class="badge bg-info">4</span>
+                                <span><strong>Above Average</strong> - Very good</span>
+                            </div>
+                            <div class="mb-2">
+                                <span class="badge bg-success">5</span>
+                                <span><strong>Outstanding</strong> - Exceptional</span>
+                            </div>
+                        </div>
+                        <div class="col-lg-6">
+                            <h6 class="fw-bold">What You'll Judge</h6>
+                            <ul class="list-unstyled">
+                                <li class="mb-2">
+                                    <span class="badge bg-info me-2">40%</span>
+                                    <strong>Quantum Tech Quality</strong>
+                                    <div class="small text-muted">Technical implementation and quantum concepts</div>
+                                </li>
+                                <li class="mb-2">
+                                    <span class="badge bg-success me-2">25%</span>
+                                    <strong>Social Impact</strong>
+                                    <div class="small text-muted">Potential to benefit society</div>
+                                </li>
+                                <li class="mb-2">
+                                    <span class="badge bg-primary me-2">20%</span>
+                                    <strong>Innovation</strong>
+                                    <div class="small text-muted">Creativity and novelty of approach</div>
+                                </li>
+                                <li class="mb-2">
+                                    <span class="badge bg-warning me-2">10%</span>
+                                    <strong>Presentation</strong>
+                                    <div class="small text-muted">How well the idea is communicated</div>
+                                </li>
+                                <li>
+                                    <span class="badge bg-secondary me-2">5%</span>
+                                    <strong>Business Viability</strong>
+                                    <div class="small text-muted">Potential for real-world implementation</div>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-info border-0 mt-3">
+                        <i class="bi bi-heart me-2"></i>
+                        <strong>Thank you!</strong> Your participation as a public judge helps ensure fair and diverse evaluation of these innovative quantum projects.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endif %}
+
+<!-- Completion Message -->
+{% if completed_judgments == total_teams %}
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card border-success" style="background: rgba(22, 160, 133, 0.1);">
+                <div class="card-body text-center py-4">
+                    <div class="mb-3" style="font-size: 3rem; color: #16a085;">
+                        <i class="bi bi-heart-fill"></i>
+                    </div>
+                    <h3 class="text-success">Thank You!</h3>
+                    <p class="lead">You have successfully judged all teams in the Quantathon.</p>
+                    <p class="text-muted">Your contribution as a public judge is invaluable to the quantum community!</p>
+                    <a href="/results/all-judges/" class="btn btn-info mt-2">
+                        <i class="bi bi-bar-chart me-2"></i>View Live Results
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Enhanced debugging and gradient forcing
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('DOM loaded, searching for gradient card...');
+        
+        const gradientCard = document.querySelector('.gradient-welcome-card');
+        console.log('Gradient card element:', gradientCard);
+        
+        if (gradientCard) {
+            // Log initial styles
+            console.log('Initial computed background:', window.getComputedStyle(gradientCard).background);
+            console.log('Initial computed background-color:', window.getComputedStyle(gradientCard).backgroundColor);
+            console.log('Initial computed background-image:', window.getComputedStyle(gradientCard).backgroundImage);
+            
+            // Force multiple background properties
+            gradientCard.style.setProperty('background', 'linear-gradient(135deg, #16a085 0%, #f4d03f 100%)', 'important');
+            gradientCard.style.setProperty('background-color', '#16a085', 'important');
+            gradientCard.style.setProperty('background-image', 'linear-gradient(135deg, #16a085 0%, #f4d03f 100%)', 'important');
+            
+            // Test with solid color first
+                
+                setTimeout(() => {
+
+                    console.log('Final computed background:', window.getComputedStyle(gradientCard).background);
+            
+            // Log all classes
+            console.log('Card classes:', gradientCard.className);
+            console.log('Card inline style:', gradientCard.style.cssText);
+            
+        } else {
+            console.error('Gradient card not found! Available cards:', document.querySelectorAll('.card'));
+        }
+        
+        // Also try to find card by other methods
+        const allCards = document.querySelectorAll('.card');
+        console.log('Total cards found:', allCards.length);
+        allCards.forEach((card, index) => {
+            console.log(`Card ${index}:`, card.className, card.style.cssText);
+        });
+    });
+
+    // Team filtering functionality
+    function filterTeams(status) {
+        const teams = document.querySelectorAll('.team-item');
+        const buttons = document.querySelectorAll('.btn-group .btn');
+        
+        // Update button states
+        buttons.forEach(btn => btn.classList.remove('active'));
+        event.target.classList.add('active');
+        
+        // Filter teams
+        teams.forEach(team => {
+            if (status === 'all' || team.dataset.status === status) {
+                team.style.display = 'block';
+                team.style.opacity = '1';
+            } else {
+                team.style.display = 'none';
+                team.style.opacity = '0';
+            }
+        });
+    }
+
+    // Add hover effects to team cards
+    document.querySelectorAll('.team-card').forEach(card => {
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-5px)';
+            this.style.boxShadow = '0 20px 40px rgba(0, 0, 0, 0.15)';
+        });
+        
+        card.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+            this.style.boxShadow = '0 20px 40px rgba(0, 0, 0, 0.08)';
+        });
+    });
+
+    // Encourage participation
+    if ({{ completed_judgments }} === 0) {
+        setTimeout(() => {
+            const toast = document.createElement('div');
+            toast.className = 'alert alert-info position-fixed';
+            toast.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+            toast.innerHTML = `
+                <i class="bi bi-star me-2"></i>
+                <strong>Ready to start?</strong> Click on any team to begin judging!
+                <button type="button" class="btn-close ms-2" onclick="this.parentElement.remove()"></button>
+            `;
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                if (toast.parentElement) toast.remove();
+            }, 8000);
+        }, 2000);
+    }
+</script>
+{% endblock %}

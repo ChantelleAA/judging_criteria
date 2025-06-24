@@ -23,7 +23,9 @@ urlpatterns = [
     
     # Anonymous home
     path('home/', views.home_anonymous, name='home_anonymous'),
-
+    path('public-judge/', views.public_judge_access, name='public_judge_access'),
+    path('public-judge/team/<int:team_id>/', views.public_judge_team, name='public_judge_team'),
+    
     # Admin URLs
     path('results/', views.admin_results, name='admin_results'),
     path('admin/export/', views.export_results, name='export_results'),

@@ -98,3 +98,84 @@ class TeamScoreForm(forms.Form):
                     }),
                     required=False
                 )
+
+
+
+class RoleBasedTeamScoreForm(forms.Form):
+    """Dynamic form based on judge's allowed criteria"""
+    
+    def __init__(self, *args, **kwargs):
+        self.judge = kwargs.pop('judge')
+        self.team = kwargs.pop('team')
+        self.allowed_criteria = kwargs.pop('allowed_criteria')
+        super().__init__(*args, **kwargs)
+        
+        # Add fields only for allowed criteria
+        for criterion in self.allowed_criteria:
+            # Score field
+            self.fields[f'score_{criterion.id}'] = forms.ChoiceField(
+                choices=[(i, i) for i in range(1, 6)],
+                label=f"{criterion.name} ({criterion.weight}%)",
+                help_text=criterion.description,
+                widget=forms.Select(attrs={'class': 'form-select'})
+            )
+            
+            # Comment field
+            self.fields[f'comment_{criterion.id}'] = forms.CharField(
+                label=f"Comments on {criterion.name}",
+                required=False,
+                widget=forms.Textarea(attrs={
+                    'class': 'form-control',
+                    'rows': 3,
+                    'placeholder': f'Optional feedback on {criterion.name}...'
+                })
+            )
+        
+        # General comments
+        self.fields['comments'] = forms.CharField(
+            label="Overall Comments",
+            required=False,
+            widget=forms.Textarea(attrs={
+                'class': 'form-control',
+                'rows': 4,
+                'placeholder': 'Overall feedback for the team...'
+            })
+        )
+
+class PublicTeamScoreForm(forms.Form):
+    """Form for public judges (all criteria)"""
+    
+    def __init__(self, *args, **kwargs):
+        self.team = kwargs.pop('team')
+        self.allowed_criteria = kwargs.pop('allowed_criteria')
+        super().__init__(*args, **kwargs)
+        
+        # Add fields for all criteria (public judges see everything)
+        for criterion in self.allowed_criteria:
+            self.fields[f'score_{criterion.id}'] = forms.ChoiceField(
+                choices=[(i, i) for i in range(1, 6)],
+                label=f"{criterion.name} ({criterion.weight}%)",
+                help_text=criterion.description,
+                widget=forms.Select(attrs={'class': 'form-select'})
+            )
+            
+            self.fields[f'comment_{criterion.id}'] = forms.CharField(
+                label=f"Comments on {criterion.name}",
+                required=False,
+                widget=forms.Textarea(attrs={
+                    'class': 'form-control',
+                    'rows': 2,
+                    'placeholder': f'Optional feedback on {criterion.name}...'
+                })
+            )
+        
+        self.fields['comments'] = forms.CharField(
+            label="Overall Comments",
+            required=False,
+            widget=forms.Textarea(attrs={
+                'class': 'form-control',
+                'rows': 3,
+                'placeholder': 'Overall feedback for the team...'
+            })
+        )
+

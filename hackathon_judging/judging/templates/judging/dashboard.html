@@ -14,6 +14,44 @@
     </div>
 {% endif %}
 
+{% if judge_type %}
+    <div class="container-fluid px-4 mb-3">
+        <div class="alert alert-{{ judge_type|yesno:'success,warning,info' }} border-0">
+            <div class="d-flex align-items-center">
+                <div class="me-3">
+                    {% if judge_type == 'quantum_expert' %}
+                        <i class="bi bi-cpu-fill fs-4"></i>
+                    {% elif judge_type == 'general_judge' %}
+                        <i class="bi bi-person-badge fs-4"></i>
+                    {% else %}
+                        <i class="bi bi-globe fs-4"></i>
+                    {% endif %}
+                </div>
+                <div>
+                    <h6 class="mb-1 fw-bold">
+                        {% if judge_type == 'quantum_expert' %}
+                            Quantum Expert Judge
+                        {% elif judge_type == 'general_judge' %}
+                            General Judge
+                        {% else %}
+                            Public Judge
+                        {% endif %}
+                    </h6>
+                    <p class="mb-0 small">
+                        {% if judge_type == 'quantum_expert' %}
+                            You will evaluate all criteria including quantum technical aspects.
+                        {% elif judge_type == 'general_judge' %}
+                            You will evaluate: Social Impact, Presentation, and Business Viability.
+                        {% else %}
+                            You will evaluate all criteria as a member of the public.
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endif %}
+
 <div class="row">
     <!-- Welcome Hero Section -->
     <div class="col-12 mb-4">

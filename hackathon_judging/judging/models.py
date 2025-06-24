@@ -36,9 +36,35 @@ class Judge(models.Model):
     unique_token = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
     has_submitted = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
+    JUDGE_TYPE_CHOICES = [
+    ('quantum_expert', 'Quantum Expert'),
+    ('general_judge', 'General Judge'),
+    ('public', 'Public Judge'),
+]
+    judge_type = models.CharField(
+        max_length=20, 
+        choices=JUDGE_TYPE_CHOICES, 
+        default='general_judge',
+        help_text="Determines which criteria this judge can evaluate"
+    )
+    
+
+    def get_allowed_criteria(self):
+        """Return criteria this judge can evaluate based on their type"""
+        if self.judge_type == 'quantum_expert':
+            # Quantum experts judge ALL criteria
+            return JudgingCriteria.objects.all()
+        elif self.judge_type == 'public':
+            # Public judges ALL criteria  
+            return JudgingCriteria.objects.all()
+        else:
+            # General judges: exclude quantum-specific criteria
+            return JudgingCriteria.objects.exclude(
+                name__in=['Quantum Tech Quality', 'Innovation']
+            )
     
     def __str__(self):
-        return f"{self.user.get_full_name()} - {', '.join([exp.name for exp in self.expertise_areas.all()])}"
+        return f"{self.user.get_full_name()} ({self.get_judge_type_display()})"
 
 class Team(models.Model):
     """Teams participating in the hackathon"""

@@ -45,6 +45,8 @@ def judge_registration(request):
     return render(request, 'judging/register.html', {'form': form})
 
 
+
+
 def judge_team(request, team_id):
     """Judge a specific team - UPDATED VERSION"""
     if not request.user.is_authenticated:
@@ -556,6 +558,7 @@ def generate_judge_links(request):
     context = {
         'judge_links': judge_links,
         'master_results_url': master_results_url,
+        'public_judge_url': request.build_absolute_uri('/public-judge/'),
     }
     
     return render(request, 'judging/judge_links.html', context)
@@ -563,3 +566,190 @@ def generate_judge_links(request):
 def home_anonymous(request):
     """Simple home page for anonymous users"""
     return render(request, 'judging/home_anonymous.html')
+
+
+def judge_dashboard_anonymous(request, judge_token):
+    """Anonymous judge dashboard with role-based criteria"""
+    try:
+        judge = get_object_or_404(Judge, unique_token=judge_token)
+    except:
+        messages.error(request, 'Invalid or expired judge link. Please contact the administrator.')
+        return render(request, 'judging/invalid_link.html')
+    
+    teams = Team.objects.all()
+    judged_teams = Submission.objects.filter(judge=judge).values_list('team_id', flat=True)
+    
+    # Get criteria this judge can evaluate
+    allowed_criteria = judge.get_allowed_criteria()
+    
+    context = {
+        'judge': judge,
+        'teams': teams,
+        'judged_teams': judged_teams,
+        'total_teams': teams.count(),
+        'completed_judgments': len(judged_teams),
+        'remaining_teams': teams.count() - len(judged_teams),
+        'is_anonymous': True,
+        'judge_token': judge_token,
+        'allowed_criteria': allowed_criteria,
+        'judge_type': judge.judge_type,
+    }
+    return render(request, 'judging/dashboard.html', context)
+
+def judge_team_anonymous(request, judge_token, team_id):
+    """Anonymous team judging with role-based criteria"""
+    try:
+        judge = get_object_or_404(Judge, unique_token=judge_token)
+        team = get_object_or_404(Team, id=team_id)
+    except:
+        messages.error(request, 'Invalid link. Please contact the administrator.')
+        return redirect('home_anonymous')
+
+    if Submission.objects.filter(judge=judge, team=team).exists():
+        messages.warning(request, f'You have already judged {team.name}.')
+        return redirect('judge_dashboard_anonymous', judge_token=judge_token)
+
+    # Get only the criteria this judge can evaluate
+    allowed_criteria = judge.get_allowed_criteria()
+
+    if request.method == 'POST':
+        form = RoleBasedTeamScoreForm(request.POST, judge=judge, team=team, allowed_criteria=allowed_criteria)
+        if form.is_valid():
+            with transaction.atomic():
+                submission = Submission.objects.create(
+                    judge=judge,
+                    team=team,
+                    comments=form.cleaned_data.get('comments', '')
+                )
+
+                # Save scores only for allowed criteria
+                for criterion in allowed_criteria:
+                    score_key = f"score_{criterion.id}"
+                    comment_key = f"comment_{criterion.id}"
+                    
+                    score_value = form.cleaned_data.get(score_key)
+                    score_comment = form.cleaned_data.get(comment_key, '')
+
+                    if score_value:
+                        Score.objects.create(
+                            submission=submission,
+                            criteria=criterion,
+                            score=score_value,
+                            comments=score_comment
+                        )
+
+                update_team_final_scores(team)
+                messages.success(request, f'Successfully submitted judgment for {team.name}!')
+                return redirect('judge_dashboard_anonymous', judge_token=judge_token)
+    else:
+        form = RoleBasedTeamScoreForm(judge=judge, team=team, allowed_criteria=allowed_criteria)
+
+    context = {
+        'form': form,
+        'team': team,
+        'judge': judge,
+        'judge_token': judge_token,
+        'is_anonymous': True,
+        'allowed_criteria': allowed_criteria,
+        'judge_type': judge.judge_type,
+        'judge_type_display': judge.get_judge_type_display(),
+    }
+    return render(request, 'judging/judge_team.html', context)
+
+def public_judge_access(request):
+    """Create anonymous public judge access"""
+    # Create a temporary public judge session
+    public_judge_data = {
+        'judge_type': 'public',
+        'name': 'Public Judge',
+        'session_id': request.session.session_key or request.session.create()
+    }
+    
+    # Store in session
+    request.session['public_judge'] = public_judge_data
+    
+    # Get all teams for public judging
+    teams = Team.objects.all()
+    
+    # Check if this session has judged teams (store in session)
+    judged_teams = request.session.get('judged_teams', [])
+    
+    context = {
+        'teams': teams,
+        'judged_teams': judged_teams,
+        'total_teams': teams.count(),
+        'completed_judgments': len(judged_teams),
+        'remaining_teams': teams.count() - len(judged_teams),
+        'is_public': True,
+        'judge_type': 'public',
+    }
+    return render(request, 'judging/public_judge_access.html', context)
+
+def public_judge_team(request, team_id):
+    """Public team judging"""
+    team = get_object_or_404(Team, id=team_id)
+    
+    # Check if already judged (session-based)
+    judged_teams = request.session.get('judged_teams', [])
+    if team_id in judged_teams:
+        messages.warning(request, f'You have already judged {team.name}.')
+        return redirect('public_judge_access')
+
+    # All criteria for public judges
+    allowed_criteria = JudgingCriteria.objects.all()
+
+    if request.method == 'POST':
+        form = PublicTeamScoreForm(request.POST, team=team, allowed_criteria=allowed_criteria)
+        if form.is_valid():
+            # Create a pseudo-judge for public submissions
+            public_judge, created = Judge.objects.get_or_create(
+                user=None,  # No user for public
+                defaults={
+                    'judge_type': 'public',
+                    'unique_token': uuid.uuid4(),
+                }
+            )
+            
+            with transaction.atomic():
+                submission = Submission.objects.create(
+                    judge=public_judge,
+                    team=team,
+                    comments=form.cleaned_data.get('comments', '')
+                )
+
+                # Save scores for all criteria
+                for criterion in allowed_criteria:
+                    score_key = f"score_{criterion.id}"
+                    comment_key = f"comment_{criterion.id}"
+                    
+                    score_value = form.cleaned_data.get(score_key)
+                    score_comment = form.cleaned_data.get(comment_key, '')
+
+                    if score_value:
+                        Score.objects.create(
+                            submission=submission,
+                            criteria=criterion,
+                            score=score_value,
+                            comments=score_comment
+                        )
+
+                # Mark as judged in session
+                judged_teams.append(team_id)
+                request.session['judged_teams'] = judged_teams
+                
+                update_team_final_scores(team)
+                messages.success(request, f'Successfully submitted judgment for {team.name}!')
+                return redirect('public_judge_access')
+    else:
+        form = PublicTeamScoreForm(team=team, allowed_criteria=allowed_criteria)
+
+    context = {
+        'form': form,
+        'team': team,
+        'is_public': True,
+        'allowed_criteria': allowed_criteria,
+        'judge_type': 'public',
+    }
+    return render(request, 'judging/public_judge_team.html', context)
+
+
