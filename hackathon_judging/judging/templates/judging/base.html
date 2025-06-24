@@ -313,7 +313,7 @@
             padding: 20px 24px;
             margin-bottom: 24px;
             backdrop-filter: blur(10px);
-            border-left: 4px solid;
+            /* border-left: 4px solid; */
         }
 
         .alert-success {
@@ -565,6 +565,8 @@
             .btn, .viz-tabs, .modal { display: none !important; }
             .card { border: 1px solid #000 !important; }
         }
+
+
     </style>
     
     {% block extra_css %}
@@ -572,7 +574,7 @@
 </head>
 <body>
     <!-- Navigation -->
-    <nav class="navbar navbar-expand-lg">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
         <div class="container">
             <a class="navbar-brand" href="{% url 'home' %}">
                 <i class="bi bi-cpu-fill me-2"></i>
@@ -592,22 +594,22 @@
                             </a>
                         </li>
                         {% if user.is_staff %}
-                            <li class="nav-item">
+                            <!-- <li class="nav-item">
                                 <a class="nav-link" href="{% url 'admin_results' %}">
                                     <i class="bi bi-bar-chart-fill me-1"></i>Analytics
                                 </a>
-                            </li>
+                            </li> -->
                             <li class="nav-item">
                                 <a class="nav-link" href="/admin/">
                                     <i class="bi bi-gear-fill me-1"></i>Admin
                                 </a>
                             </li>
                         {% else %}
-                            <li class="nav-item">
+                            <!-- <li class="nav-item">
                                 <a class="nav-link" href="{% url 'admin_results' %}">
                                     <i class="bi bi-graph-up me-1"></i>Results
                                 </a>
-                            </li>
+                            </li> -->
                         {% endif %}
                         <!-- <li class="nav-item">
                             <span class="nav-link">
@@ -661,7 +663,7 @@
         <div class="container text-center">
             <p class="mb-0">
                 <i class="bi bi-c-circle me-1"></i>
-                2025 Quantathon Judging System | Powered by Quantum Innovation
+                2025 Quantathon Judging System 
             </p>
         </div>
     </footer>

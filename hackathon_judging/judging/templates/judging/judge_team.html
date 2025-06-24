@@ -29,23 +29,23 @@
                                 <p class="mb-3">{{ team.members }}</p>
                             </div>
                             <div class="col-md-6">
-                                {% if team.presentation_link %}
-                                    <a href="{{ team.presentation_link }}" 
+                                <!-- {% if team.presentation_link %} -->
+                                    <!-- <a href="{{ team.presentation_link }}" 
                                        target="_blank" 
                                        class="btn btn-light btn-lg">
                                         <i class="bi bi-play-circle-fill me-2"></i>
                                         View Presentation
-                                    </a>
-                                {% endif %}
+                                    </a> -->
+                                <!-- {% endif %} -->
                             </div>
                         </div>
                     </div>
                     <div class="col-lg-4 text-lg-end">
                         <div class="bg-white bg-opacity-20 rounded-3 p-3">
-                            <h6 class="mb-2">Your Expertise Areas:</h6>
+                            <!-- <h6 class="mb-2">Your Expertise Areas:</h6>
                             {% for area in judge.expertise_areas.all %}
                                 <span class="badge bg-light text-dark me-1 mb-1">{{ area.name }}</span>
-                            {% endfor %}
+                            {% endfor %} -->
                         </div>
                     </div>
                 </div>
@@ -97,12 +97,35 @@
                                             </div>
                                             <div class="col-lg-6">
                                                 <div class="d-flex align-items-center justify-content-lg-end">
-                                                    <label class="form-label me-3 mb-0">Score (1-5):</label>
-                                                    <div class="score-input-wrapper">
-                                                        {{ field }}
-                                                        {% if field.errors %}
-                                                            <div class="text-danger small mt-1">{{ field.errors.0 }}</div>
-                                                        {% endif %}
+                                                    <div class="form-group">
+                                                    <label for="score">Score</label>
+                                                    <select class="form-control score-select"
+                                                            name="{{ field.name }}"
+                                                            required
+                                                            onchange="showOnlyNumber(this)">
+                                                        <!-- placeholder -->
+                                                        <option value="" selected hidden>— Select a Score —</option>
+
+                                                        <!-- real choices -->
+                                                        <option value="1" data-label="1">
+                                                            1 – Very Weak – Barely meets expectations or not at all.
+                                                        </option>
+                                                        <option value="2" data-label="2">
+                                                            2 – Weak – Major gaps; needs significant improvement.
+                                                        </option>
+                                                        <option value="3" data-label="3">
+                                                            3 – Fair – Adequate but unremarkable; meets minimum requirements.
+                                                        </option>
+                                                        <option value="4" data-label="4">
+                                                            4 – Strong – Solid work with only minor issues.
+                                                        </option>
+                                                        <option value="5" data-label="5">
+                                                            5 – Exceptional – Outstanding; exceeds expectations on all points.
+                                                        </option>
+                                                    </select>
+
+
+
                                                     </div>
                                                 </div>
                                             </div>
@@ -174,32 +197,46 @@
                 Scoring Guide
             </div>
             <div class="card-body">
-                <div class="row">
-                    <div class="col-md-3 text-center mb-3">
-                        <div class="p-3 bg-danger bg-opacity-10 rounded-3">
-                            <h5 class="text-danger">1-3</h5>
-                            <small class="text-muted">Poor / Below Average</small>
-                        </div>
-                    </div>
-                    <div class="col-md-3 text-center mb-3">
-                        <div class="p-3 bg-warning bg-opacity-10 rounded-3">
-                            <h5 class="text-warning">4-5</h5>
-                            <small class="text-muted">Average / Satisfactory</small>
-                        </div>
-                    </div>
-                    <div class="col-md-3 text-center mb-3">
-                        <div class="p-3 bg-info bg-opacity-10 rounded-3">
-                            <h5 class="text-info">6-7</h5>
-                            <small class="text-muted">Good / Above Average</small>
-                        </div>
-                    </div>
-                    <div class="col-md-3 text-center mb-3">
-                        <div class="p-3 bg-success bg-opacity-10 rounded-3">
-                            <h5 class="text-success">8-10</h5>
-                            <small class="text-muted">Excellent / Outstanding</small>
-                        </div>
+              
+  
+                <div class="row g-3 text-center">
+                <div class="col-md">
+                    <div class="p-3 bg-danger bg-opacity-10 rounded-3 h-100">
+                        <h5 class="text-danger">1</h5>
+                        <span class="badge bg-danger-subtle text-danger">Very Weak</span>
+                        <p class="small mt-2 text-muted">Barely meets expectations or not at all.</p>
                     </div>
                 </div>
+                <div class="col-md">
+                    <div class="p-3 bg-warning bg-opacity-10 rounded-3 h-100">
+                        <h5 class="text-warning">2</h5>
+                        <span class="badge bg-warning-subtle text-warning">Weak</span>
+                        <p class="small mt-2 text-muted">Major gaps; needs significant improvement.</p>
+                    </div>
+                </div>
+                <div class="col-md">
+                    <div class="p-3 bg-info bg-opacity-10 rounded-3 h-100">
+                        <h5 class="text-info">3</h5>
+                        <span class="badge bg-info-subtle text-info">Fair</span>
+                        <p class="small mt-2 text-muted">Adequate but unremarkable; meets minimum requirements.</p>
+                    </div>
+                </div>
+                <div class="col-md">
+                    <div class="p-3 bg-primary bg-opacity-10 rounded-3 h-100">
+                        <h5 class="text-primary">4</h5>
+                        <span class="badge bg-primary-subtle text-primary">Strong</span>
+                        <p class="small mt-2 text-muted">Solid work with only minor issues.</p>
+                    </div>
+                </div>
+                <div class="col-md">
+                    <div class="p-3 bg-success bg-opacity-10 rounded-3 h-100">
+                        <h5 class="text-success">5</h5>
+                        <span class="badge bg-success-subtle text-success">Exceptional</span>
+                        <p class="small mt-2 text-muted">Outstanding; exceeds expectations on all points.</p>
+                    </div>
+                </div>
+                </div>
+
             </div>
         </div>
     </div>
@@ -244,6 +281,29 @@
             document.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
         }
     }
+
+        function showOnlyNumber(select) {
+        const selectedIndex = select.selectedIndex;
+        const selectedOption = select.options[selectedIndex];
+        if (selectedOption.value === "") return;
+
+        // Set selected option text to just the number
+        selectedOption.textContent = selectedOption.getAttribute("data-label");
+
+        // Reset other options to full label
+        for (let i = 0; i < select.options.length; i++) {
+            if (i !== selectedIndex) {
+            const option = select.options[i];
+            const val = option.getAttribute("data-label");
+            if (val === "1") option.textContent = "1 – Very Weak – Barely meets expectations or not at all.";
+            if (val === "2") option.textContent = "2 – Weak – Major gaps; needs significant improvement.";
+            if (val === "3") option.textContent = "3 – Fair – Adequate but unremarkable; meets minimum requirements.";
+            if (val === "4") option.textContent = "4 – Strong – Solid work with only minor issues.";
+            if (val === "5") option.textContent = "5 – Exceptional – Outstanding; exceeds expectations on all points.";
+            }
+        }
+        }
+
 
     // Real-time score validation
     document.querySelectorAll('input[type="number"]').forEach(input => {

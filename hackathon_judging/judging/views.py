@@ -13,6 +13,8 @@ from django.contrib.auth.views import LoginView
 from django.urls import reverse_lazy
 from django.contrib.auth import logout
 from collections import defaultdict
+import json
+from django.core.serializers.json import DjangoJSONEncoder
 
 
 def judge_registration(request):
@@ -40,32 +42,6 @@ def judge_registration(request):
         form = JudgeRegistrationForm()
     
     return render(request, 'judging/register.html', {'form': form})
-
-
-def judge_dashboard(request):
-    """Main dashboard for judges - UPDATED VERSION"""
-    # Check if user is authenticated
-    if not request.user.is_authenticated:
-        return redirect('/admin/login/')
-    
-    # Check if user has judge profile
-    try:
-        judge = request.user.judge
-    except Judge.DoesNotExist:
-        messages.error(request, 'You are not registered as a judge.')
-        return redirect('judge_registration')
-    
-    teams = Team.objects.all()
-    judged_teams = Submission.objects.filter(judge=judge).values_list('team_id', flat=True)
-    
-    context = {
-        'judge': judge,
-        'teams': teams,
-        'judged_teams': judged_teams,
-        'total_teams': teams.count(),
-        'completed_judgments': len(judged_teams),
-    }
-    return render(request, 'judging/dashboard.html', context)
 
 
 def judge_team(request, team_id):
@@ -150,45 +126,164 @@ def custom_logout_view(request):
     return render(request, 'judging/logout.html')
 
 
+# def admin_results(request):
+#     """Results dashboard – supplies JSON blobs for Chart.js"""
+#     if not request.user.is_authenticated:
+#         return redirect('judge_login')
+
+#     # allow staff or judges                     ↓ same logic, simpler
+#     if not (request.user.is_staff or hasattr(request.user, 'judge')):
+#         messages.error(request, "You don't have permission to view results.")
+#         return redirect('judge_dashboard')
+
+#     # ---------- 1. Final-score queryset -----------------
+#     teams_with_scores = (
+#         TeamFinalScore.objects
+#         .select_related('team')
+#         .order_by('-final_weighted_score')
+#     )
+
+#     # update rank, if changed
+#     for idx, tfs in enumerate(teams_with_scores, 1):
+#         if tfs.rank != idx:
+#             tfs.rank = idx
+#             tfs.save(update_fields=['rank'])
+
+#     # ---------- 2. Per-criterion averages ---------------
+#     criteria_qs = JudgingCriteria.objects.all()
+#     team_crit_avg = defaultdict(dict)          # {team_id:{crit:avg}}
+
+#     for crit in criteria_qs:
+#         for row in (Score.objects
+#                     .filter(criteria=crit)
+#                     .values('submission__team')
+#                     .annotate(avg=Avg('score'))):
+#             team_id = row['submission__team']
+#             team_crit_avg[team_id][crit.name] = float(row['avg'])
+
+#     # fill in missing criteria with 0
+#     for t_id in team_crit_avg:
+#         for crit in criteria_qs:
+#             team_crit_avg[t_id].setdefault(crit.name, 0)
+
+#     # ---------- 3. Pack teams_json ----------------------
+#     teams_json = [{
+#         'team':  tfs.team.name,
+#         'final_weighted_score': float(tfs.final_weighted_score),
+#         'scores': team_crit_avg.get(tfs.team.id, {c.name:0 for c in criteria_qs})
+#     } for tfs in teams_with_scores]
+
+#     # ---------- 4. Raw per-judge scores -----------------
+#     all_scores = list(
+#         Score.objects.values(
+#             'criteria__name',          # e.g. "Innovation"
+#             'submission__team__name',  # e.g. "QBits"
+#             'submission__judge__id',   # judge id (int)
+#             'score'                    # 1-5
+#         )
+#     )
+
+#     # ---------- 5. Context sent to template -------------
+#     context = {
+#         'teams_with_scores': teams_with_scores,
+#         'total_submissions': Submission.objects.count(),
+#         'total_judges':      Judge.objects.count(),
+
+#         # JSON blobs for JavaScript
+#         'criteria_labels': json.dumps([c.name for c in criteria_qs]),
+#         'teams_json':      json.dumps(teams_json,  cls=DjangoJSONEncoder),
+#         'all_scores_json': json.dumps(all_scores,  cls=DjangoJSONEncoder),
+#     }
+#     return render(request, 'judging/admin_results.html', context)
+
+
 def admin_results(request):
-    """Admin view for results and rankings with per-criterion breakdowns"""
+    """Results dashboard – supplies JSON blobs for Chart.js - FIXED VERSION"""
     if not request.user.is_authenticated:
         return redirect('judge_login')
-    
-    # Allow both staff and judges
-    is_judge = hasattr(request.user, 'judge') or request.user.is_staff
 
-    if not is_judge:
-        messages.error(request, 'You must be an administrator or judge to view results.')
+    # allow staff or judges
+    if not (request.user.is_staff or hasattr(request.user, 'judge')):
+        messages.error(request, "You don't have permission to view results.")
         return redirect('judge_dashboard')
 
-    teams_with_scores = TeamFinalScore.objects.select_related('team').order_by('-final_weighted_score')
+    # ---------- 1. Final-score queryset -----------------
+    teams_with_scores = (
+        TeamFinalScore.objects
+        .select_related('team')
+        .order_by('-final_weighted_score')
+    )
 
-    # Update rankings
-    for i, team_score in enumerate(teams_with_scores, 1):
-        team_score.rank = i
-        team_score.save()
+    # update rank, if changed
+    for idx, tfs in enumerate(teams_with_scores, 1):
+        if tfs.rank != idx:
+            tfs.rank = idx
+            tfs.save(update_fields=['rank'])
 
-    # Aggregate per-criterion average scores per team
-    team_criterion_breakdown = defaultdict(dict)
-    criteria_list = JudgingCriteria.objects.all()
+    # ---------- 2. Per-criterion averages ---------------
+    criteria_qs = JudgingCriteria.objects.all()
+    team_crit_avg = defaultdict(dict)          # {team_id:{crit:avg}}
 
-    for team_score in teams_with_scores:
-        for criterion in criteria_list:
-            avg = Score.objects.filter(
-                submission__team=team_score.team,
-                criteria=criterion
-            ).aggregate(avg=Avg('score'))['avg'] or 0
-            team_criterion_breakdown[team_score.team.id][criterion.name] = round(avg, 2)
+    for crit in criteria_qs:
+        for row in (Score.objects
+                    .filter(criteria=crit)
+                    .values('submission__team')
+                    .annotate(avg=Avg('score'))):
+            team_id = row['submission__team']
+            team_crit_avg[team_id][crit.name] = float(row['avg'])
 
+    # fill in missing criteria with 0
+    for t_id in team_crit_avg:
+        for crit in criteria_qs:
+            team_crit_avg[t_id].setdefault(crit.name, 0)
+
+    # ---------- 3. Pack teams_json - FIXED VERSION ----------------------
+    teams_json = []
+    for tfs in teams_with_scores:
+        # Get scores for this team
+        team_scores = team_crit_avg.get(tfs.team.id, {})
+        
+        # Ensure all criteria are present with fallbacks
+        scores_dict = {}
+        for crit in criteria_qs:
+            scores_dict[crit.name] = team_scores.get(crit.name, 0)
+        
+        teams_json.append({
+            'team': tfs.team.name,                                    # Team name as string
+            'final_weighted_score': float(tfs.final_weighted_score),  # Final score
+            'rank': tfs.rank,                                        # Add rank - THIS WAS MISSING!
+            'scores': scores_dict,                                   # Criteria scores
+            'members': getattr(tfs.team, 'members', 'Team Members'), # Add members if available
+            'description': getattr(tfs.team, 'description', ''),     # Add description if available
+            'presentation_link': getattr(tfs.team, 'presentation_link', ''), # Add presentation link if available
+        })
+
+    # ---------- 4. Raw per-judge scores -----------------
+    all_scores = list(
+        Score.objects.values(
+            'criteria__name',          # e.g. "Innovation"
+            'submission__team__name',  # e.g. "QBits"
+            'submission__judge__id',   # judge id (int)
+            'score'                    # 1-10
+        )
+    )
+
+    # ---------- 5. Context sent to template - ENHANCED -------------
     context = {
         'teams_with_scores': teams_with_scores,
         'total_submissions': Submission.objects.count(),
-        'total_judges': Judge.objects.count(),
-        'is_judge_view': is_judge,
-        'criteria_list': criteria_list,  #for template header
-        'team_criterion_breakdown': dict(team_criterion_breakdown),  #for team rows
+        'total_judges':      Judge.objects.count(),
+
+        # JSON blobs for JavaScript
+        'criteria_labels': json.dumps([c.name for c in criteria_qs]),
+        'teams_json':      json.dumps(teams_json,  cls=DjangoJSONEncoder),
+        'all_scores_json': json.dumps(all_scores,  cls=DjangoJSONEncoder),
     }
+    
+    # Debug logging - you can remove this after testing
+    print("DEBUG - First team data:", teams_json[0] if teams_json else "No teams")
+    print("DEBUG - Criteria labels:", [c.name for c in criteria_qs])
+    
     return render(request, 'judging/admin_results.html', context)
 
 def export_results(request):
@@ -265,49 +360,20 @@ class JudgeLoginView(LoginView):
         else:
             return reverse_lazy('judge_registration')
 
-# ADD a home redirect view
 def home_redirect(request):
     """Smart redirect based on user type"""
     if not request.user.is_authenticated:
         return redirect('judge_registration')
     
-    # If user is a judge, go to dashboard
     if hasattr(request.user, 'judge'):
         return redirect('judge_dashboard')
-    # If admin/staff, go to admin panel
     elif request.user.is_staff:
         return redirect('admin:index')
-    # Otherwise, assume they need to register as judge
     else:
         return redirect('judge_registration')
 
-# UPDATE the judge_dashboard view (replace the existing one):
-def judge_dashboard(request):
-    """Main dashboard for judges - UPDATED"""
-    if not request.user.is_authenticated:
-        return redirect('judge_login')
-    
-    try:
-        judge = request.user.judge
-    except Judge.DoesNotExist:
-        messages.error(request, 'You are not registered as a judge.')
-        return redirect('judge_registration')
-    
-    teams = Team.objects.all()
-    judged_teams = Submission.objects.filter(judge=judge).values_list('team_id', flat=True)
-    
-    context = {
-        'judge': judge,
-        'teams': teams,
-        'judged_teams': judged_teams,
-        'total_teams': teams.count(),
-        'completed_judgments': len(judged_teams),
-        'remaining_teams': teams.count() - len(judged_teams),  # Add this line
-    }
-    return render(request, 'judging/dashboard.html', context)
-# SIMPLIFIED VIEWS - judging/views.py (replace relevant functions)
 
-# REPLACE the home_redirect view with this:
+
 def home_redirect(request):
     """Smart redirect for pre-defined judges system"""
     if not request.user.is_authenticated:
@@ -324,7 +390,6 @@ def home_redirect(request):
         messages.warning(request, 'You are not registered as a judge for this hackathon. Please contact the administrator.')
         return redirect('judge_login')
 
-# REPLACE the judge_dashboard view:
 def judge_dashboard(request):
     """Main dashboard for pre-defined judges"""
     if not request.user.is_authenticated:
@@ -345,12 +410,9 @@ def judge_dashboard(request):
         'judged_teams': judged_teams,
         'total_teams': teams.count(),
         'completed_judgments': len(judged_teams),
+        'remaining_teams': teams.count() - len(judged_teams)
     }
     return render(request, 'judging/dashboard.html', context)
-
-# REMOVE the judge_registration view entirely - it's not needed
-
-# UPDATE the JudgeLoginView:
 class JudgeLoginView(LoginView):
     """Custom login view for pre-defined judges"""
     template_name = 'judging/login.html'

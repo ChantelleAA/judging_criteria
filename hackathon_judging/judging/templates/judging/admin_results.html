@@ -1,9 +1,13 @@
 {% extends 'judging/base.html' %}
+{% load custom_tags %}
 
 {% block title %}Analytics Dashboard - Quantathon{% endblock %}
 
 {% block content %}
 <!-- Header with Controls -->
+<script src="https://cdn.jsdelivr.net/npm/chartjs-chart-box-and-violin@4"></script>
+<!-- <script src="https://cdn.jsdelivr.net/npm/chartjs-chart-matrix@2"></script> -->
+
 <div class="row mb-4">
     <div class="col-lg-8">
         <h1 class="display-6 fw-bold mb-2">
@@ -133,147 +137,55 @@
 <div class="row mb-4">
     <div class="col-12">
         <div class="viz-card">
+            <!-- NEW VIZ TABS -->
             <div class="viz-tabs">
                 <button class="viz-tab active" onclick="showChart('overview')" id="tab-overview">
-                    <i class="bi bi-bar-chart me-2"></i>Score Overview
+                    <i class="bi bi-bar-chart me-1"></i>Final Scores
                 </button>
-                <button class="viz-tab" onclick="showChart('criteria')" id="tab-criteria">
-                    <i class="bi bi-pie-chart me-2"></i>Criteria Analysis
-                </button>
-                <button class="viz-tab" onclick="showChart('judges')" id="tab-judges">
-                    <i class="bi bi-people me-2"></i>Judge Distribution
-                </button>
-                <button class="viz-tab" onclick="showChart('aggregated')" id="tab-aggregated">
-                    <i class="bi bi-graph-up me-2"></i>Aggregated Votes
+                <button class="viz-tab" onclick="showChart('criterion')" id="tab-criterion">
+                    <i class="bi bi-graph-up-arrow me-1"></i>Per&nbsp;Criterion
                 </button>
                 <button class="viz-tab" onclick="showChart('comparison')" id="tab-comparison">
-                    <i class="bi bi-layers me-2"></i>Team Comparison
+                    <i class="bi bi-layers me-1"></i>Team Comparison
+                </button>
+                <button class="viz-tab" onclick="showChart('breakdown')" id="tab-breakdown">
+                    <i class="bi bi-pie-chart me-1"></i>Team&nbsp;Breakdown
+                </button>
+                <button class="viz-tab" onclick="showChart('spread')" id="tab-spread">
+                    <i class="bi bi-hdd-stack"></i> Spread
                 </button>
             </div>
-            
-            <!-- Score Overview Chart -->
+
+            <!-- chart containers -->
             <div id="chart-overview" class="chart-container">
-                <h6 class="fw-bold mb-3">Final Scores - Top 10 Teams</h6>
-                <canvas id="scoreDistributionChart" height="400"></canvas>
+                <canvas id="overviewChart" height="380"></canvas>
             </div>
-            
-            <!-- Criteria Analysis Chart -->
-            <div id="chart-criteria" class="chart-container" style="display: none;">
-                <h6 class="fw-bold mb-3">Judging Criteria Weights</h6>
-                <div class="row">
-                    <div class="col-lg-6">
-                        <canvas id="criteriaChart" height="300"></canvas>
-                    </div>
-                    <div class="col-lg-6">
-                        <div class="criteria-breakdown">
-                            <div class="p-3 border rounded mb-2">
-                                <strong>Quantum Tech Quality (40%)</strong>
-                                <div class="progress mt-2">
-                                    <div class="progress-bar" style="width: 40%; background: #6B46C1;"></div>
-                                </div>
-                            </div>
-                            <div class="p-3 border rounded mb-2">
-                                <strong>Social Impact (25%)</strong>
-                                <div class="progress mt-2">
-                                    <div class="progress-bar" style="width: 25%; background: #06B6D4;"></div>
-                                </div>
-                            </div>
-                            <div class="p-3 border rounded mb-2">
-                                <strong>Innovation (20%)</strong>
-                                <div class="progress mt-2">
-                                    <div class="progress-bar" style="width: 20%; background: #3B82F6;"></div>
-                                </div>
-                            </div>
-                            <div class="p-3 border rounded mb-2">
-                                <strong>Presentation (10%)</strong>
-                                <div class="progress mt-2">
-                                    <div class="progress-bar" style="width: 10%; background: #8B5CF6;"></div>
-                                </div>
-                            </div>
-                            <div class="p-3 border rounded">
-                                <strong>Business Viability (5%)</strong>
-                                <div class="progress mt-2">
-                                    <div class="progress-bar" style="width: 5%; background: #EC4899;"></div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+
+            <div id="chart-criterion" class="chart-container" style="display:none;">
+                <canvas id="criterionChart" height="380"></canvas>
             </div>
-            
-            <!-- Judge Distribution Chart -->
-            <div id="chart-judges" class="chart-container" style="display: none;">
-                <h6 class="fw-bold mb-3">Judge Expertise Distribution</h6>
-                <canvas id="judgesChart" height="400"></canvas>
+
+            <div id="chart-comparison" class="chart-container" style="display:none;">
+                <canvas id="comparisonChart" height="380"></canvas>
             </div>
-            
-            <!-- Aggregated Votes Chart -->
-            <div id="chart-aggregated" class="chart-container" style="display: none;">
-                <h6 class="fw-bold mb-3">Aggregated Votes by Criteria - All Teams</h6>
-                <div class="row mb-3">
-                    <div class="col-md-6">
-                        <select class="form-select" id="aggregatedCriteriaSelect" onchange="updateAggregatedChart()">
-                            <option value="all">All Criteria</option>
-                            <option value="quantum">Quantum Tech Quality</option>
-                            <option value="social">Social Impact</option>
-                            <option value="innovation">Innovation</option>
-                            <option value="presentation">Presentation</option>
-                            <option value="business">Business Viability</option>
-                        </select>
-                    </div>
-                    <div class="col-md-6">
-                        <select class="form-select" id="aggregatedChartType" onchange="updateAggregatedChart()">
-                            <option value="bar">Bar Chart</option>
-                            <option value="radar">Radar Chart</option>
-                            <option value="line">Line Chart</option>
-                        </select>
-                    </div>
-                </div>
-                <canvas id="aggregatedChart" height="400"></canvas>
+
+            <div id="chart-breakdown" class="chart-container" style="display:none;">
+                <label for="teamSelect" class="form-label fw-bold">
+                    Choose a team to see score breakdown
+                </label>
+                <select id="teamSelect" class="form-select mb-3"></select>
+                <canvas id="teamBreakdownChart" height="380"></canvas>
             </div>
-            
-            <!-- Team Comparison Chart -->
-            <div id="chart-comparison" class="chart-container" style="display: none;">
-                <h6 class="fw-bold mb-3">Team Performance Comparison</h6>
-                <div class="row mb-3">
-                    <div class="col-md-4">
-                        <select class="form-select" id="comparisonTeam1" onchange="updateComparisonChart()">
-                            <option value="">Select Team 1</option>
-                            {% for team_score in teams_with_scores %}
-                                <option value="{{ forloop.counter0 }}" {% if forloop.first %}selected{% endif %}>
-                                    {{ team_score.team.name }}
-                                </option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                    <div class="col-md-4">
-                        <select class="form-select" id="comparisonTeam2" onchange="updateComparisonChart()">
-                            <option value="">Select Team 2</option>
-                            {% for team_score in teams_with_scores %}
-                                <option value="{{ forloop.counter0 }}" {% if forloop.counter == 2 %}selected{% endif %}>
-                                    {{ team_score.team.name }}
-                                </option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                    <div class="col-md-4">
-                        <select class="form-select" id="comparisonTeam3" onchange="updateComparisonChart()">
-                            <option value="">Select Team 3 (Optional)</option>
-                            {% for team_score in teams_with_scores %}
-                                <option value="{{ forloop.counter0 }}" {% if forloop.counter == 3 %}selected{% endif %}>
-                                    {{ team_score.team.name }}
-                                </option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                </div>
-                <canvas id="comparisonChart" height="400"></canvas>
+
+            <div id="chart-spread" class="chart-container" style="display:none;">
+                <canvas id="spreadChart" height="380"></canvas>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Detailed Rankings Table -->
+
+<!-- Detailed Rankings Table with Expandable Rows -->
 <div class="row">
     <div class="col-12">
         <div class="card">
@@ -283,6 +195,10 @@
                     Complete Rankings
                 </h4>
                 <div class="d-flex gap-2">
+                    <button class="btn btn-sm btn-outline-secondary" onclick="toggleAllDetails()">
+                        <i class="bi bi-arrows-expand me-1" id="toggleIcon"></i>
+                        <span id="toggleText">Expand All</span>
+                    </button>
                     <button class="btn btn-sm btn-outline-primary" onclick="exportTableCSV()">
                         <i class="bi bi-filetype-csv me-1"></i>CSV
                     </button>
@@ -297,21 +213,27 @@
                         <table class="table table-hover mb-0" id="rankingsTable">
                             <thead class="table-dark">
                                 <tr>
+                                    <th class="text-center" width="50"></th>
                                     <th class="text-center" width="80">Rank</th>
                                     <th>Team</th>
-                                    <th class="text-center">Quantum Tech<br><small>(40%)</small></th>
+                                    <th class="text-center">Quantum Tech Quality<br><small>(40%)</small></th>
                                     <th class="text-center">Social Impact<br><small>(25%)</small></th>
                                     <th class="text-center">Innovation<br><small>(20%)</small></th>
                                     <th class="text-center">Presentation<br><small>(10%)</small></th>
-                                    <th class="text-center">Business<br><small>(5%)</small></th>
+                                    <th class="text-center">Business Viability<br><small>(5%)</small></th>
                                     <th class="text-center" width="120"><strong>Final Score</strong></th>
                                     <th class="text-center" width="100">Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {% for team_score in teams_with_scores %}
+                                    <!-- Main Team Row -->
                                     <tr class="{% if team_score.rank <= 3 %}table-warning{% endif %} team-row" 
-                                        onclick="showTeamDetails({{ team_score.team.id }}, '{{ team_score.team.name|escapejs }}')">
+                                        onclick="toggleTeamDetails('team-{{ forloop.counter0 }}')"
+                                        style="cursor: pointer;">
+                                        <td class="text-center">
+                                            <i class="bi bi-chevron-right expand-icon" id="icon-team-{{ forloop.counter0 }}"></i>
+                                        </td>
                                         <td class="text-center fw-bold">
                                             {% if team_score.rank == 1 %}
                                                 <span class="badge bg-warning text-dark fs-6 p-2">🥇 {{ team_score.rank }}</span>
@@ -343,7 +265,7 @@
                                                     {{ team_score.quantum_tech_score|floatformat:1 }}
                                                 </span>
                                                 <div class="progress mt-1" style="height: 4px;">
-                                                    <div class="progress-bar bg-primary" style="width: {% widthratio team_score.quantum_tech_score 10 100 %}%"></div>
+                                                    <div class="progress-bar bg-primary" style="width: {% widthratio team_score.quantum_tech_score 5 100 %}%"></div>
                                                 </div>
                                             </div>
                                         </td>
@@ -353,7 +275,7 @@
                                                     {{ team_score.social_impact_score|floatformat:1 }}
                                                 </span>
                                                 <div class="progress mt-1" style="height: 4px;">
-                                                    <div class="progress-bar bg-success" style="width: {% widthratio team_score.social_impact_score 10 100 %}%"></div>
+                                                    <div class="progress-bar bg-success" style="width: {% widthratio team_score.social_impact_score 5 100 %}%"></div>
                                                 </div>
                                             </div>
                                         </td>
@@ -363,7 +285,7 @@
                                                     {{ team_score.innovation_score|floatformat:1 }}
                                                 </span>
                                                 <div class="progress mt-1" style="height: 4px;">
-                                                    <div class="progress-bar bg-info" style="width: {% widthratio team_score.innovation_score 10 100 %}%"></div>
+                                                    <div class="progress-bar bg-info" style="width: {% widthratio team_score.innovation_score 5 100 %}%"></div>
                                                 </div>
                                             </div>
                                         </td>
@@ -373,7 +295,7 @@
                                                     {{ team_score.presentation_score|floatformat:1 }}
                                                 </span>
                                                 <div class="progress mt-1" style="height: 4px;">
-                                                    <div class="progress-bar bg-warning" style="width: {% widthratio team_score.presentation_score 10 100 %}%"></div>
+                                                    <div class="progress-bar bg-warning" style="width: {% widthratio team_score.presentation_score 5 100 %}%"></div>
                                                 </div>
                                             </div>
                                         </td>
@@ -383,27 +305,23 @@
                                                     {{ team_score.business_viability_score|floatformat:1 }}
                                                 </span>
                                                 <div class="progress mt-1" style="height: 4px;">
-                                                    <div class="progress-bar bg-secondary" style="width: {% widthratio team_score.business_viability_score 10 100 %}%"></div>
+                                                    <div class="progress-bar bg-secondary" style="width: {% widthratio team_score.business_viability_score 5 100 %}%"></div>
                                                 </div>
                                             </div>
                                         </td>
                                         <td class="text-center">
                                             <div class="final-score">
-                                                <div class="display-6 fw-bold bg-quantum-gradient" 
+                                                <div class="display-5 fw-bold bg-dark" 
                                                      style="-webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;">
                                                     {{ team_score.final_weighted_score|floatformat:2 }}
                                                 </div>
-                                                <div class="progress mt-1" style="height: 6px;">
-                                                    <div class="progress-bar" style="width: {% widthratio team_score.final_weighted_score 10 100 %}%"></div>
-                                                </div>
+                                                <!-- <div class="small text-muted">
+                                                    Final Score
+                                                </div> -->
                                             </div>
                                         </td>
                                         <td class="text-center">
                                             <div class="btn-group btn-group-sm">
-                                                <button class="btn btn-outline-info" 
-                                                        onclick="event.stopPropagation(); showTeamDetails({{ team_score.team.id }}, '{{ team_score.team.name|escapejs }}')">
-                                                    <i class="bi bi-eye"></i>
-                                                </button>
                                                 {% if team_score.team.presentation_link %}
                                                     <a href="{{ team_score.team.presentation_link }}" 
                                                        target="_blank" 
@@ -412,6 +330,287 @@
                                                         <i class="bi bi-play-circle"></i>
                                                     </a>
                                                 {% endif %}
+                                                <button class="btn btn-outline-primary" 
+                                                        onclick="event.stopPropagation(); exportTeamReport('{{ team_score.team.name|escapejs }}')">
+                                                    <i class="bi bi-download"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    
+                                    <!-- Expandable Details Row -->
+                                    <tr class="team-details-row" id="details-team-{{ forloop.counter0 }}" style="display: none;">
+                                        <td colspan="10" class="p-0">
+                                            <div class="team-details-content" style="background: linear-gradient(135deg, rgba(107, 70, 193, 0.05) 0%, rgba(59, 130, 246, 0.05) 100%); border-left: 4px solid var(--quantum-purple);">
+                                                <div class="container-fluid p-4">
+                                                    <!-- Team Details Content -->
+                                                    <div class="row mb-4">
+                                                        <div class="col-md-8">
+                                                            <div class="card h-100" style="border: none; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+                                                                <div class="card-header bg-light">
+                                                                    <h6 class="mb-0">
+                                                                        <i class="bi bi-graph-up me-2"></i>Detailed Score Breakdown
+                                                                    </h6>
+                                                                </div>
+                                                                <div class="card-body">
+                                                                    <div class="row g-3">
+                                                                        <!-- Quantum Tech Quality -->
+                                                                        <div class="col-md-6 mb-3">
+                                                                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                                                                <span class="fw-medium">Quantum Tech Quality</span>
+                                                                                <div class="text-end">
+                                                                                    <span class="fw-bold" style="font-size: 1.2rem;">{{ team_score.quantum_tech_score|floatformat:1 }}</span>
+                                                                                    <span class="text-muted small">(40%)</span>
+                                                                                </div>
+                                                                            </div>
+                                                                            <div class="progress" style="height: 8px;">
+                                                                                <div class="progress-bar {% if team_score.quantum_tech_score >= 4 %}bg-success{% elif team_score.quantum_tech_score >= 3 %}bg-warning{% elif team_score.quantum_tech_score >= 2 %}bg-info{% else %}bg-danger{% endif %}" 
+                                                                                     style="width: {% widthratio team_score.quantum_tech_score 5 100 %}%">
+                                                                                </div>
+                                                                            </div>
+                                                                            <div class="small text-muted mt-1">{{ team_score.quantum_tech_score|floatformat:1 }}/5.0</div>
+                                                                        </div>
+                                                                        
+                                                                        <!-- Social Impact -->
+                                                                        <div class="col-md-6 mb-3">
+                                                                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                                                                <span class="fw-medium">Social Impact</span>
+                                                                                <div class="text-end">
+                                                                                    <span class="fw-bold" style="font-size: 1.2rem;">{{ team_score.social_impact_score|floatformat:1 }}</span>
+                                                                                    <span class="text-muted small">(25%)</span>
+                                                                                </div>
+                                                                            </div>
+                                                                            <div class="progress" style="height: 8px;">
+                                                                                <div class="progress-bar {% if team_score.social_impact_score >= 4 %}bg-success{% elif team_score.social_impact_score >= 3 %}bg-warning{% elif team_score.social_impact_score >= 2 %}bg-info{% else %}bg-danger{% endif %}" 
+                                                                                     style="width: {% widthratio team_score.social_impact_score 5 100 %}%">
+                                                                                </div>
+                                                                            </div>
+                                                                            <div class="small text-muted mt-1">{{ team_score.social_impact_score|floatformat:1 }}/5.0</div>
+                                                                        </div>
+                                                                        
+                                                                        <!-- Innovation -->
+                                                                        <div class="col-md-6 mb-3">
+                                                                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                                                                <span class="fw-medium">Innovation</span>
+                                                                                <div class="text-end">
+                                                                                    <span class="fw-bold" style="font-size: 1.2rem;">{{ team_score.innovation_score|floatformat:1 }}</span>
+                                                                                    <span class="text-muted small">(20%)</span>
+                                                                                </div>
+                                                                            </div>
+                                                                            <div class="progress" style="height: 8px;">
+                                                                                <div class="progress-bar {% if team_score.innovation_score >= 4 %}bg-success{% elif team_score.innovation_score >= 3 %}bg-warning{% elif team_score.innovation_score >= 2 %}bg-info{% else %}bg-danger{% endif %}" 
+                                                                                     style="width: {% widthratio team_score.innovation_score 5 100 %}%">
+                                                                                </div>
+                                                                            </div>
+                                                                            <div class="small text-muted mt-1">{{ team_score.innovation_score|floatformat:1 }}/5.0</div>
+                                                                        </div>
+                                                                        
+                                                                        <!-- Presentation -->
+                                                                        <div class="col-md-6 mb-3">
+                                                                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                                                                <span class="fw-medium">Presentation</span>
+                                                                                <div class="text-end">
+                                                                                    <span class="fw-bold" style="font-size: 1.2rem;">{{ team_score.presentation_score|floatformat:1 }}</span>
+                                                                                    <span class="text-muted small">(10%)</span>
+                                                                                </div>
+                                                                            </div>
+                                                                            <div class="progress" style="height: 8px;">
+                                                                                <div class="progress-bar {% if team_score.presentation_score >= 4 %}bg-success{% elif team_score.presentation_score >= 3 %}bg-warning{% elif team_score.presentation_score >= 2 %}bg-info{% else %}bg-danger{% endif %}" 
+                                                                                     style="width: {% widthratio team_score.presentation_score 5 100 %}%">
+                                                                                </div>
+                                                                            </div>
+                                                                            <div class="small text-muted mt-1">{{ team_score.presentation_score|floatformat:1 }}/5.0</div>
+                                                                        </div>
+                                                                        
+                                                                        <!-- Business Viability -->
+                                                                        <div class="col-md-6 mb-3">
+                                                                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                                                                <span class="fw-medium">Business Viability</span>
+                                                                                <div class="text-end">
+                                                                                    <span class="fw-bold" style="font-size: 1.2rem;">{{ team_score.business_viability_score|floatformat:1 }}</span>
+                                                                                    <span class="text-muted small">(5%)</span>
+                                                                                </div>
+                                                                            </div>
+                                                                            <div class="progress" style="height: 8px;">
+                                                                                <div class="progress-bar {% if team_score.business_viability_score >= 4 %}bg-success{% elif team_score.business_viability_score >= 3 %}bg-warning{% elif team_score.business_viability_score >= 2 %}bg-info{% else %}bg-danger{% endif %}" 
+                                                                                     style="width: {% widthratio team_score.business_viability_score 5 100 %}%">
+                                                                                </div>
+                                                                            </div>
+                                                                            <div class="small text-muted mt-1">{{ team_score.business_viability_score|floatformat:1 }}/5.0</div>
+                                                                        </div>
+                                                                    </div>
+                                                                    
+                                                                    <hr class="my-4">
+                                                                    
+                                                                    <div class="text-center">
+                                                                        <h6 class="text-muted mb-2">Weighted Final Score</h6>
+                                                                       <div style="font-size: 2.5rem; font-weight: bold; color: var(--quantum-purple);">
+                                                                            {{ team_score.final_weighted_score|floatformat:2 }}
+                                                                        </div>
+                                                                          
+                                                                        <div class="text-muted">
+                                                                            <i class="bi bi-trophy-fill me-1" style="color: gold;"></i>
+                                                                            Rank #{{ team_score.rank }}
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        
+                                                        <div class="col-md-4">
+                                                            <div class="card h-100" style="border: none; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+                                                                <div class="card-header bg-light">
+                                                                    <h6 class="mb-0">
+                                                                        <i class="bi bi-people me-2"></i>Team Information
+                                                                    </h6>
+                                                                </div>
+                                                                <div class="card-body">
+                                                                    <div class="mb-3">
+                                                                        <strong>Team Members:</strong>
+                                                                        <p class="mb-2 small">{{ team_score.team.members|default:"Not specified" }}</p>
+                                                                    </div>
+                                                                    
+                                                                    <div class="mb-3">
+                                                                        <strong>Performance Summary:</strong>
+                                                                        <div class="row text-center mt-2">
+                                                                            <div class="col-6">
+                                                                                <div class="border rounded p-2">
+                                                                                    <div class="fw-bold text-primary">
+                                                                                        {% with team_score.quantum_tech_score|floatformat:1 as qt %}
+                                                                                        {% with team_score.social_impact_score|floatformat:1 as si %}
+                                                                                        {% with team_score.innovation_score|floatformat:1 as in %}
+                                                                                        {% with team_score.presentation_score|floatformat:1 as pr %}
+                                                                                        {% with team_score.business_viability_score|floatformat:1 as bv %}
+                                                                                        {% with qt|add:si|add:in|add:pr|add:bv as max_temp %}
+                                                                                        {{ team_score.quantum_tech_score|floatformat:1 }}
+                                                                                        {% endwith %}
+                                                                                        {% endwith %}
+                                                                                        {% endwith %}
+                                                                                        {% endwith %}
+                                                                                        {% endwith %}
+                                                                                        {% endwith %}
+                                                                                    </div>
+                                                                                    <small class="text-muted">Best Score</small>
+                                                                                </div>
+                                                                            </div>
+                                                                            <div class="col-6">
+                                                                                <div class="border rounded p-2">
+                                                                                    <div class="fw-bold text-secondary">{{ team_score.business_viability_score|floatformat:1 }}</div>
+                                                                                    <small class="text-muted">Lowest Score</small>
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                    
+                                                                    {% if team_score.team.presentation_link %}
+                                                                    <div class="mb-3">
+                                                                        <a href="{{ team_score.team.presentation_link }}" target="_blank" class="btn btn-outline-primary w-100">
+                                                                            <i class="bi bi-play-circle me-2"></i>View Presentation
+                                                                        </a>
+                                                                    </div>
+                                                                    {% endif %}
+                                                                    
+                                                                    <div class="text-center">
+                                                                        <canvas id="teamRadarChart-{{ forloop.counter0 }}" style="max-height: 200px;"></canvas>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    <!-- Analysis Section -->
+                                                    <div class="row">
+                                                        <div class="col-12">
+                                                            <div class="card" style="border: none; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+                                                                <div class="card-header bg-light">
+                                                                    <h6 class="mb-0">
+                                                                        <i class="bi bi-bar-chart me-2"></i>Performance Analysis
+                                                                    </h6>
+                                                                </div>
+                                                                <div class="card-body">
+                                                                    <div class="row">
+                                                                        <div class="col-md-6">
+                                                                            <h6 class="text-success">Strengths (≥ 4.0)</h6>
+                                                                            <ul class="list-unstyled">
+                                                                                {% if team_score.quantum_tech_score >= 4 %}
+                                                                                    <li class="mb-1">
+                                                                                        <i class="bi bi-check-circle-fill text-success me-2"></i>
+                                                                                        <strong>Quantum Tech Quality:</strong> {{ team_score.quantum_tech_score|floatformat:1 }}/5
+                                                                                    </li>
+                                                                                {% endif %}
+                                                                                {% if team_score.social_impact_score >= 4 %}
+                                                                                    <li class="mb-1">
+                                                                                        <i class="bi bi-check-circle-fill text-success me-2"></i>
+                                                                                        <strong>Social Impact:</strong> {{ team_score.social_impact_score|floatformat:1 }}/5
+                                                                                    </li>
+                                                                                {% endif %}
+                                                                                {% if team_score.innovation_score >= 4 %}
+                                                                                    <li class="mb-1">
+                                                                                        <i class="bi bi-check-circle-fill text-success me-2"></i>
+                                                                                        <strong>Innovation:</strong> {{ team_score.innovation_score|floatformat:1 }}/5
+                                                                                    </li>
+                                                                                {% endif %}
+                                                                                {% if team_score.presentation_score >= 4 %}
+                                                                                    <li class="mb-1">
+                                                                                        <i class="bi bi-check-circle-fill text-success me-2"></i>
+                                                                                        <strong>Presentation:</strong> {{ team_score.presentation_score|floatformat:1 }}/5
+                                                                                    </li>
+                                                                                {% endif %}
+                                                                                {% if team_score.business_viability_score >= 4 %}
+                                                                                    <li class="mb-1">
+                                                                                        <i class="bi bi-check-circle-fill text-success me-2"></i>
+                                                                                        <strong>Business Viability:</strong> {{ team_score.business_viability_score|floatformat:1 }}/5
+                                                                                    </li>
+                                                                                {% endif %}
+                                                                            </ul>
+                                                                            {% if team_score.quantum_tech_score < 4 and team_score.social_impact_score < 4 and team_score.innovation_score < 4 and team_score.presentation_score < 4 and team_score.business_viability_score < 4 %}
+                                                                                <p class="text-muted small">No scores above 4.0</p>
+                                                                            {% endif %}
+                                                                        </div>
+                                                                        <div class="col-md-6">
+                                                                            <h6 class="text-warning">Areas for Improvement (< 4.0)</h6>
+                                                                            <ul class="list-unstyled">
+                                                                                {% if team_score.quantum_tech_score < 4 %}
+                                                                                    <li class="mb-1">
+                                                                                        <i class="bi bi-exclamation-circle-fill text-warning me-2"></i>
+                                                                                        <strong>Quantum Tech Quality:</strong> {{ team_score.quantum_tech_score|floatformat:1 }}/5
+                                                                                    </li>
+                                                                                {% endif %}
+                                                                                {% if team_score.social_impact_score < 4 %}
+                                                                                    <li class="mb-1">
+                                                                                        <i class="bi bi-exclamation-circle-fill text-warning me-2"></i>
+                                                                                        <strong>Social Impact:</strong> {{ team_score.social_impact_score|floatformat:1 }}/5
+                                                                                    </li>
+                                                                                {% endif %}
+                                                                                {% if team_score.innovation_score < 4 %}
+                                                                                    <li class="mb-1">
+                                                                                        <i class="bi bi-exclamation-circle-fill text-warning me-2"></i>
+                                                                                        <strong>Innovation:</strong> {{ team_score.innovation_score|floatformat:1 }}/5
+                                                                                    </li>
+                                                                                {% endif %}
+                                                                                {% if team_score.presentation_score < 4 %}
+                                                                                    <li class="mb-1">
+                                                                                        <i class="bi bi-exclamation-circle-fill text-warning me-2"></i>
+                                                                                        <strong>Presentation:</strong> {{ team_score.presentation_score|floatformat:1 }}/5
+                                                                                    </li>
+                                                                                {% endif %}
+                                                                                {% if team_score.business_viability_score < 4 %}
+                                                                                    <li class="mb-1">
+                                                                                        <i class="bi bi-exclamation-circle-fill text-warning me-2"></i>
+                                                                                        <strong>Business Viability:</strong> {{ team_score.business_viability_score|floatformat:1 }}/5
+                                                                                    </li>
+                                                                                {% endif %}
+                                                                            </ul>
+                                                                            {% if team_score.quantum_tech_score >= 4 and team_score.social_impact_score >= 4 and team_score.innovation_score >= 4 and team_score.presentation_score >= 4 and team_score.business_viability_score >= 4 %}
+                                                                                <p class="text-muted small">All scores above 4.0! 🎉</p>
+                                                                            {% endif %}
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
                                             </div>
                                         </td>
                                     </tr>
@@ -433,530 +632,777 @@
     </div>
 </div>
 
-<!-- Team Details Modal -->
-<div class="modal fade" id="teamModal" tabindex="-1">
-    <div class="modal-dialog modal-xl">
-        <div class="modal-content">
-            <div class="modal-header bg-quantum-gradient text-white">
-                <h5 class="modal-title">
-                    <i class="bi bi-cpu me-2"></i>
-                    <span id="modalTeamName">Team Details</span>
-                </h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <div id="teamDetails" class="p-3">
-                    <div class="text-center">
-                        <div class="spinner-border text-primary" role="status">
-                            <span class="visually-hidden">Loading...</span>
-                        </div>
-                        <p class="mt-2">Loading team analytics...</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-{% endblock %}
-
-{% block extra_js %}
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
 <script>
-    // Chart configurations and data
-    const chartColors = {
-        quantum: '#6B46C1',
-        pink: '#EC4899',
-        cyan: '#06B6D4',
-        blue: '#3B82F6',
-        violet: '#8B5CF6'
-    };
+// Expandable Rows JavaScript
+function toggleTeamDetails(teamId) {
+    const detailsRow = document.getElementById(`details-${teamId}`);
+    const icon = document.getElementById(`icon-${teamId}`);
+    
+    if (detailsRow.style.display === 'none') {
+        // Show details
+        detailsRow.style.display = 'table-row';
+        icon.classList.remove('bi-chevron-right');
+        icon.classList.add('bi-chevron-down');
+        
+        // Create radar chart for this team
+        setTimeout(() => createTeamRadarChart(teamId), 100);
+        
+        // Smooth scroll to the expanded content
+        setTimeout(() => {
+            detailsRow.scrollIntoView({ 
+                behavior: 'smooth', 
+                block: 'nearest' 
+            });
+        }, 200);
+    } else {
+        // Hide details
+        detailsRow.style.display = 'none';
+        icon.classList.remove('bi-chevron-down');
+        icon.classList.add('bi-chevron-right');
+    }
+}
 
-    let scoreChart, criteriaChart, judgesChart, aggregatedChart, comparisonChart;
-    const teamsData = [
-        {% for team_score in teams_with_scores %}
-        {
-            name: "{{ team_score.team.name|escapejs }}",
-            quantum: {{ team_score.quantum_tech_score|default:0 }},
-            social: {{ team_score.social_impact_score|default:0 }},
-            innovation: {{ team_score.innovation_score|default:0 }},
-            presentation: {{ team_score.presentation_score|default:0 }},
-            business: {{ team_score.business_viability_score|default:0 }},
-            final: {{ team_score.final_weighted_score|default:0 }},
-            rank: {{ team_score.rank|default:0 }}
-        }{% if not forloop.last %},{% endif %}
-        {% endfor %}
-    ];
+function toggleAllDetails() {
+    const allDetailRows = document.querySelectorAll('.team-details-row');
+    const allIcons = document.querySelectorAll('.expand-icon');
+    const toggleBtn = document.getElementById('toggleText');
+    const toggleIcon = document.getElementById('toggleIcon');
+    
+    const isAnyExpanded = Array.from(allDetailRows).some(row => row.style.display !== 'none');
+    
+    if (isAnyExpanded) {
+        // Collapse all
+        allDetailRows.forEach(row => row.style.display = 'none');
+        allIcons.forEach(icon => {
+            icon.classList.remove('bi-chevron-down');
+            icon.classList.add('bi-chevron-right');
+        });
+        toggleBtn.textContent = 'Expand All';
+        toggleIcon.classList.remove('bi-arrows-collapse');
+        toggleIcon.classList.add('bi-arrows-expand');
+    } else {
+        // Expand all
+        allDetailRows.forEach(row => row.style.display = 'table-row');
+        allIcons.forEach(icon => {
+            icon.classList.remove('bi-chevron-right');
+            icon.classList.add('bi-chevron-down');
+        });
+        toggleBtn.textContent = 'Collapse All';
+        toggleIcon.classList.remove('bi-arrows-expand');
+        toggleIcon.classList.add('bi-arrows-collapse');
+        
+        // Create all radar charts
+        setTimeout(() => {
+            allDetailRows.forEach((row, index) => {
+                createTeamRadarChart(`team-${index}`);
+            });
+        }, 100);
+    }
+}
 
-    // Initialize all charts when page loads
-    document.addEventListener('DOMContentLoaded', function() {
-        initializeCharts();
-        createPodiumCharts();
-        updateAggregatedChart();
-        updateComparisonChart();
+function createTeamRadarChart(teamId) {
+    const teamIndex = teamId.split('-')[1];
+    const ctx = document.getElementById(`teamRadarChart-${teamIndex}`);
+    
+    if (!ctx || !teamsData || !teamsData[teamIndex]) {
+        console.warn('Radar chart canvas or data not found for:', teamId);
+        return;
+    }
+    
+    const teamData = teamsData[teamIndex];
+    
+    // Destroy existing chart if it exists
+    const existingChart = Chart.getChart(ctx);
+    if (existingChart) {
+        existingChart.destroy();
+    }
+    
+    new Chart(ctx, {
+        type: 'radar',
+        data: {
+            labels: criteriaLbl,
+            datasets: [{
+                label: teamData.team,
+                data: criteriaLbl.map(crit => teamData.scores[crit] || 0),
+                fill: true,
+                backgroundColor: 'rgba(107, 70, 193, 0.2)',
+                borderColor: 'rgba(107, 70, 193, 1)',
+                pointBackgroundColor: 'rgba(107, 70, 193, 1)',
+                pointBorderColor: '#fff',
+                pointHoverBackgroundColor: '#fff',
+                pointHoverBorderColor: 'rgba(107, 70, 193, 1)',
+                pointRadius: 4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                r: {
+                    beginAtZero: true,
+                    max: 5,
+                    ticks: {
+                        stepSize: 1,
+                        display: true
+                    },
+                    grid: {
+                        color: 'rgba(0,0,0,0.1)'
+                    },
+                    angleLines: {
+                        color: 'rgba(0,0,0,0.1)'
+                    }
+                }
+            }
+        }
     });
+}
 
-    function initializeCharts() {
-        // Score Distribution Chart
-        const scoreCtx = document.getElementById('scoreDistributionChart');
-        if (scoreCtx) {
-            scoreChart = new Chart(scoreCtx.getContext('2d'), {
-                type: 'bar',
-                data: {
-                    labels: teamsData.slice(0, 10).map(t => t.name),
-                    datasets: [{
-                        label: 'Final Score',
-                        data: teamsData.slice(0, 10).map(t => t.final),
-                        backgroundColor: createGradient(scoreCtx.getContext('2d'), chartColors.quantum, chartColors.pink),
-                        borderColor: chartColors.quantum,
-                        borderWidth: 2,
-                        borderRadius: 8,
-                        borderSkipped: false,
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { display: false },
-                        title: {
-                            display: true,
-                            text: 'Top 10 Teams - Final Scores',
-                            font: { size: 18, weight: 'bold' }
-                        }
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            max: 10,
-                            grid: { color: 'rgba(0,0,0,0.1)' }
-                        },
-                        x: {
-                            grid: { display: false }
-                        }
-                    },
-                    animation: {
-                        duration: 2000,
-                        easing: 'easeOutQuart'
-                    }
-                }
-            });
-        }
+function exportTeamReport(teamName) {
+    alert(`Exporting detailed report for ${teamName}...`);
+    // Implement actual export functionality here
+}
 
-        // Criteria Analysis Chart
-        const criteriaCtx = document.getElementById('criteriaChart');
-        if (criteriaCtx) {
-            criteriaChart = new Chart(criteriaCtx.getContext('2d'), {
-                type: 'doughnut',
-                data: {
-                    labels: ['Quantum Tech (40%)', 'Social Impact (25%)', 'Innovation (20%)', 'Presentation (10%)', 'Business (5%)'],
-                    datasets: [{
-                        data: [40, 25, 20, 10, 5],
-                        backgroundColor: [
-                            chartColors.quantum,
-                            chartColors.cyan,
-                            chartColors.blue,
-                            chartColors.violet,
-                            chartColors.pink
-                        ],
-                        borderWidth: 3,
-                        borderColor: '#fff'
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { position: 'bottom' }
-                    },
-                    animation: {
-                        animateRotate: true,
-                        duration: 2000
-                    }
-                }
-            });
-        }
-
-        // Judges Distribution Chart
-        const judgesCtx = document.getElementById('judgesChart');
-        if (judgesCtx) {
-            judgesChart = new Chart(judgesCtx.getContext('2d'), {
-                type: 'radar',
-                data: {
-                    labels: ['Quantum Physics', 'Computer Science', 'Innovation', 'Education', 'Climate Science'],
-                    datasets: [{
-                        label: 'Judge Expertise Distribution',
-                        data: [8, 5, 6, 7, 3],
-                        backgroundColor: 'rgba(107, 70, 193, 0.2)',
-                        borderColor: chartColors.quantum,
-                        borderWidth: 3,
-                        pointBackgroundColor: chartColors.pink,
-                        pointBorderColor: '#fff',
-                        pointBorderWidth: 2,
-                        pointRadius: 6
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        title: {
-                            display: true,
-                            text: 'Judge Expertise Areas',
-                            font: { size: 18, weight: 'bold' }
-                        }
-                    },
-                    scales: {
-                        r: {
-                            beginAtZero: true,
-                            max: 10,
-                            grid: { color: 'rgba(0,0,0,0.1)' }
-                        }
-                    }
-                }
-            });
-        }
-    }
-
-    function updateAggregatedChart() {
-        const criteria = document.getElementById('aggregatedCriteriaSelect')?.value || 'all';
-        const chartType = document.getElementById('aggregatedChartType')?.value || 'bar';
-        
-        if (aggregatedChart) aggregatedChart.destroy();
-
-        const ctx = document.getElementById('aggregatedChart');
-        if (!ctx) return;
-
-        let datasets = [];
-        let labels = teamsData.map(t => t.name);
-
-        if (criteria === 'all') {
-            datasets = [
-                {
-                    label: 'Quantum Tech',
-                    data: teamsData.map(t => t.quantum),
-                    backgroundColor: chartColors.quantum + '80',
-                    borderColor: chartColors.quantum,
-                    borderWidth: 2
-                },
-                {
-                    label: 'Social Impact',
-                    data: teamsData.map(t => t.social),
-                    backgroundColor: chartColors.cyan + '80',
-                    borderColor: chartColors.cyan,
-                    borderWidth: 2
-                },
-                {
-                    label: 'Innovation',
-                    data: teamsData.map(t => t.innovation),
-                    backgroundColor: chartColors.blue + '80',
-                    borderColor: chartColors.blue,
-                    borderWidth: 2
-                },
-                {
-                    label: 'Presentation',
-                    data: teamsData.map(t => t.presentation),
-                    backgroundColor: chartColors.violet + '80',
-                    borderColor: chartColors.violet,
-                    borderWidth: 2
-                },
-                {
-                    label: 'Business',
-                    data: teamsData.map(t => t.business),
-                    backgroundColor: chartColors.pink + '80',
-                    borderColor: chartColors.pink,
-                    borderWidth: 2
-                }
-            ];
-        } else {
-            const criteriaMap = {
-                quantum: { data: 'quantum', label: 'Quantum Tech Quality', color: chartColors.quantum },
-                social: { data: 'social', label: 'Social Impact', color: chartColors.cyan },
-                innovation: { data: 'innovation', label: 'Innovation', color: chartColors.blue },
-                presentation: { data: 'presentation', label: 'Presentation', color: chartColors.violet },
-                business: { data: 'business', label: 'Business Viability', color: chartColors.pink }
-            };
-            
-            const selected = criteriaMap[criteria];
-            datasets = [{
-                label: selected.label,
-                data: teamsData.map(t => t[selected.data]),
-                backgroundColor: selected.color + '80',
-                borderColor: selected.color,
-                borderWidth: 2,
-                borderRadius: chartType === 'bar' ? 8 : 0
-            }];
-        }
-
-        aggregatedChart = new Chart(ctx.getContext('2d'), {
-            type: chartType,
-            data: { labels, datasets },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: { position: 'top' },
-                    title: {
-                        display: true,
-                        text: criteria === 'all' ? 'All Criteria Comparison' : criteriaMap[criteria]?.label || 'Aggregated Scores'
-                    }
-                },
-                scales: chartType !== 'radar' ? {
-                    y: { beginAtZero: true, max: 10 }
-                } : {
-                    r: { beginAtZero: true, max: 10 }
-                }
-            }
-        });
-    }
-
-    function updateComparisonChart() {
-        const team1Index = parseInt(document.getElementById('comparisonTeam1')?.value);
-        const team2Index = parseInt(document.getElementById('comparisonTeam2')?.value);
-        const team3Index = parseInt(document.getElementById('comparisonTeam3')?.value);
-        
-        if (comparisonChart) comparisonChart.destroy();
-
-        const ctx = document.getElementById('comparisonChart');
-        if (!ctx || isNaN(team1Index) || isNaN(team2Index)) return;
-
-        const datasets = [];
-        const labels = ['Quantum Tech', 'Social Impact', 'Innovation', 'Presentation', 'Business'];
-
-        if (!isNaN(team1Index) && teamsData[team1Index]) {
-            const team1 = teamsData[team1Index];
-            datasets.push({
-                label: team1.name,
-                data: [team1.quantum, team1.social, team1.innovation, team1.presentation, team1.business],
-                backgroundColor: chartColors.quantum + '40',
-                borderColor: chartColors.quantum,
-                borderWidth: 3,
-                pointBackgroundColor: chartColors.quantum
-            });
-        }
-
-        if (!isNaN(team2Index) && teamsData[team2Index]) {
-            const team2 = teamsData[team2Index];
-            datasets.push({
-                label: team2.name,
-                data: [team2.quantum, team2.social, team2.innovation, team2.presentation, team2.business],
-                backgroundColor: chartColors.cyan + '40',
-                borderColor: chartColors.cyan,
-                borderWidth: 3,
-                pointBackgroundColor: chartColors.cyan
-            });
-        }
-
-        if (!isNaN(team3Index) && teamsData[team3Index]) {
-            const team3 = teamsData[team3Index];
-            datasets.push({
-                label: team3.name,
-                data: [team3.quantum, team3.social, team3.innovation, team3.presentation, team3.business],
-                backgroundColor: chartColors.pink + '40',
-                borderColor: chartColors.pink,
-                borderWidth: 3,
-                pointBackgroundColor: chartColors.pink
-            });
-        }
-
-        comparisonChart = new Chart(ctx.getContext('2d'), {
-            type: 'radar',
-            data: { labels, datasets },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: { position: 'top' },
-                    title: {
-                        display: true,
-                        text: 'Team Performance Comparison'
-                    }
-                },
-                scales: {
-                    r: {
-                        beginAtZero: true,
-                        max: 10,
-                        ticks: { stepSize: 2 }
-                    }
-                }
-            }
-        });
-    }
-
-    function createPodiumCharts() {
-        for (let i = 1; i <= 3; i++) {
-            const team = teamsData[i-1];
-            if (!team) continue;
-
-            const ctx = document.getElementById(`podiumChart${i}`);
-            if (!ctx) continue;
-
-            new Chart(ctx.getContext('2d'), {
-                type: 'doughnut',
-                data: {
-                    labels: ['Quantum', 'Social', 'Innovation', 'Present.', 'Business'],
-                    datasets: [{
-                        data: [team.quantum, team.social, team.innovation, team.presentation, team.business],
-                        backgroundColor: [
-                            chartColors.quantum,
-                            chartColors.cyan,
-                            chartColors.blue,
-                            chartColors.violet,
-                            chartColors.pink
-                        ],
-                        borderWidth: 2,
-                        borderColor: '#fff'
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { display: false }
-                    },
-                    cutout: '70%'
-                }
-            });
-        }
-    }
-
-    function updateRadarChart() {
-        const selector = document.getElementById('teamSelector');
-        if (!selector || teamsData.length === 0) return;
-        
-        const teamIndex = parseInt(selector.value) || 0;
-        const team = teamsData[teamIndex];
-        if (!team) return;
-
-        if (radarChart) radarChart.destroy();
-
-        const radarCtx = document.getElementById('radarChart');
-        if (radarCtx) {
-            radarChart = new Chart(radarCtx.getContext('2d'), {
-                type: 'radar',
-                data: {
-                    labels: ['Quantum Tech', 'Social Impact', 'Innovation', 'Presentation', 'Business'],
-                    datasets: [{
-                        label: team.name,
-                        data: [team.quantum, team.social, team.innovation, team.presentation, team.business],
-                        backgroundColor: 'rgba(107, 70, 193, 0.2)',
-                        borderColor: chartColors.quantum,
-                        borderWidth: 3,
-                        pointBackgroundColor: chartColors.pink,
-                        pointBorderColor: '#fff',
-                        pointBorderWidth: 2,
-                        pointRadius: 6
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        r: {
-                            beginAtZero: true,
-                            max: 10,
-                            ticks: { stepSize: 2 }
-                        }
-                    },
-                    plugins: {
-                        legend: { display: false }
-                    }
-                }
-            });
-        }
-    }
-
-    function showChart(type) {
-        document.querySelectorAll('.viz-tab').forEach(tab => tab.classList.remove('active'));
-        event.target.classList.add('active');
-
-        document.querySelectorAll('.chart-container').forEach(container => {
-            container.style.display = 'none';
-        });
-        const targetChart = document.getElementById(`chart-${type}`);
-        if (targetChart) {
-            targetChart.style.display = 'block';
-        }
-    }
-
-    function createGradient(ctx, color1, color2) {
-        const gradient = ctx.createLinearGradient(0, 0, 0, 400);
-        gradient.addColorStop(0, color1);
-        gradient.addColorStop(1, color2);
-        return gradient;
-    }
-
-    function showTeamDetails(teamId, teamName) {
-        document.getElementById('modalTeamName').textContent = teamName;
-        
-        const detailsHtml = `
-            <div class="row">
-                <div class="col-md-6">
-                    <h6 class="fw-bold">Team Information</h6>
-                    <p><strong>Team ID:</strong> ${teamId}</p>
-                    <p><strong>Name:</strong> ${teamName}</p>
-                    <p class="text-muted">Detailed scoring breakdown and judge feedback would be displayed here in a production system.</p>
-                </div>
-                <div class="col-md-6">
-                    <h6 class="fw-bold">Judge Feedback</h6>
-                    <div class="alert alert-info">
-                        <i class="bi bi-info-circle me-2"></i>
-                        Individual judge comments and detailed scoring analysis would appear here.
-                    </div>
-                </div>
-            </div>
-        `;
-        
-        document.getElementById('teamDetails').innerHTML = detailsHtml;
-        
-        const modal = new bootstrap.Modal(document.getElementById('teamModal'));
-        modal.show();
-    }
-
-    function refreshDashboard() {
-        location.reload();
-    }
-
-    function exportTableCSV() {
-        const table = document.getElementById('rankingsTable');
-        if (!table) return;
-        
-        const rows = table.querySelectorAll('tr');
-        let csv = [];
-
-        rows.forEach(row => {
-            const cols = row.querySelectorAll('td, th');
-            const rowData = Array.from(cols).map(col => 
-                col.textContent.trim().replace(/,/g, ';')
-            );
-            csv.push(rowData.join(','));
-        });
-
-        const csvContent = csv.join('\n');
-        const blob = new Blob([csvContent], { type: 'text/csv' });
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = 'quantathon_results.csv';
-        a.click();
-        window.URL.revokeObjectURL(url);
-    }
-
-    // Auto-refresh every 60 seconds
-    setInterval(refreshDashboard, 60000);
-
-    // Add hover effects to table rows
-    document.querySelectorAll('.team-row').forEach(row => {
-        row.style.cursor = 'pointer';
+// Add hover effects for team rows
+document.addEventListener('DOMContentLoaded', function() {
+    const teamRows = document.querySelectorAll('.team-row');
+    teamRows.forEach(row => {
         row.addEventListener('mouseenter', function() {
-            this.style.backgroundColor = 'rgba(107, 70, 193, 0.05)';
+            this.style.backgroundColor = 'rgba(107, 70, 193, 0.1)';
         });
         row.addEventListener('mouseleave', function() {
             this.style.backgroundColor = '';
         });
     });
+});
 </script>
 
 <style>
+/* Expandable Rows Styles */
+.team-row {
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.team-row:hover {
+    background-color: rgba(107, 70, 193, 0.1) !important;
+}
+
+.expand-icon {
+    transition: transform 0.2s ease;
+    color: var(--quantum-purple);
+    font-weight: bold;
+}
+
+.team-details-row {
+    border-top: none !important;
+}
+
+.team-details-content {
+    animation: expandIn 0.3s ease-out;
+}
+
+@keyframes expandIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Enhanced progress bars for details */
+.team-details-content .progress-bar {
+    transition: width 0.6s ease;
+}
+
+/* Print styles */
+@media print {
+    .team-details-row {
+        display: table-row !important;
+    }
+    .expand-icon {
+        display: none !important;
+    }
+    .btn {
+        display: none !important;
+    }
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+    .team-details-content .container-fluid {
+        padding: 1rem;
+    }
+    
+    .team-details-content .card-body {
+        padding: 1rem;
+    }
+    
+    .team-details-content .row {
+        margin-bottom: 1rem;
+    }
+}
+</style>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-chart-box-and-violin@3/dist/chartjs-chart-box-and-violin.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-chart-matrix@1/dist/chartjs-chart-matrix.min.js"></script>
+
+<script>
+/* ------------- 0. Raw data from Django -------------- */
+const teamsData = {{ teams_json|safe }};
+const criteriaLbl = {{ criteria_labels|safe }};
+const rawScores = {{ all_scores_json|safe }};
+
+/* ------------- 1. Helper palette and constants -------------------- */
+const palette = ['#6B46C1','#06B6D4','#3B82F6','#8B5CF6','#EC4899'];
+
+// FIXED: Criteria weights with CORRECT names
+const criteriaWeights = {
+    "Quantum Tech Quality": 40,    // ✅ Fixed: was "Quantum Tech"
+    "Social Impact": 25,           // ✅ Correct
+    "Innovation": 20,              // ✅ Correct  
+    "Presentation": 10,            // ✅ Correct
+    "Business Viability": 5        // ✅ Fixed: was "Business"
+};
+
+/* ------------- 2. Final Scores (bar) ---------------- */
+new Chart(document.getElementById('overviewChart'), {
+    type: 'bar',
+    data: {
+        labels: teamsData.map(t => t.team),
+        datasets: [{
+            label: 'Final Score',
+            data: teamsData.map(t => t.final_weighted_score),
+            backgroundColor: palette[0]
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            legend: { display: false }
+        },
+        scales: {
+            y: { beginAtZero: true, max: 5 }
+        }
+    }
+});
+
+/* ------------- 3. Per-Criterion grouped bar --------- */
+new Chart(document.getElementById('criterionChart'), {
+    type: 'bar',
+    data: {
+        labels: criteriaLbl,
+        datasets: teamsData.map((t, i) => ({
+            label: t.team,
+            data: criteriaLbl.map(c => t.scores[c] || 0),
+            backgroundColor: palette[i % palette.length]
+        }))
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            title: { display: true, text: 'Per-Criterion Scores' }
+        },
+        scales: {
+            y: { beginAtZero: true, max: 5 }  // Fixed to 5-point scale
+        }
+    }
+});
+
+/* ------------- 4. Radar comparison (top 3) ---------- */
+const top3 = teamsData.slice(0, 3);
+new Chart(document.getElementById('comparisonChart'), {
+    type: 'radar',
+    data: {
+        labels: criteriaLbl,
+        datasets: top3.map((t, i) => ({
+            label: t.team,
+            data: criteriaLbl.map(c => t.scores[c] || 0),
+            fill: true,
+            backgroundColor: palette[i] + '55',
+            borderColor: palette[i]
+        }))
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            title: { display: true, text: 'Top 3 Comparison' }
+        },
+        scales: {
+            r: { beginAtZero: true, max: 5 }  // Fixed to 5-point scale
+        }
+    }
+});
+
+/* ------------- 5. Team breakdown (doughnut) --------- */
+const sel = document.getElementById('teamSelect');
+teamsData.forEach(t => {
+    const o = document.createElement('option');
+    o.value = t.team;
+    o.text = t.team;
+    sel.appendChild(o);
+});
+
+let breakdownChart;
+function drawBreak(teamName) {
+    const t = teamsData.find(x => x.team === teamName);
+    if (!t) return;
+    if (breakdownChart) breakdownChart.destroy();
+    breakdownChart = new Chart(document.getElementById('teamBreakdownChart'), {
+        type: 'doughnut',
+        data: {
+            labels: criteriaLbl,
+            datasets: [{
+                data: criteriaLbl.map(c => t.scores[c] || 0),
+                backgroundColor: palette
+            }]
+        },
+        options: {
+            plugins: {
+                title: { display: true, text: `${teamName} Breakdown` }
+            }
+        }
+    });
+}
+
+sel.addEventListener('change', e => drawBreak(e.target.value));
+if (sel.options.length > 0) drawBreak(sel.options[0].value);
+
+/* ------------- 6. Score Spread Histogram ----- */
+try {
+    const spreadCtx = document.getElementById('spreadChart');
+    
+    if (rawScores && rawScores.length > 0) {
+        const histogramBuckets = [1, 2, 3, 4, 5];  // Fixed to 5-point scale
+        const histDS = criteriaLbl.map((crit, i) => {
+            const arr = histogramBuckets.map(b =>
+                rawScores.filter(r => r.criteria__name === crit && Math.floor(r.score) === b).length
+            );
+            return {
+                label: crit,
+                data: arr,
+                backgroundColor: palette[i % palette.length]
+            };
+        });
+
+        new Chart(spreadCtx, {
+            type: 'bar',
+            data: { labels: histogramBuckets.map(b => b.toString()), datasets: histDS },
+            options: {
+                responsive: true,
+                plugins: { title: { display: true, text: 'Score Distribution by Criteria' } },
+                scales: { y: { beginAtZero: true } }
+            }
+        });
+    } else {
+        new Chart(spreadCtx, {
+            type: 'bar',
+            data: {
+                labels: criteriaLbl,
+                datasets: [{
+                    label: 'Average Score',
+                    data: criteriaLbl.map(crit => {
+                        const scores = teamsData.map(t => t.scores[crit] || 0);
+                        return scores.reduce((a, b) => a + b, 0) / scores.length;
+                    }),
+                    backgroundColor: palette[0]
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: { title: { display: true, text: 'Average Scores by Criteria' } },
+                scales: { y: { beginAtZero: true, max: 5 } }  // Fixed to 5-point scale
+            }
+        });
+    }
+} catch (error) {
+    console.error('Spread chart error:', error);
+}
+
+/* ------------- 7. Tab switch logic ------------------ */
+function showChart(kind) {
+    document.querySelectorAll('.chart-container').forEach(c => c.style.display = 'none');
+    const shown = document.getElementById('chart-' + kind);
+    if (shown) {
+        shown.style.display = 'block';
+        document.querySelectorAll('.viz-tab').forEach(b => b.classList.remove('active'));
+        const activeTab = document.getElementById('tab-' + kind);
+        if (activeTab) activeTab.classList.add('active');
+        shown.querySelectorAll('canvas').forEach(cv => {
+            const chart = Chart.getChart(cv);
+            if (chart) chart.resize();
+        });
+    }
+}
+
+/* ------------- 8. Utility functions ----- */
+function refreshDashboard() {
+    location.reload();
+}
+
+function exportTableCSV() {
+    const table = document.getElementById('rankingsTable');
+    if (!table) return;
+    
+    let csv = [];
+    const rows = table.querySelectorAll('tr');
+    
+    for (let i = 0; i < rows.length; i++) {
+        const row = [];
+        const cols = rows[i].querySelectorAll('td, th');
+        
+        for (let j = 0; j < cols.length; j++) {
+            let cellText = cols[j].textContent.trim().replace(/\s+/g, ' ');
+            row.push('"' + cellText + '"');
+        }
+        csv.push(row.join(','));
+    }
+    
+    const csvContent = csv.join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.setAttribute('hidden', '');
+    a.setAttribute('href', url);
+    a.setAttribute('download', 'rankings.csv');
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+}
+
+/* ------------- 9. FIXED MODAL FUNCTIONS ------------- */
+
+function showTeamDetails(teamId, teamName) {
+    console.log('Opening modal for:', teamName); // Debug log
+    
+    // Set modal title
+    const modalTitle = document.getElementById('modalTeamName');
+    if (modalTitle) {
+        modalTitle.textContent = teamName;
+    }
+    
+    // Find team data immediately
+    const teamData = teamsData.find(t => t.team === teamName);
+    console.log('Found team data:', teamData); // Debug log
+    
+    const detailsDiv = document.getElementById('teamDetails');
+    
+    if (teamData && detailsDiv) {
+        generateTeamDetails(teamData, detailsDiv);
+    } else {
+        detailsDiv.innerHTML = `
+            <div class="text-center py-4">
+                <div class="text-danger mb-3" style="font-size: 3rem;">
+                    <i class="bi bi-exclamation-triangle"></i>
+                </div>
+                <h5>Team data not found</h5>
+                <p class="text-muted">Unable to load details for ${teamName}</p>
+            </div>
+        `;
+    }
+    
+    // Show modal
+    const modal = new bootstrap.Modal(document.getElementById('teamModal'));
+    modal.show();
+}
+
+function generateTeamDetails(teamData, container) {
+    console.log('Generating details for:', teamData.team); // Debug log
+    
+    const content = `
+        <div class="row mb-4">
+            <div class="col-md-8">
+                <div class="card score-breakdown-card h-100">
+                    <div class="card-header bg-light">
+                        <h6 class="mb-0">
+                            <i class="bi bi-graph-up me-2"></i>Score Breakdown
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            ${criteriaLbl.map(crit => {
+                                const score = teamData.scores[crit] || 0;
+                                const weight = criteriaWeights[crit] || 0;
+                                const percentage = Math.min((score / 5) * 100, 100);  // Fixed to 5-point scale
+                                
+                                // Color coding based on score
+                                let colorClass = 'bg-danger';
+                                if (score >= 4) colorClass = 'bg-success';
+                                else if (score >= 3) colorClass = 'bg-warning';
+                                else if (score >= 2) colorClass = 'bg-info';
+                                
+                                return `
+                                    <div class="col-md-6 mb-3">
+                                        <div class="d-flex justify-content-between align-items-center mb-2">
+                                            <span class="fw-medium">${crit}</span>
+                                            <div class="text-end">
+                                                <span class="fw-bold" style="font-size: 1.2rem;">${score.toFixed(1)}</span>
+                                                <span class="text-muted small">(${weight}%)</span>
+                                            </div>
+                                        </div>
+                                        <div class="progress" style="height: 8px;">
+                                            <div class="progress-bar ${colorClass}" 
+                                                 style="width: ${percentage}%" 
+                                                 role="progressbar" 
+                                                 aria-valuenow="${score}" 
+                                                 aria-valuemin="0" 
+                                                 aria-valuemax="5">
+                                            </div>
+                                        </div>
+                                        <div class="small text-muted mt-1">${score.toFixed(1)}/5.0</div>
+                                    </div>
+                                `;
+                            }).join('')}
+                        </div>
+                        
+                        <hr class="my-4">
+                        
+                        <div class="text-center">
+                            <h6 class="text-muted mb-2">Weighted Final Score</h6>
+                            <div class="final-score-display">
+                                ${teamData.final_weighted_score.toFixed(2)}
+                            </div>
+                            <div class="text-muted">
+                                <i class="bi bi-trophy-fill me-1" style="color: gold;"></i>
+                                Rank #${teamData.rank || 'N/A'}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card score-breakdown-card h-100">
+                    <div class="card-header bg-light">
+                        <h6 class="mb-0">
+                            <i class="bi bi-people me-2"></i>Team Information
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <strong>Team Members:</strong>
+                            <p class="mb-2 small">${teamData.members || 'Not specified'}</p>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <strong>Project Description:</strong>
+                            <p class="mb-2 small">${teamData.description || 'No description available'}</p>
+                        </div>
+                        
+                        ${teamData.presentation_link ? `
+                            <div class="mb-3">
+                                <a href="${teamData.presentation_link}" target="_blank" class="btn btn-outline-primary w-100">
+                                    <i class="bi bi-play-circle me-2"></i>View Presentation
+                                </a>
+                            </div>
+                        ` : ''}
+                        
+                        <div class="mb-3">
+                            <strong>Performance Summary:</strong>
+                            <div class="row text-center mt-2">
+                                <div class="col-6">
+                                    <div class="border rounded p-2">
+                                        <div class="fw-bold text-primary">${Math.max(...criteriaLbl.map(c => teamData.scores[c] || 0)).toFixed(1)}</div>
+                                        <small class="text-muted">Highest</small>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="border rounded p-2">
+                                        <div class="fw-bold text-secondary">${Math.min(...criteriaLbl.map(c => teamData.scores[c] || 0)).toFixed(1)}</div>
+                                        <small class="text-muted">Lowest</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="text-center">
+                            <canvas id="teamRadarChart" style="max-height: 200px;"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="col-12">
+                <div class="card score-breakdown-card">
+                    <div class="card-header bg-light">
+                        <h6 class="mb-0">
+                            <i class="bi bi-bar-chart me-2"></i>Detailed Analysis
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6>Strengths (≥ 4.0)</h6>
+                                <ul class="list-unstyled">
+                                    ${criteriaLbl
+                                        .filter(crit => (teamData.scores[crit] || 0) >= 4)
+                                        .map(crit => `
+                                            <li class="mb-1">
+                                                <i class="bi bi-check-circle-fill text-success me-2"></i>
+                                                <strong>${crit}:</strong> ${(teamData.scores[crit] || 0).toFixed(1)}/5
+                                            </li>
+                                        `).join('')}
+                                </ul>
+                                ${criteriaLbl.filter(crit => (teamData.scores[crit] || 0) >= 4).length === 0 ? 
+                                    '<p class="text-muted small">No scores above 4.0</p>' : ''}
+                            </div>
+                            <div class="col-md-6">
+                                <h6>Areas for Improvement (< 4.0)</h6>
+                                <ul class="list-unstyled">
+                                    ${criteriaLbl
+                                        .filter(crit => (teamData.scores[crit] || 0) < 4)
+                                        .map(crit => `
+                                            <li class="mb-1">
+                                                <i class="bi bi-exclamation-circle-fill text-warning me-2"></i>
+                                                <strong>${crit}:</strong> ${(teamData.scores[crit] || 0).toFixed(1)}/5
+                                            </li>
+                                        `).join('')}
+                                </ul>
+                                ${criteriaLbl.filter(crit => (teamData.scores[crit] || 0) < 4).length === 0 ? 
+                                    '<p class="text-muted small">All scores above 4.0!</p>' : ''}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    container.innerHTML = content;
+    
+    // Create radar chart immediately
+    createTeamRadarChart(teamData);
+}
+
+// FIXED: Single radar chart function
+function createTeamRadarChart(teamData) {
+    const ctx = document.getElementById('teamRadarChart');
+    if (!ctx) {
+        console.error('Radar chart canvas not found');
+        return;
+    }
+    
+    // Destroy existing chart if it exists
+    const existingChart = Chart.getChart(ctx);
+    if (existingChart) {
+        existingChart.destroy();
+    }
+    
+    console.log('Creating radar chart for:', teamData.team); // Debug log
+    
+    new Chart(ctx, {
+        type: 'radar',
+        data: {
+            labels: criteriaLbl,
+            datasets: [{
+                label: teamData.team,
+                data: criteriaLbl.map(crit => teamData.scores[crit] || 0),
+                fill: true,
+                backgroundColor: 'rgba(107, 70, 193, 0.2)',
+                borderColor: 'rgba(107, 70, 193, 1)',
+                pointBackgroundColor: 'rgba(107, 70, 193, 1)',
+                pointBorderColor: '#fff',
+                pointHoverBackgroundColor: '#fff',
+                pointHoverBorderColor: 'rgba(107, 70, 193, 1)',
+                pointRadius: 4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                r: {
+                    beginAtZero: true,
+                    max: 5,  // Fixed to 5-point scale
+                    ticks: {
+                        stepSize: 1,
+                        display: false
+                    },
+                    grid: {
+                        color: 'rgba(0,0,0,0.1)'
+                    },
+                    angleLines: {
+                        color: 'rgba(0,0,0,0.1)'
+                    }
+                }
+            }
+        }
+    });
+}
+
+function exportTeamReport() {
+    const teamName = document.getElementById('modalTeamName').textContent;
+    alert(`Export functionality for ${teamName} - implement as needed`);
+}
+
+function updateComparisonChart() {
+    console.log('Comparison chart update requested');
+}
+
+// Debug: Test if modal works
+console.log('Modal functions loaded. Available teams:', teamsData.map(t => t.team));
+
+// TEST FUNCTIONS - Add at the very end of your script section
+function testModal() {
+    console.log('Test modal function called');
+    
+    // Test 1: Check if modal element exists
+    const modalElement = document.getElementById('teamModal');
+    console.log('Modal element found:', modalElement ? 'YES' : 'NO');
+    
+    // Test 2: Check if Bootstrap is loaded
+    console.log('Bootstrap loaded:', typeof bootstrap !== 'undefined' ? 'YES' : 'NO');
+    
+    if (modalElement && typeof bootstrap !== 'undefined') {
+        try {
+            const modal = new bootstrap.Modal(modalElement);
+            console.log('Modal object created successfully');
+            modal.show();
+            console.log('Modal show() called');
+        } catch (error) {
+            console.error('Error creating/showing modal:', error);
+        }
+    } else {
+        console.error('Missing modal element or Bootstrap');
+    }
+}
+
+function testTeamFunction() {
+    console.log('Testing team function...');
+    if (typeof teamsData !== 'undefined' && teamsData.length > 0) {
+        const firstTeam = teamsData[0];
+        console.log('First team:', firstTeam);
+        alert(`Found team: ${firstTeam.team}`);
+        showTeamDetails(1, firstTeam.team);
+    } else {
+        alert('No teams data found!');
+    }
+}
+</script>
+
+<style>
+    .chart-container canvas {
+        min-height: 380px !important;
+    }
+
     .score-cell {
         min-width: 80px;
     }
@@ -967,15 +1413,100 @@
     
     .team-row {
         transition: all 0.2s ease;
+        cursor: pointer;
+    }
+    
+    .team-row:hover {
+        background-color: rgba(107, 70, 193, 0.1) !important;
     }
     
     .chart-container canvas {
         max-height: 400px;
     }
+
+    /* Enhanced Modal Styles */
+    .score-breakdown-card {
+        border: none;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        transition: transform 0.2s ease;
+    }
+
+    .score-breakdown-card:hover {
+        transform: translateY(-2px);
+    }
+
+    .criteria-score {
+        font-size: 1.5rem;
+        font-weight: bold;
+    }
+
+    .criteria-weight {
+        font-size: 0.9rem;
+        opacity: 0.7;
+    }
+
+/* Ensure modal appears above everything */
+.modal {
+    z-index: 1055 !important;
+}
+
+.modal-backdrop {
+    z-index: 1050 !important;
+    opacity: 0.5 !important;
+}
+
+/* Ensure modal content is fully visible */
+.modal-dialog {
+    z-index: 1056 !important;
+}
+
+/* Remove any conflicting styles that might fade the modal */
+.modal.show .modal-dialog {
+    opacity: 1 !important;
+    transform: none !important;
+}
+
+/* Ensure modal content loads without fade delays */
+.modal-content {
+    opacity: 1 !important;
+    transition: none !important;
+}
+
+    .final-score-display {
+        font-size: 3rem;
+        font-weight: bold;
+        background: linear-gradient(135deg, var(--quantum-purple) 0%, var(--quantum-blue) 100%);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .judge-feedback {
+        background: #f8f9fa;
+        border-left: 4px solid var(--quantum-purple);
+        padding: 1rem;
+        margin: 0.5rem 0;
+    }
+
+    .performance-indicator {
+        height: 8px;
+        border-radius: 4px;
+        overflow: hidden;
+        background: #e9ecef;
+    }
+
+    .performance-bar {
+        height: 100%;
+        transition: width 0.3s ease;
+    }
     
     @media print {
-        .btn, .viz-tabs, .modal { display: none !important; }
-        .card { border: 1px solid #000 !important; }
+        .btn, .viz-tabs, .modal { 
+            display: none !important; 
+        }
+        .card { 
+            border: 1px solid #000 !important; 
+        }
     }
 </style>
 {% endblock %}
