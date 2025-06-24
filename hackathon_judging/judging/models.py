@@ -3,6 +3,7 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.core.validators import MinValueValidator, MaxValueValidator
 import uuid
+from django.utils import timezone
 
 class JudgeExpertise(models.Model):
     """Different areas of expertise for judges"""
@@ -134,3 +135,105 @@ class TeamFinalScore(models.Model):
     
     def __str__(self):
         return f"{self.team.name} - Final Score: {self.final_weighted_score}"
+    
+
+
+class PublicJudgment(models.Model):
+    """
+    Model for storing public votes from community members
+    """
+    team = models.ForeignKey('Team', on_delete=models.CASCADE)
+    
+    # Scoring criteria (1-5 scale, same as judge criteria)
+    quantum_tech_quality = models.IntegerField(
+        validators=[MinValueValidator(1), MaxValueValidator(5)],
+        help_text="Technical implementation and quantum concepts (40% weight)"
+    )
+    social_impact = models.IntegerField(
+        validators=[MinValueValidator(1), MaxValueValidator(5)],
+        help_text="Potential to benefit society (25% weight)"
+    )
+    innovation = models.IntegerField(
+        validators=[MinValueValidator(1), MaxValueValidator(5)],
+        help_text="Creativity and novelty of approach (20% weight)"
+    )
+    presentation = models.IntegerField(
+        validators=[MinValueValidator(1), MaxValueValidator(5)],
+        help_text="How well the idea is communicated (10% weight)"
+    )
+    business_viability = models.IntegerField(
+        validators=[MinValueValidator(1), MaxValueValidator(5)],
+        help_text="Potential for real-world implementation (5% weight)"
+    )
+    
+    # Optional comments
+    comments = models.TextField(blank=True, null=True, help_text="Overall feedback")
+    
+    # Individual criteria comments (optional)
+    comment_quantum_tech = models.TextField(blank=True, null=True)
+    comment_social_impact = models.TextField(blank=True, null=True)
+    comment_innovation = models.TextField(blank=True, null=True)
+    comment_presentation = models.TextField(blank=True, null=True)
+    comment_business_viability = models.TextField(blank=True, null=True)
+    
+    # Tracking fields
+    voter_ip = models.GenericIPAddressField(help_text="IP address of the voter")
+    user_agent = models.TextField(blank=True, null=True, help_text="Browser user agent")
+    created_at = models.DateTimeField(default=timezone.now)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    # Optional: If you want to track registered users vs anonymous
+    voter_email = models.EmailField(blank=True, null=True, help_text="Optional email for verification")
+    voter_name = models.CharField(max_length=100, blank=True, null=True, help_text="Optional name")
+    
+    class Meta:
+        # Prevent duplicate votes from same IP for same team
+        unique_together = ['team', 'voter_ip']
+        ordering = ['-created_at']
+        verbose_name = "Public Judgment"
+        verbose_name_plural = "Public Judgments"
+    
+    def __str__(self):
+        return f"Public vote for {self.team.name} from {self.voter_ip}"
+    
+    @property
+    def weighted_score(self):
+        """Calculate weighted score using the same weights as judge criteria"""
+        return (
+            self.quantum_tech_quality * 0.40 +
+            self.social_impact * 0.25 +
+            self.innovation * 0.20 +
+            self.presentation * 0.10 +
+            self.business_viability * 0.05
+        )
+    
+    @property
+    def average_score(self):
+        """Simple average of all criteria scores"""
+        return (
+            self.quantum_tech_quality +
+            self.social_impact +
+            self.innovation +
+            self.presentation +
+            self.business_viability
+        ) / 5
+    
+    def get_criteria_scores(self):
+        """Return all criteria scores as a dictionary"""
+        return {
+            'quantum_tech_quality': self.quantum_tech_quality,
+            'social_impact': self.social_impact,
+            'innovation': self.innovation,
+            'presentation': self.presentation,
+            'business_viability': self.business_viability,
+        }
+    
+    def get_criteria_comments(self):
+        """Return all criteria comments as a dictionary"""
+        return {
+            'quantum_tech': self.comment_quantum_tech,
+            'social_impact': self.comment_social_impact,
+            'innovation': self.comment_innovation,
+            'presentation': self.comment_presentation,
+            'business_viability': self.comment_business_viability,
+        }

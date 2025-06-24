@@ -10,16 +10,7 @@ class JudgeExpertiseAdmin(admin.ModelAdmin):
     list_display = ['name', 'description']
     search_fields = ['name']
 
-# @admin.register(JudgingCriteria)
-# class JudgingCriteriaAdmin(admin.ModelAdmin):
-#     list_display = ['name', 'weight', 'get_expertise_areas']
-#     list_filter = ['expertise_areas']
-#     search_fields = ['name']
-#     filter_horizontal = ['expertise_areas']
-    
-#     def get_expertise_areas(self, obj):
-#         return ", ".join([area.name for area in obj.expertise_areas.all()])
-#     get_expertise_areas.short_description = 'Expertise Areas'
+
 
 @admin.register(Judge)
 class JudgeAdmin(admin.ModelAdmin):
@@ -219,6 +210,69 @@ class Command(BaseCommand):
         
         self.stdout.write(self.style.SUCCESS('Successfully set up judging criteria and expertise areas'))
 
+class PublicJudgmentAdmin(admin.ModelAdmin):
+    list_display = [
+        'team', 
+        'voter_ip', 
+        'quantum_tech_quality',
+        'social_impact',
+        'innovation', 
+        'presentation',
+        'business_viability',
+        'weighted_score_display',
+        'created_at'
+    ]
+    list_filter = [
+        'created_at',
+        'team',
+        'quantum_tech_quality',
+        'social_impact',
+        'innovation'
+    ]
+    search_fields = ['team__name', 'voter_ip', 'comments']
+    readonly_fields = ['created_at', 'updated_at', 'weighted_score_display', 'average_score_display']
+    ordering = ['-created_at']
+    
+    fieldsets = (
+        ('Team & Voter Info', {
+            'fields': ('team', 'voter_ip', 'voter_email', 'voter_name', 'user_agent')
+        }),
+        ('Scores', {
+            'fields': (
+                'quantum_tech_quality',
+                'social_impact', 
+                'innovation',
+                'presentation',
+                'business_viability'
+            )
+        }),
+        ('Comments', {
+            'fields': (
+                'comments',
+                'comment_quantum_tech',
+                'comment_social_impact',
+                'comment_innovation',
+                'comment_presentation',
+                'comment_business_viability'
+            ),
+            'classes': ('collapse',)
+        }),
+        ('Metadata', {
+            'fields': ('created_at', 'updated_at', 'weighted_score_display', 'average_score_display'),
+            'classes': ('collapse',)
+        })
+    )
+    
+    def weighted_score_display(self, obj):
+        return f"{obj.weighted_score:.2f}"
+    weighted_score_display.short_description = "Weighted Score"
+    
+    def average_score_display(self, obj):
+        return f"{obj.average_score:.2f}"
+    average_score_display.short_description = "Average Score"
+
+# Register the admin
+admin.site.register(PublicJudgment, PublicJudgmentAdmin)
 # At the end of admin.py, keep only this:
 admin.site.site_header = "Hackathon Judging System"
 admin.site.site_title = "Judging Admin"

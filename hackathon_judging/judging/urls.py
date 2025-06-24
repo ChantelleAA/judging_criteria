@@ -46,4 +46,11 @@ urlpatterns = [
              success_url='/dashboard/'
          ), 
          name='password_change'),
+
+    # Public voting results
+    path('public-results/', views.public_voting_results, name='public_voting_results'),
+    
+    # Admin public voting results
+    path('admin/public-results/', views.admin_public_voting_results, name='admin_public_voting_results'),
+    
 ]

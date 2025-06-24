@@ -4,7 +4,6 @@ from django.contrib.auth import login
 from django.contrib.auth.models import User
 from django.contrib import messages
 from django.db import transaction
-from django.db.models import Avg
 from django.http import JsonResponse
 from .models import *
 from .forms import *
@@ -17,6 +16,9 @@ import json
 from django.core.serializers.json import DjangoJSONEncoder
 import uuid
 from django.http import HttpResponse
+from django.db.models import Avg, Count, Sum, Q
+from django.shortcuts import render
+from django.contrib.admin.views.decorators import staff_member_required
 
 def judge_registration(request):
     """Register new judges"""
@@ -656,100 +658,460 @@ def judge_team_anonymous(request, judge_token, team_id):
     }
     return render(request, 'judging/judge_team.html', context)
 
-def public_judge_access(request):
-    """Create anonymous public judge access"""
-    # Create a temporary public judge session
-    public_judge_data = {
-        'judge_type': 'public',
-        'name': 'Public Judge',
-        'session_id': request.session.session_key or request.session.create()
-    }
-    
-    # Store in session
-    request.session['public_judge'] = public_judge_data
-    
-    # Get all teams for public judging
-    teams = Team.objects.all()
-    
-    # Check if this session has judged teams (store in session)
-    judged_teams = request.session.get('judged_teams', [])
-    
-    context = {
-        'teams': teams,
-        'judged_teams': judged_teams,
-        'total_teams': teams.count(),
-        'completed_judgments': len(judged_teams),
-        'remaining_teams': teams.count() - len(judged_teams),
-        'is_public': True,
-        'judge_type': 'public',
-    }
-    return render(request, 'judging/public_judge_access.html', context)
 
-def public_judge_team(request, team_id):
-    """Public team judging"""
-    team = get_object_or_404(Team, id=team_id)
+def public_voting_results(request):
+    """
+    Display public voting results - accessible to everyone
+    """
+    # Get all teams with public judgments
+    teams_with_public_votes = Team.objects.filter(
+        publicjudgment__isnull=False
+    ).distinct().annotate(
+        # Count public votes
+        public_vote_count=Count('publicjudgment'),
+        
+        # Average scores for each criteria
+        avg_quantum_tech=Avg('publicjudgment__quantum_tech_quality'),
+        avg_social_impact=Avg('publicjudgment__social_impact'), 
+        avg_innovation=Avg('publicjudgment__innovation'),
+        avg_presentation=Avg('publicjudgment__presentation'),
+        avg_business_viability=Avg('publicjudgment__business_viability'),
+        
+        # Overall weighted average (same weights as judge criteria)
+        # Quantum Tech: 40%, Social Impact: 25%, Innovation: 20%, Presentation: 10%, Business: 5%
+    ).order_by('-public_vote_count')
     
-    # Check if already judged (session-based)
-    judged_teams = request.session.get('judged_teams', [])
-    if team_id in judged_teams:
-        messages.warning(request, f'You have already judged {team.name}.')
-        return redirect('public_judge_access')
-
-    # All criteria for public judges
-    allowed_criteria = JudgingCriteria.objects.all()
-
-    if request.method == 'POST':
-        form = PublicTeamScoreForm(request.POST, team=team, allowed_criteria=allowed_criteria)
-        if form.is_valid():
-            # Create a pseudo-judge for public submissions
-            public_judge, created = Judge.objects.get_or_create(
-                user=None,  # No user for public
-                defaults={
-                    'judge_type': 'public',
-                    'unique_token': uuid.uuid4(),
-                }
+    # Calculate weighted scores for each team
+    teams_data = []
+    for team in teams_with_public_votes:
+        if team.avg_quantum_tech is not None:  # Only include teams with votes
+            weighted_score = (
+                (team.avg_quantum_tech or 0) * 0.40 +
+                (team.avg_social_impact or 0) * 0.25 +
+                (team.avg_innovation or 0) * 0.20 +
+                (team.avg_presentation or 0) * 0.10 +
+                (team.avg_business_viability or 0) * 0.05
             )
             
-            with transaction.atomic():
-                submission = Submission.objects.create(
-                    judge=public_judge,
-                    team=team,
-                    comments=form.cleaned_data.get('comments', '')
-                )
-
-                # Save scores for all criteria
-                for criterion in allowed_criteria:
-                    score_key = f"score_{criterion.id}"
-                    comment_key = f"comment_{criterion.id}"
-                    
-                    score_value = form.cleaned_data.get(score_key)
-                    score_comment = form.cleaned_data.get(comment_key, '')
-
-                    if score_value:
-                        Score.objects.create(
-                            submission=submission,
-                            criteria=criterion,
-                            score=score_value,
-                            comments=score_comment
-                        )
-
-                # Mark as judged in session
-                judged_teams.append(team_id)
-                request.session['judged_teams'] = judged_teams
-                
-                update_team_final_scores(team)
-                messages.success(request, f'Successfully submitted judgment for {team.name}!')
-                return redirect('public_judge_access')
-    else:
-        form = PublicTeamScoreForm(team=team, allowed_criteria=allowed_criteria)
-
+            teams_data.append({
+                'team': team,
+                'public_vote_count': team.public_vote_count,
+                'avg_quantum_tech': round(team.avg_quantum_tech, 2) if team.avg_quantum_tech else 0,
+                'avg_social_impact': round(team.avg_social_impact, 2) if team.avg_social_impact else 0,
+                'avg_innovation': round(team.avg_innovation, 2) if team.avg_innovation else 0,
+                'avg_presentation': round(team.avg_presentation, 2) if team.avg_presentation else 0,
+                'avg_business_viability': round(team.avg_business_viability, 2) if team.avg_business_viability else 0,
+                'weighted_score': round(weighted_score, 2),
+            })
+    
+    # Sort by weighted score (highest first)
+    teams_data.sort(key=lambda x: x['weighted_score'], reverse=True)
+    
+    # Add rankings
+    for i, team_data in enumerate(teams_data, 1):
+        team_data['rank'] = i
+    
+    # Get total public votes cast
+    total_public_votes = PublicJudgment.objects.count()
+    
+    # Get unique public voters (if you track this)
+    # unique_voters = PublicJudgment.objects.values('voter_ip').distinct().count()
+    
+    # Statistics for charts
+    vote_distribution = []
+    for team_data in teams_data:
+        vote_distribution.append({
+            'team_name': team_data['team'].name,
+            'vote_count': team_data['public_vote_count'],
+            'weighted_score': team_data['weighted_score']
+        })
+    
     context = {
-        'form': form,
+        'teams_data': teams_data,
+        'total_teams': len(teams_data),
+        'total_public_votes': total_public_votes,
+        'vote_distribution_json': json.dumps(vote_distribution),
+        'page_title': 'Public Voting Results',
+    }
+    
+    return render(request, 'judging/public_results.html', context)
+
+def admin_public_voting_results(request):
+    """
+    Admin view for public voting results with detailed analytics
+    """
+    # Get all public judgments for detailed analysis
+    public_judgments = PublicJudgment.objects.select_related('team').all()
+    
+    # Get teams with detailed public voting stats
+    teams_with_public_votes = Team.objects.filter(
+        publicjudgment__isnull=False
+    ).distinct().annotate(
+        public_vote_count=Count('publicjudgment'),
+        avg_quantum_tech=Avg('publicjudgment__quantum_tech_quality'),
+        avg_social_impact=Avg('publicjudgment__social_impact'), 
+        avg_innovation=Avg('publicjudgment__innovation'),
+        avg_presentation=Avg('publicjudgment__presentation'),
+        avg_business_viability=Avg('publicjudgment__business_viability'),
+    ).order_by('-public_vote_count')
+    
+    # Calculate detailed statistics
+    teams_data = []
+    for team in teams_with_public_votes:
+        if team.avg_quantum_tech is not None:
+            weighted_score = (
+                (team.avg_quantum_tech or 0) * 0.40 +
+                (team.avg_social_impact or 0) * 0.25 +
+                (team.avg_innovation or 0) * 0.20 +
+                (team.avg_presentation or 0) * 0.10 +
+                (team.avg_business_viability or 0) * 0.05
+            )
+            
+            # Get individual votes for this team for detailed analysis
+            team_votes = PublicJudgment.objects.filter(team=team)
+            
+            teams_data.append({
+                'team': team,
+                'public_vote_count': team.public_vote_count,
+                'avg_quantum_tech': round(team.avg_quantum_tech, 2) if team.avg_quantum_tech else 0,
+                'avg_social_impact': round(team.avg_social_impact, 2) if team.avg_social_impact else 0,
+                'avg_innovation': round(team.avg_innovation, 2) if team.avg_innovation else 0,
+                'avg_presentation': round(team.avg_presentation, 2) if team.avg_presentation else 0,
+                'avg_business_viability': round(team.avg_business_viability, 2) if team.avg_business_viability else 0,
+                'weighted_score': round(weighted_score, 2),
+                'votes': team_votes,
+            })
+    
+    # Sort by weighted score
+    teams_data.sort(key=lambda x: x['weighted_score'], reverse=True)
+    
+    # Add rankings
+    for i, team_data in enumerate(teams_data, 1):
+        team_data['rank'] = i
+    
+    # Additional admin statistics
+    total_public_votes = PublicJudgment.objects.count()
+    teams_without_votes = Team.objects.filter(publicjudgment__isnull=True).count()
+    
+    # Voting patterns analysis
+    criteria_averages = {
+        'quantum_tech': PublicJudgment.objects.aggregate(avg=Avg('quantum_tech_quality'))['avg'],
+        'social_impact': PublicJudgment.objects.aggregate(avg=Avg('social_impact'))['avg'],
+        'innovation': PublicJudgment.objects.aggregate(avg=Avg('innovation'))['avg'],
+        'presentation': PublicJudgment.objects.aggregate(avg=Avg('presentation'))['avg'],
+        'business_viability': PublicJudgment.objects.aggregate(avg=Avg('business_viability'))['avg'],
+    }
+    
+    context = {
+        'teams_data': teams_data,
+        'total_teams': len(teams_data),
+        'total_public_votes': total_public_votes,
+        'teams_without_votes': teams_without_votes,
+        'criteria_averages': criteria_averages,
+        'public_judgments': public_judgments,
+        'page_title': 'Admin: Public Voting Results',
+        'is_admin_view': True,
+    }
+    
+    return render(request, 'judging/admin_public_results.html', context)
+
+# Add this to your views.py file
+
+from django.shortcuts import render, get_object_or_404, redirect
+from django.contrib import messages
+from django.db import IntegrityError
+from django.http import HttpResponseRedirect
+from django.urls import reverse
+from .models import Team, PublicJudgment
+
+def get_client_ip(request):
+    """Get the client's IP address"""
+    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+    if x_forwarded_for:
+        ip = x_forwarded_for.split(',')[0]
+    else:
+        ip = request.META.get('REMOTE_ADDR')
+    return ip
+
+def public_judge_team(request, team_id):
+    """
+    Handle public judging of individual teams
+    """
+    team = get_object_or_404(Team, id=team_id)
+    voter_ip = get_client_ip(request)
+    
+    # Check if this IP has already voted for this team
+    existing_vote = PublicJudgment.objects.filter(team=team, voter_ip=voter_ip).first()
+    
+    if existing_vote:
+        messages.warning(request, f'You have already voted for {team.name}. Thank you for your participation!')
+        return redirect('public_judge_access')
+    
+    if request.method == 'POST':
+        try:
+            # Extract scores from form - ensure they exist
+            quantum_tech_quality = request.POST.get('quantum_tech_quality')
+            social_impact = request.POST.get('social_impact')
+            innovation = request.POST.get('innovation')
+            presentation = request.POST.get('presentation')
+            business_viability = request.POST.get('business_viability')
+            
+            # Check if all required fields are present
+            if not all([quantum_tech_quality, social_impact, innovation, presentation, business_viability]):
+                messages.error(request, 'Please fill in all scoring criteria.')
+                return render(request, 'judging/public_judge_team.html', {'team': team})
+            
+            # Convert to integers
+            quantum_tech_quality = int(quantum_tech_quality)
+            social_impact = int(social_impact)
+            innovation = int(innovation)
+            presentation = int(presentation)
+            business_viability = int(business_viability)
+            
+            # Validate scores are in range
+            scores = [quantum_tech_quality, social_impact, innovation, presentation, business_viability]
+            if not all(1 <= score <= 5 for score in scores):
+                messages.error(request, 'All scores must be between 1 and 5.')
+                return render(request, 'judging/public_judge_team.html', {'team': team})
+            
+            # Create the public judgment
+            public_judgment = PublicJudgment.objects.create(
+                team=team,
+                quantum_tech_quality=quantum_tech_quality,
+                social_impact=social_impact,
+                innovation=innovation,
+                presentation=presentation,
+                business_viability=business_viability,
+                comments=request.POST.get('comments', '').strip(),
+                comment_quantum_tech=request.POST.get('comment_quantum_tech', '').strip(),
+                comment_social_impact=request.POST.get('comment_social_impact', '').strip(),
+                comment_innovation=request.POST.get('comment_innovation', '').strip(),
+                comment_presentation=request.POST.get('comment_presentation', '').strip(),
+                comment_business_viability=request.POST.get('comment_business_viability', '').strip(),
+                voter_ip=voter_ip,
+                user_agent=request.META.get('HTTP_USER_AGENT', ''),
+                voter_email=request.POST.get('voter_email', '').strip(),
+                voter_name=request.POST.get('voter_name', '').strip()
+            )
+            
+            # Verify the vote was saved
+            print(f"DEBUG: Created PublicJudgment with ID: {public_judgment.id}")
+            print(f"DEBUG: Vote for team {team.name} by IP {voter_ip}")
+            print(f"DEBUG: Weighted score: {public_judgment.weighted_score}")
+            
+            messages.success(
+                request, 
+                f'✅ Thank you for judging {team.name}! Your vote has been recorded. '
+                f'Weighted Score: {public_judgment.weighted_score:.2f}/5.0'
+            )
+            return HttpResponseRedirect(reverse('public_judge_access'))
+            
+        except (ValueError, TypeError) as e:
+            print(f"DEBUG: Error converting scores to integers: {e}")
+            messages.error(request, 'Please fill in all required fields with valid scores (1-5).')
+            return render(request, 'judging/public_judge_team.html', {'team': team})
+            
+        except IntegrityError as e:
+            print(f"DEBUG: IntegrityError - duplicate vote: {e}")
+            messages.warning(request, f'You have already voted for {team.name}. Thank you for your participation!')
+            return redirect('public_judge_access')
+            
+        except Exception as e:
+            print(f"DEBUG: Unexpected error: {e}")
+            messages.error(request, f'An error occurred while submitting your vote: {str(e)}')
+            return render(request, 'judging/public_judge_team.html', {'team': team})
+    
+    # GET request - show the judging form
+    context = {
         'team': team,
-        'is_public': True,
-        'allowed_criteria': allowed_criteria,
-        'judge_type': 'public',
     }
     return render(request, 'judging/public_judge_team.html', context)
 
 
+def public_judge_access(request):
+    """
+    Public judge dashboard showing teams and progress
+    """
+    teams = Team.objects.all().order_by('name')
+    voter_ip = get_client_ip(request)
+    
+    # Get teams this IP has already judged
+    judged_teams = PublicJudgment.objects.filter(voter_ip=voter_ip).values_list('team_id', flat=True)
+    
+    # Debug: Print what we found
+    print(f"DEBUG: Found {len(judged_teams)} votes for IP {voter_ip}")
+    print(f"DEBUG: Judged teams: {list(judged_teams)}")
+    
+    # Calculate statistics
+    total_teams = teams.count()
+    completed_judgments = len(judged_teams)
+    remaining_teams = total_teams - completed_judgments
+    
+    context = {
+        'teams': teams,
+        'judged_teams': list(judged_teams),
+        'total_teams': total_teams,
+        'completed_judgments': completed_judgments,
+        'remaining_teams': remaining_teams,
+    }
+    return render(request, 'judging/public_judge_access.html', context)
+
+# Add this to your views.py file
+
+from django.db.models import Avg, Count, Sum, Q
+from django.shortcuts import render
+from django.contrib.admin.views.decorators import staff_member_required
+from django.contrib.auth.decorators import login_required
+import json
+
+def public_voting_results(request):
+    """
+    Display public voting results - accessible to everyone
+    """
+    # Get all teams with public judgments
+    teams_with_public_votes = Team.objects.filter(
+        publicjudgment__isnull=False
+    ).distinct().annotate(
+        # Count public votes
+        public_vote_count=Count('publicjudgment'),
+        
+        # Average scores for each criteria - FIXED COLUMN NAMES
+        avg_quantum_tech=Avg('publicjudgment__quantum_tech_quality'),
+        avg_social_impact=Avg('publicjudgment__social_impact'), 
+        avg_innovation=Avg('publicjudgment__innovation'),
+        avg_presentation=Avg('publicjudgment__presentation'),
+        avg_business_viability=Avg('publicjudgment__business_viability'),
+    ).order_by('-public_vote_count')
+    
+    # Calculate weighted scores for each team
+    teams_data = []
+    for team in teams_with_public_votes:
+        if team.avg_quantum_tech is not None:  # Only include teams with votes
+            weighted_score = (
+                (team.avg_quantum_tech or 0) * 0.40 +
+                (team.avg_social_impact or 0) * 0.25 +
+                (team.avg_innovation or 0) * 0.20 +
+                (team.avg_presentation or 0) * 0.10 +
+                (team.avg_business_viability or 0) * 0.05
+            )
+            
+            teams_data.append({
+                'team': team,
+                'public_vote_count': team.public_vote_count,
+                'avg_quantum_tech': round(team.avg_quantum_tech, 2) if team.avg_quantum_tech else 0,
+                'avg_social_impact': round(team.avg_social_impact, 2) if team.avg_social_impact else 0,
+                'avg_innovation': round(team.avg_innovation, 2) if team.avg_innovation else 0,
+                'avg_presentation': round(team.avg_presentation, 2) if team.avg_presentation else 0,
+                'avg_business_viability': round(team.avg_business_viability, 2) if team.avg_business_viability else 0,
+                'weighted_score': round(weighted_score, 2),
+            })
+    
+    # Sort by weighted score (highest first)
+    teams_data.sort(key=lambda x: x['weighted_score'], reverse=True)
+    
+    # Add rankings
+    for i, team_data in enumerate(teams_data, 1):
+        team_data['rank'] = i
+    
+    # Get total public votes cast
+    total_public_votes = PublicJudgment.objects.count()
+    
+    # Statistics for charts
+    vote_distribution = []
+    for team_data in teams_data:
+        vote_distribution.append({
+            'team_name': team_data['team'].name,
+            'vote_count': team_data['public_vote_count'],
+            'weighted_score': team_data['weighted_score']
+        })
+    
+    context = {
+        'teams_data': teams_data,
+        'total_teams': len(teams_data),
+        'total_public_votes': total_public_votes,
+        'vote_distribution_json': json.dumps(vote_distribution),
+        'page_title': 'Public Voting Results',
+    }
+    
+    return render(request, 'judging/public_results.html', context)
+
+
+@staff_member_required
+def admin_public_voting_results(request):
+    """
+    Admin view for public voting results with detailed analytics
+    """
+    # Get all public judgments for detailed analysis
+    public_judgments = PublicJudgment.objects.select_related('team').all()
+    
+    # Get teams with detailed public voting stats - FIXED COLUMN NAMES
+    teams_with_public_votes = Team.objects.filter(
+        publicjudgment__isnull=False
+    ).distinct().annotate(
+        public_vote_count=Count('publicjudgment'),
+        avg_quantum_tech=Avg('publicjudgment__quantum_tech_quality'),
+        avg_social_impact=Avg('publicjudgment__social_impact'), 
+        avg_innovation=Avg('publicjudgment__innovation'),
+        avg_presentation=Avg('publicjudgment__presentation'),
+        avg_business_viability=Avg('publicjudgment__business_viability'),
+    ).order_by('-public_vote_count')
+    
+    # Calculate detailed statistics
+    teams_data = []
+    for team in teams_with_public_votes:
+        if team.avg_quantum_tech is not None:
+            weighted_score = (
+                (team.avg_quantum_tech or 0) * 0.40 +
+                (team.avg_social_impact or 0) * 0.25 +
+                (team.avg_innovation or 0) * 0.20 +
+                (team.avg_presentation or 0) * 0.10 +
+                (team.avg_business_viability or 0) * 0.05
+            )
+            
+            # Get individual votes for this team for detailed analysis
+            team_votes = PublicJudgment.objects.filter(team=team)
+            
+            teams_data.append({
+                'team': team,
+                'public_vote_count': team.public_vote_count,
+                'avg_quantum_tech': round(team.avg_quantum_tech, 2) if team.avg_quantum_tech else 0,
+                'avg_social_impact': round(team.avg_social_impact, 2) if team.avg_social_impact else 0,
+                'avg_innovation': round(team.avg_innovation, 2) if team.avg_innovation else 0,
+                'avg_presentation': round(team.avg_presentation, 2) if team.avg_presentation else 0,
+                'avg_business_viability': round(team.avg_business_viability, 2) if team.avg_business_viability else 0,
+                'weighted_score': round(weighted_score, 2),
+                'votes': team_votes,
+            })
+    
+    # Sort by weighted score
+    teams_data.sort(key=lambda x: x['weighted_score'], reverse=True)
+    
+    # Add rankings
+    for i, team_data in enumerate(teams_data, 1):
+        team_data['rank'] = i
+    
+    # Additional admin statistics
+    total_public_votes = PublicJudgment.objects.count()
+    teams_without_votes = Team.objects.filter(publicjudgment__isnull=True).count()
+    
+    # Voting patterns analysis - FIXED COLUMN NAMES
+    criteria_averages = {
+        'quantum_tech': PublicJudgment.objects.aggregate(avg=Avg('quantum_tech_quality'))['avg'],
+        'social_impact': PublicJudgment.objects.aggregate(avg=Avg('social_impact'))['avg'],
+        'innovation': PublicJudgment.objects.aggregate(avg=Avg('innovation'))['avg'],
+        'presentation': PublicJudgment.objects.aggregate(avg=Avg('presentation'))['avg'],
+        'business_viability': PublicJudgment.objects.aggregate(avg=Avg('business_viability'))['avg'],
+    }
+    
+    context = {
+        'teams_data': teams_data,
+        'total_teams': len(teams_data),
+        'total_public_votes': total_public_votes,
+        'teams_without_votes': teams_without_votes,
+        'criteria_averages': criteria_averages,
+        'public_judgments': public_judgments,
+        'page_title': 'Admin: Public Voting Results',
+        'is_admin_view': True,
+    }
+    
+    return render(request, 'judging/admin_public_results.html', context)

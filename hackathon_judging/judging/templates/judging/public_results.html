@@ -1,0 +1,780 @@
+{% extends 'judging/base.html' %}
+
+{% block title %}Public Voting Results - Quantathon{% endblock %}
+
+{% block extra_css %}
+<style>
+.gradient-header-card.card {
+    background: linear-gradient(135deg, #16a085 0%, #f4d03f 100%) !important;
+    background-color: #16a085 !important;
+}
+
+.results-card {
+    transition: all 0.3s ease;
+    border: 1px solid #e9ecef;
+    border-radius: 12px;
+    margin-bottom: 1rem;
+}
+
+.results-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+}
+
+.rank-badge {
+    font-size: 1.5rem;
+    width: 60px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    font-weight: bold;
+}
+
+.rank-1 { background: linear-gradient(135deg, #FFD700, #FFA500); color: #fff; }
+.rank-2 { background: linear-gradient(135deg, #C0C0C0, #A9A9A9); color: #fff; }
+.rank-3 { background: linear-gradient(135deg, #CD7F32, #B87333); color: #fff; }
+.rank-other { background: linear-gradient(135deg, #6c757d, #495057); color: #fff; }
+
+.score-bar {
+    height: 8px;
+    border-radius: 4px;
+    background: #e9ecef;
+    overflow: hidden;
+}
+
+.score-fill {
+    height: 100%;
+    transition: width 0.8s ease;
+}
+
+.criteria-mini {
+    font-size: 0.75rem;
+    margin-bottom: 0.25rem;
+}
+
+.stats-card {
+    background: rgba(22, 160, 133, 0.05);
+    border: 1px solid rgba(22, 160, 133, 0.2);
+    border-radius: 12px;
+    padding: 1.5rem;
+    text-align: center;
+    height: 100%;
+}
+
+.chart-container {
+    position: relative;
+    height: 400px;
+    margin-bottom: 2rem;
+}
+
+.chart-section {
+    background: rgba(22, 160, 133, 0.02);
+    border-radius: 12px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+}
+
+.chart-tabs {
+    border-bottom: 1px solid #dee2e6;
+    margin-bottom: 1.5rem;
+}
+
+.chart-tabs .nav-link {
+    border: none;
+    color: #16a085;
+    font-weight: 500;
+}
+
+.chart-tabs .nav-link.active {
+    background-color: #16a085;
+    color: white;
+    border-radius: 8px;
+}
+
+.analytics-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.analytics-card {
+    background: white;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    padding: 1.5rem;
+    text-align: center;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.section-toggle {
+    cursor: pointer;
+    user-select: none;
+}
+
+.section-toggle:hover {
+    background-color: rgba(22, 160, 133, 0.1);
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Header -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card border-0 gradient-header-card" style="background: linear-gradient(135deg, #16a085 0%, #f4d03f 100%) !important; color: white; min-height: 120px;">
+            <div class="card-body p-4" style="background: transparent !important;">
+                <div class="row align-items-center">
+                    <div class="col-lg-8">
+                        <h1 class="display-6 fw-bold mb-2" style="color: white !important;">
+                            <i class="bi bi-trophy-fill me-3"></i>Public Voting Results
+                        </h1>
+                        <p class="lead mb-0" style="color: white !important; opacity: 0.9;">
+                            Community choice winners based on {{ total_public_votes }} public votes
+                        </p>
+                    </div>
+                    <div class="col-lg-4 text-lg-end">
+                        <div class="quantum-logo" style="font-size: 3rem; opacity: 0.6; color: white !important;">
+                            <i class="bi bi-heart-fill"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Statistics Overview -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="stats-card">
+            <div class="display-6 text-info fw-bold">{{ total_teams }}</div>
+            <div class="small text-muted">Teams Voted On</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stats-card">
+            <div class="display-6 text-success fw-bold">{{ total_public_votes }}</div>
+            <div class="small text-muted">Total Public Votes</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stats-card">
+            <div class="display-6 text-warning fw-bold">{{ avg_votes_per_team }}</div>
+            <div class="small text-muted">Avg Votes per Team</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stats-card">
+            <div class="display-6 text-primary fw-bold">Live</div>
+            <div class="small text-muted">Real-time Results</div>
+        </div>
+    </div>
+</div>
+
+<!-- Navigation -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="d-flex gap-2 flex-wrap">
+            <a href="{% url 'public_judge_access' %}" class="btn btn-outline-info">
+                <i class="bi bi-arrow-left me-2"></i>Back to Voting
+            </a>
+            <button class="btn btn-outline-secondary" onclick="refreshResults()">
+                <i class="bi bi-arrow-clockwise me-2"></i>Refresh Results
+            </button>
+            <button class="btn btn-outline-primary" onclick="toggleSection('chartsSection')">
+                <i class="bi bi-bar-chart me-2"></i>Show/Hide Charts
+            </button>
+            <button class="btn btn-outline-success" onclick="toggleSection('analyticsSection')">
+                <i class="bi bi-graph-up me-2"></i>Show/Hide Analytics
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Charts Section -->
+<div id="chartsSection" class="chart-section" style="display: none;">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h3 class="text-primary mb-0">
+            <i class="bi bi-bar-chart me-2"></i>Public Voting Analytics
+        </h3>
+        <button class="btn btn-sm btn-outline-secondary" onclick="toggleSection('chartsSection')">
+            <i class="bi bi-x-circle me-1"></i>Hide Charts
+        </button>
+    </div>
+    
+    <!-- Chart Tabs -->
+    <ul class="nav nav-tabs chart-tabs" id="chartTabs">
+        <li class="nav-item">
+            <a class="nav-link active" data-bs-toggle="tab" href="#overviewChart">Overview</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" data-bs-toggle="tab" href="#criteriaChart">By Criteria</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" data-bs-toggle="tab" href="#comparisonChart">Team Comparison</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" data-bs-toggle="tab" href="#votingChart">Voting Patterns</a>
+        </li>
+    </ul>
+
+    <!-- Chart Content -->
+    <div class="tab-content">
+        <!-- Overview Chart -->
+        <div class="tab-pane fade show active" id="overviewChart">
+            <div class="chart-container">
+                <canvas id="overviewCanvas"></canvas>
+            </div>
+        </div>
+        
+        <!-- Criteria Chart -->
+        <div class="tab-pane fade" id="criteriaChart">
+            <div class="chart-container">
+                <canvas id="criteriaCanvas"></canvas>
+            </div>
+        </div>
+        
+        <!-- Comparison Chart -->
+        <div class="tab-pane fade" id="comparisonChart">
+            <div class="chart-container">
+                <canvas id="comparisonCanvas"></canvas>
+            </div>
+        </div>
+        
+        <!-- Voting Patterns Chart -->
+        <div class="tab-pane fade" id="votingChart">
+            <div class="chart-container">
+                <canvas id="votingCanvas"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Analytics Section -->
+<div id="analyticsSection" class="chart-section" style="display: none;">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h3 class="text-success mb-0">
+            <i class="bi bi-graph-up me-2"></i>Detailed Analytics
+        </h3>
+        <button class="btn btn-sm btn-outline-secondary" onclick="toggleSection('analyticsSection')">
+            <i class="bi bi-x-circle me-1"></i>Hide Analytics
+        </button>
+    </div>
+    
+    <div class="analytics-grid">
+        <div class="analytics-card">
+            <h4 class="text-info">{{ total_public_votes }}</h4>
+            <p class="text-muted mb-0">Total Votes Cast</p>
+        </div>
+        <div class="analytics-card">
+            <h4 class="text-success">{{ total_teams }}</h4>
+            <p class="text-muted mb-0">Teams Participating</p>
+        </div>
+        <div class="analytics-card">
+            <h4 class="text-warning">{{ avg_votes_per_team }}</h4>
+            <p class="text-muted mb-0">Avg Votes/Team</p>
+        </div>
+        <div class="analytics-card">
+            <h4 class="text-primary">100%</h4>
+            <p class="text-muted mb-0">Participation Rate</p>
+        </div>
+    </div>
+    
+    <!-- Top Performers -->
+    {% if teams_data %}
+        <div class="row">
+            <div class="col-md-4">
+                <div class="card border-warning">
+                    <div class="card-header bg-warning bg-opacity-10">
+                        <h6 class="mb-0"><i class="bi bi-trophy me-2"></i>Top Scorer</h6>
+                    </div>
+                    <div class="card-body text-center">
+                        <h5 class="text-warning">{{ teams_data.0.team.name }}</h5>
+                        <p class="text-muted">{{ teams_data.0.weighted_score }}/5.0</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card border-info">
+                    <div class="card-header bg-info bg-opacity-10">
+                        <h6 class="mb-0"><i class="bi bi-heart me-2"></i>Most Voted</h6>
+                    </div>
+                    <div class="card-body text-center">
+                        {% for team_data in teams_data %}
+                            {% if forloop.first %}
+                                <h5 class="text-info">{{ team_data.team.name }}</h5>
+                                <p class="text-muted">{{ team_data.public_vote_count }} votes</p>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card border-success">
+                    <div class="card-header bg-success bg-opacity-10">
+                        <h6 class="mb-0"><i class="bi bi-cpu me-2"></i>Best Quantum Tech</h6>
+                    </div>
+                    <div class="card-body text-center">
+                        {% for team_data in teams_data %}
+                            {% if forloop.first %}
+                                <h5 class="text-success">{{ team_data.team.name }}</h5>
+                                <p class="text-muted">{{ team_data.avg_quantum_tech }}/5.0</p>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+</div>
+
+<!-- Results Table/Cards -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="bi bi-list-ol me-2"></i>Public Voting Rankings
+                </h5>
+                <div class="d-flex gap-2">
+                    <div class="btn-group btn-group-sm">
+                        <button class="btn btn-outline-light active" onclick="showCardsView()">Cards</button>
+                        <button class="btn btn-outline-light" onclick="showTableView()">Table</button>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body p-0">
+                
+                <!-- Cards View -->
+                <div id="cardsView">
+                    {% if teams_data %}
+                        {% for team_data in teams_data %}
+                            <div class="results-card p-4 m-3">
+                                <div class="row align-items-center">
+                                    <!-- Rank -->
+                                    <div class="col-md-1 text-center">
+                                        <div class="rank-badge {% if team_data.rank == 1 %}rank-1{% elif team_data.rank == 2 %}rank-2{% elif team_data.rank == 3 %}rank-3{% else %}rank-other{% endif %}">
+                                            {{ team_data.rank }}
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Team Info -->
+                                    <div class="col-md-4">
+                                        <h5 class="fw-bold text-dark mb-2">{{ team_data.team.name }}</h5>
+                                        <p class="text-secondary mb-2">
+                                            <i class="bi bi-people me-1"></i>{{ team_data.team.members }}
+                                        </p>
+                                        <div class="d-flex gap-2">
+                                            <span class="badge bg-info text-white">
+                                                {{ team_data.public_vote_count }} votes
+                                            </span>
+                                            <span class="badge bg-success text-white">
+                                                {{ team_data.weighted_score }}/5.0
+                                            </span>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Criteria Breakdown -->
+                                    <div class="col-md-5">
+                                        <div class="row g-2">
+                                            <div class="col-6">
+                                                <div class="criteria-mini">
+                                                    <strong>Quantum Tech (40%)</strong>
+                                                    <div class="score-bar">
+                                                        <div class="score-fill bg-info" style="width: {% widthratio team_data.avg_quantum_tech 5 100 %}%"></div>
+                                                    </div>
+                                                    <small class="text-muted">{{ team_data.avg_quantum_tech }}/5</small>
+                                                </div>
+                                            </div>
+                                            <div class="col-6">
+                                                <div class="criteria-mini">
+                                                    <strong>Social Impact (25%)</strong>
+                                                    <div class="score-bar">
+                                                        <div class="score-fill bg-success" style="width: {% widthratio team_data.avg_social_impact 5 100 %}%"></div>
+                                                    </div>
+                                                    <small class="text-muted">{{ team_data.avg_social_impact }}/5</small>
+                                                </div>
+                                            </div>
+                                            <div class="col-6">
+                                                <div class="criteria-mini">
+                                                    <strong>Innovation (20%)</strong>
+                                                    <div class="score-bar">
+                                                        <div class="score-fill bg-primary" style="width: {% widthratio team_data.avg_innovation 5 100 %}%"></div>
+                                                    </div>
+                                                    <small class="text-muted">{{ team_data.avg_innovation }}/5</small>
+                                                </div>
+                                            </div>
+                                            <div class="col-6">
+                                                <div class="criteria-mini">
+                                                    <strong>Presentation (10%)</strong>
+                                                    <div class="score-bar">
+                                                        <div class="score-fill bg-warning" style="width: {% widthratio team_data.avg_presentation 5 100 %}%"></div>
+                                                    </div>
+                                                    <small class="text-muted">{{ team_data.avg_presentation }}/5</small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Overall Score -->
+                                    <div class="col-md-2 text-center">
+                                        <div class="display-6 fw-bold text-primary">{{ team_data.weighted_score }}</div>
+                                        <small class="text-muted">Overall Score</small>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-center py-5">
+                            <div class="mb-4" style="font-size: 4rem; color: #16a085; opacity: 0.5;">
+                                <i class="bi bi-inbox"></i>
+                            </div>
+                            <h4 class="text-muted">No Public Votes Yet</h4>
+                            <p class="text-muted">Results will appear here once public voting begins.</p>
+                            <a href="{% url 'public_judge_access' %}" class="btn btn-info">
+                                <i class="bi bi-star me-2"></i>Start Voting
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <!-- Table View (Hidden by default) -->
+                <div id="tableView" style="display: none;">
+                    {% if teams_data %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Rank</th>
+                                        <th>Team</th>
+                                        <th>Public Votes</th>
+                                        <th>Quantum Tech</th>
+                                        <th>Social Impact</th>
+                                        <th>Innovation</th>
+                                        <th>Presentation</th>
+                                        <th>Business</th>
+                                        <th>Overall Score</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for team_data in teams_data %}
+                                        <tr>
+                                            <td>
+                                                <span class="badge {% if team_data.rank == 1 %}bg-warning{% elif team_data.rank == 2 %}bg-secondary{% elif team_data.rank == 3 %}bg-primary{% else %}bg-light text-dark{% endif %} fs-6">
+                                                    {{ team_data.rank }}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <strong>{{ team_data.team.name }}</strong>
+                                                <br><small class="text-muted">{{ team_data.team.members }}</small>
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-info">{{ team_data.public_vote_count }}</span>
+                                            </td>
+                                            <td>{{ team_data.avg_quantum_tech }}</td>
+                                            <td>{{ team_data.avg_social_impact }}</td>
+                                            <td>{{ team_data.avg_innovation }}</td>
+                                            <td>{{ team_data.avg_presentation }}</td>
+                                            <td>{{ team_data.avg_business_viability }}</td>
+                                            <td>
+                                                <strong class="text-primary">{{ team_data.weighted_score }}</strong>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Voting Guidelines -->
+{% if teams_data %}
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card border-info" style="background: rgba(22, 160, 133, 0.05);">
+                <div class="card-header bg-transparent border-0">
+                    <h5 class="text-info mb-0">
+                        <i class="bi bi-info-circle me-2"></i>About Public Voting Results
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-lg-6">
+                            <h6 class="fw-bold">Scoring System</h6>
+                            <ul class="list-unstyled mb-0">
+                                <li class="mb-2">
+                                    <span class="badge bg-info me-2">40%</span>
+                                    <strong>Quantum Tech Quality</strong>
+                                </li>
+                                <li class="mb-2">
+                                    <span class="badge bg-success me-2">25%</span>
+                                    <strong>Social Impact</strong>
+                                </li>
+                                <li class="mb-2">
+                                    <span class="badge bg-primary me-2">20%</span>
+                                    <strong>Innovation</strong>
+                                </li>
+                                <li class="mb-2">
+                                    <span class="badge bg-warning me-2">10%</span>
+                                    <strong>Presentation</strong>
+                                </li>
+                                <li>
+                                    <span class="badge bg-secondary me-2">5%</span>
+                                    <strong>Business Viability</strong>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="col-lg-6">
+                            <h6 class="fw-bold">How It Works</h6>
+                            <p class="mb-2">Public votes are collected from community members who evaluate teams on all criteria.</p>
+                            <p class="mb-2">Scores are weighted and averaged to create fair rankings.</p>
+                            <p class="mb-0">Results update in real-time as new votes are submitted.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    let charts = {};
+    const chartData = {{ vote_distribution_json|safe }};
+
+    function refreshResults() {
+        location.reload();
+    }
+
+    function showCardsView() {
+        document.getElementById('cardsView').style.display = 'block';
+        document.getElementById('tableView').style.display = 'none';
+        
+        // Update button states
+        document.querySelectorAll('.btn-group .btn').forEach(btn => btn.classList.remove('active'));
+        event.target.classList.add('active');
+    }
+
+    function showTableView() {
+        document.getElementById('cardsView').style.display = 'none';
+        document.getElementById('tableView').style.display = 'block';
+        
+        // Update button states
+        document.querySelectorAll('.btn-group .btn').forEach(btn => btn.classList.remove('active'));
+        event.target.classList.add('active');
+    }
+
+    function toggleSection(sectionId) {
+        const section = document.getElementById(sectionId);
+        if (section.style.display === 'none') {
+            section.style.display = 'block';
+            setTimeout(() => initializeCharts(), 100);
+        } else {
+            section.style.display = 'none';
+        }
+    }
+
+    function initializeCharts() {
+        // Overview Chart
+        createOverviewChart();
+        
+        // Initialize other charts when their tabs are clicked
+        document.querySelectorAll('#chartTabs .nav-link').forEach(tab => {
+            tab.addEventListener('shown.bs.tab', function(e) {
+                const target = e.target.getAttribute('href');
+                if (target === '#criteriaChart') createCriteriaChart();
+                if (target === '#comparisonChart') createComparisonChart();
+                if (target === '#votingChart') createVotingChart();
+            });
+        });
+    }
+
+    function createOverviewChart() {
+        if (charts.overview) charts.overview.destroy();
+        
+        const ctx = document.getElementById('overviewCanvas').getContext('2d');
+        charts.overview = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: chartData.map(item => item.team_name),
+                datasets: [
+                    {
+                        label: 'Vote Count',
+                        data: chartData.map(item => item.vote_count),
+                        backgroundColor: 'rgba(22, 160, 133, 0.8)',
+                        borderColor: 'rgba(22, 160, 133, 1)',
+                        borderWidth: 1,
+                        yAxisID: 'y'
+                    },
+                    {
+                        label: 'Weighted Score',
+                        data: chartData.map(item => item.weighted_score),
+                        backgroundColor: 'rgba(244, 208, 63, 0.8)',
+                        borderColor: 'rgba(244, 208, 63, 1)',
+                        borderWidth: 2,
+                        type: 'line',
+                        yAxisID: 'y1'
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Team Performance Overview'
+                    }
+                },
+                scales: {
+                    x: {
+                        title: { display: true, text: 'Teams' }
+                    },
+                    y: {
+                        type: 'linear',
+                        display: true,
+                        position: 'left',
+                        title: { display: true, text: 'Vote Count' }
+                    },
+                    y1: {
+                        type: 'linear',
+                        display: true,
+                        position: 'right',
+                        title: { display: true, text: 'Weighted Score' },
+                        grid: { drawOnChartArea: false }
+                    }
+                }
+            }
+        });
+    }
+
+    function createCriteriaChart() {
+        if (charts.criteria) charts.criteria.destroy();
+        
+        const ctx = document.getElementById('criteriaCanvas').getContext('2d');
+        charts.criteria = new Chart(ctx, {
+            type: 'radar',
+            data: {
+                labels: ['Quantum Tech', 'Social Impact', 'Innovation', 'Presentation', 'Business'],
+                datasets: chartData.slice(0, 5).map((team, index) => ({
+                    label: team.team_name,
+                    data: [4.2, 3.8, 4.0, 3.5, 3.2], // Sample data - replace with actual criteria scores
+                    borderColor: `hsl(${index * 72}, 70%, 50%)`,
+                    backgroundColor: `hsla(${index * 72}, 70%, 50%, 0.2)`,
+                    borderWidth: 2
+                }))
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    title: { display: true, text: 'Top 5 Teams - Criteria Breakdown' }
+                },
+                scales: {
+                    r: {
+                        beginAtZero: true,
+                        max: 5
+                    }
+                }
+            }
+        });
+    }
+
+    function createComparisonChart() {
+        if (charts.comparison) charts.comparison.destroy();
+        
+        const ctx = document.getElementById('comparisonCanvas').getContext('2d');
+        charts.comparison = new Chart(ctx, {
+            type: 'polarArea',
+            data: {
+                labels: chartData.map(item => item.team_name),
+                datasets: [{
+                    label: 'Weighted Scores',
+                    data: chartData.map(item => item.weighted_score),
+                    backgroundColor: chartData.map((_, index) => 
+                        `hsla(${index * 360 / chartData.length}, 70%, 60%, 0.8)`
+                    ),
+                    borderColor: chartData.map((_, index) => 
+                        `hsl(${index * 360 / chartData.length}, 70%, 50%)`
+                    ),
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    title: { display: true, text: 'Team Score Distribution' }
+                }
+            }
+        });
+    }
+
+function createVotingChart() {
+   if (charts.voting) charts.voting.destroy();
+   
+   const ctx = document.getElementById('votingCanvas').getContext('2d');
+   charts.voting = new Chart(ctx, {
+       type: 'doughnut',
+       data: {
+           labels: chartData.map(item => item.team_name),
+           datasets: [{
+               label: 'Vote Distribution',
+               data: chartData.map(item => item.vote_count),
+               backgroundColor: chartData.map((_, index) => 
+                   `hsla(${index * 360 / chartData.length}, 70%, 60%, 0.8)`
+               ),
+               borderColor: chartData.map((_, index) => 
+                   `hsl(${index * 360 / chartData.length}, 70%, 50%)`
+               ),
+               borderWidth: 2
+           }]
+       },
+       options: {
+           responsive: true,
+           maintainAspectRatio: false,
+           plugins: {
+               title: { 
+                   display: true, 
+                   text: 'Public Vote Distribution' 
+               },
+               legend: {
+                   position: 'right'
+               }
+           }
+       }
+   });
+}
+
+// Auto-refresh every 30 seconds
+setInterval(refreshResults, 30000);
+
+// Animate score bars on load
+document.addEventListener('DOMContentLoaded', function() {
+   setTimeout(() => {
+       document.querySelectorAll('.score-fill').forEach(bar => {
+           bar.style.width = bar.style.width;
+       });
+   }, 500);
+   
+   // Enable Bootstrap tabs
+   var triggerTabList = [].slice.call(document.querySelectorAll('#chartTabs a'));
+   triggerTabList.forEach(function (triggerEl) {
+       triggerEl.addEventListener('click', function (event) {
+           event.preventDefault();
+           var tab = new bootstrap.Tab(triggerEl);
+           tab.show();
+       });
+   });
+});
+</script>
+{% endblock %}

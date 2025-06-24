@@ -18,6 +18,9 @@ urlpatterns = [
     path('results/<str:admin_token>/', views.admin_results_anonymous, name='admin_results_anonymous'),
     path('public-judge/', views.public_judge_access, name='public_judge_access'),
     path('public-judge/team/<int:team_id>/', views.public_judge_team, name='public_judge_team'),
+    path('public-results/', views.public_voting_results, name='public_voting_results'),
+    # Admin public results
+    path('admin/public-results/', views.admin_public_voting_results, name='admin_public_voting_results'),
     
     # Your existing app URLs:
     path('', include('judging.urls')),
