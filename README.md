@@ -2,35 +2,41 @@
 
 ![Demo](https://github.com/ChantelleAA/ChantelleAA/blob/main/judging_demo.gif)
 
-A streamlined Django-based platform for fair and flexible hackathon judging. Built for the **Quantathon**, this system supports expert-specific criteria filtering, secure one-time submissions, public voting, and automatic final score computation — all within an elegant, responsive interface.
+A streamlined Django-based platform for fair and flexible hackathon judging. Built specifically for the **Quantathon**, this app supports expert-specific criteria filtering, secure one-time submissions, public voting, real-time statistics dashboards, detailed analytical visualizations, and automatic final score computation — all within an elegant, responsive, quantum-inspired interface.
 
 ---
 
-## 🌟 Features
+## 🌟 Enhanced Features
 
-* 🧠 **Expert-Based Criteria Filtering**
-  Judges only see the criteria they are assigned to based on their area of expertise (e.g. Business Viability, Innovation, Technical Execution).
+* 🧠 **Dynamic Expert-Based Criteria Filtering**
+  Judges only evaluate criteria aligned with their expertise (e.g., Quantum Tech Quality for quantum experts, Business Viability for business experts).
 
-* 🔐 **One-Time Secure Submissions**
-  Each judge or public voter can only submit their scores once — preventing duplicates and encouraging thoughtful evaluations.
+* 🔐 **Secure Single-Use Judge Links**
+  Personalized judging links ensure each judge and public voter submits scores exactly once, enhancing integrity and accountability.
 
-* 🧮 **Real-Time Score Aggregation**
-  Scores across all criteria and judges are automatically averaged and updated, with results available on a central leaderboard.
+* 🧮 **Real-Time Score Aggregation and Analytics**
+  Live calculation and presentation of scores, weighted averages, and dynamic ranking updates, accessible via intuitive dashboards for admins, judges, and the public.
 
-* 🌍 **Public Voting Support**
-  Separate interface for public voters to rate entries on simplified criteria. Their votes are factored in with the appropriate weight.
+* 🌍 **Dedicated Public Voting Interface**
+  Allows community engagement with simplified scoring forms. Public votes are automatically integrated with appropriate weighting.
 
-* ⚙️ **Admin Panel for Link Generation**
-  Easily generate judging links from the Django Admin. Judges are emailed personalized links tied to their expertise.
+* ⚙️ **Admin Dashboard for Link and Judge Management**
+  Comprehensive control for administrators, including automatic generation of judge-specific and public links, judge assignments, and access management.
 
-* 📊 **Live Rankings Page**
-  View cumulative scores and team rankings in a dedicated results dashboard.
+* 📊 **Interactive Rankings and Visualization Dashboards**
+  Detailed analytics with customizable Chart.js visualizations including final scores, criterion-level breakdowns, team comparisons, and voting patterns.
+
+* 📤 **CSV and JSON Data Export**
+  Admins can export complete judging data and analytics for further review or offline archiving.
+
+* 🚨 **Robust Validation and Error Handling**
+  Clearly communicates invalid or expired links with direct admin contact options.
 
 ---
 
 ## 🧱 Tech Stack
 
-| Backend | Frontend | Styling     | DB & Hosting             |
+| Backend | Frontend | Styling     | Database & Hosting       |
 | ------- | -------- | ----------- | ------------------------ |
 | Django  | HTMX     | Bootstrap 5 | PostgreSQL (via Railway) |
 
@@ -38,111 +44,79 @@ A streamlined Django-based platform for fair and flexible hackathon judging. Bui
 
 ## 📸 Screenshots
 
-| Judge Interface                                                                    | Results                                                                   | Public Voting                                                                   |
-| ---------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ | ------------------------------------------------------------------------------- |
-| ![Judge View](https://github.com/ChantelleAA/judging_criteria/blob/main/judge_view1.png) | ![Results](https://github.com/ChantelleAA/judging_criteria/blob/main/results_view.png) | ![Public](https://github.com/ChantelleAA/judging_criteria/blob/main/public_judge_view.png) |
+| Judge Interface                                                                          | Results                                                                                | Public Voting                                                                              |
+| ---------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
+| ![Judge View](https://github.com/ChantelleAA/judging_criteria/blob/main/judge_view1.png) | ![Results](https://github.com/ChantelleAA/judging_criteria/blob/main/results_vid.mp4) | ![Public](https://github.com/ChantelleAA/judging_criteria/blob/main/public_judge_view.png) |
 
 ---
 
-## 🚀 Getting Started
+## 🧩 Core Models (Updated)
 
-### 1. Clone the repository
+* `Judge`: Represents judges with assigned expertise areas (Quantum Expert, General Judge, Public).
+* `JudgingCriteria`: Criteria including weighted scores for Quantum Tech Quality, Social Impact, Innovation, Presentation, Business Viability.
+* `Score`: Individual criterion scores provided by judges for teams.
+* `TeamSubmission`: Teams participating and evaluated.
+* `TeamFinalScore`: Aggregates and weights individual scores automatically.
+* `JudgingLink`: Secure, single-use URL generation for judges.
+* `PublicVote`: Stores public voting results separately for community engagement insights.
+
+---
+
+## 🚀 Quick Setup
+
+1. Clone and install dependencies:
 
 ```bash
 git clone https://github.com/ChantelleAA/judging_criteria.git
 cd judging_criteria
-```
-
-### 2. Set up environment
-
-```bash
 python -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
 ```
 
-### 3. Apply migrations
+2. Apply migrations and create admin:
 
 ```bash
-python manage.py makemigrations
 python manage.py migrate
-```
-
-### 4. Create superuser
-
-```bash
 python manage.py createsuperuser
 ```
 
-### 5. Run the server
+3. Launch app:
 
 ```bash
 python manage.py runserver
 ```
 
-Visit `http://127.0.0.1:8000/admin` to log in and begin managing judges, criteria, and links.
+Admin panel at `http://127.0.0.1:8000/admin`.
 
 ---
 
-## 🧩 Core Models
+## 🧪 Admin Configuration Steps
 
-* `Judge`: Represents a person judging, includes expertise field.
-* `JudgingCriteria`: All scoring categories (e.g., Technicality, Presentation).
-* `Score`: A judge’s rating for a team on a criterion.
-* `TeamSubmission`: Teams being evaluated.
-* `TeamFinalScore`: Auto-updated average scores per team.
-* `JudgingLink`: Secure per-judge unique access.
-* `PublicVote`: Simple form for public rating.
+1. Log in at `/admin/`
+2. Populate Judges, Criteria, and Teams.
+3. Generate and distribute judge-specific links at `/admin/generate-links/`.
+4. Monitor and export live results at `/results/`.
 
 ---
 
-## 🗃️ Folder Structure
+## 🛡️ Security Highlights
 
-```
-judging_criteria/
-│
-├── judging/              # Main app
-│   ├── models.py         # Data schema
-│   ├── views.py          # Logic for scoring, voting, results
-│   ├── templates/        # Custom HTML templates
-│   ├── static/           # Bootstrap + custom styles
-│   └── admin.py          # Admin panel customizations
-│
-├── manage.py
-├── requirements.txt
-└── README.md
-```
-
----
-
-## 🧪 Admin Setup Guide
-
-1. Login: `/admin/`
-2. Add judges under **Judge** model
-3. Add judging criteria under **JudgingCriteria**
-4. Add team submissions
-5. Use **Generate Links** to produce secure judge URLs
-6. Monitor results at `/results/`
-
----
-
-## 🛡️ Security Notes
-
-* All voting links are unique and single-use
-* Admin access is password-protected
-* No personal data is collected from public voters
-* Criteria visibility is dynamically restricted per judge
+* Single-use, secure voting links.
+* Password-protected admin access.
+* IP-based restrictions to prevent duplicate public votes.
+* Anonymous public judging with no personal data stored.
 
 ---
 
 ## ✨ Live Demo
 
-👉 [Judging Platform](https://judgingcriteria-production.up.railway.app/)
-👉 [Results Page](https://judgingcriteria-production.up.railway.app/results/)
-👉 [GitHub Repo](https://github.com/ChantelleAA/judging_criteria)
+👉 [Public Judging Platform](https://judgingcriteria-production.up.railway.app/public-judge/)
+👉 [Live Results Dashboard](https://judgingcriteria-production.up.railway.app/public-results/)
+👉 [GitHub Repository](https://github.com/ChantelleAA/judging_criteria)
 
 ---
 
 ## 🙌 Credits
 
-Built by [Chantelle Amoako-Atta](https://linkedin.com/in/chantelleaa) for the Quantathon judging team, with love and precision.
+Developed by [Chantelle Amoako-Atta](https://linkedin.com/in/chantelleaa) with precision and care for the Quantathon event.
