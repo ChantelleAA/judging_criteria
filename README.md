@@ -1,8 +1,8 @@
 # 🧑🏾‍⚖️ Quantathon Judging App
 
-![Demo](https://github.com/ChantelleAA/ChantelleAA/blob/main/judging_demo.gif)
-
 A streamlined Django-based platform for fair and flexible hackathon judging. Built specifically for the **Quantathon**, this app supports expert-specific criteria filtering, secure one-time submissions, public voting, real-time statistics dashboards, detailed analytical visualizations, and automatic final score computation — all within an elegant, responsive, quantum-inspired interface.
+
+![Demo](https://github.com/ChantelleAA/ChantelleAA/blob/main/judging_demo.gif)
 
 ---
 
@@ -46,7 +46,7 @@ A streamlined Django-based platform for fair and flexible hackathon judging. Bui
 
 | Judge Interface                                                                          | Results                                                                                | Public Voting                                                                              |
 | ---------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
-| ![Judge View](https://github.com/ChantelleAA/judging_criteria/blob/main/judge_view1.png) | ![Results](https://github.com/ChantelleAA/judging_criteria/blob/main/results_vid.mp4) | ![Public](https://github.com/ChantelleAA/judging_criteria/blob/main/public_judge_view.png) |
+| ![Judge View](https://github.com/ChantelleAA/judging_criteria/blob/main/judge_view1.png) | ![Results](https://github.com/ChantelleAA/judging_criteria/blob/main/results_view.png) | ![Public](https://github.com/ChantelleAA/judging_criteria/blob/main/public_judge_view.png) |
 
 ---
 
