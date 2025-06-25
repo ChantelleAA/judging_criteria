@@ -50,7 +50,7 @@ A streamlined Django-based platform for fair and flexible hackathon judging. Bui
 
 ---
 
-## 🧩 Core Models (Updated)
+## 🧩 Core Models
 
 * `Judge`: Represents judges with assigned expertise areas (Quantum Expert, General Judge, Public).
 * `JudgingCriteria`: Criteria including weighted scores for Quantum Tech Quality, Social Impact, Innovation, Presentation, Business Viability.
