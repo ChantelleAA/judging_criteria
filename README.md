@@ -1,7 +1,3 @@
-Here’s a comprehensive and well-structured `README.md` for your **Quantathon Judging App**, tailored to your style and standards:
-
----
-
 # 🧑🏾‍⚖️ Quantathon Judging App
 
 ![Demo](https://github.com/ChantelleAA/ChantelleAA/blob/main/judging_demo.gif)
@@ -150,13 +146,3 @@ judging_criteria/
 ## 🙌 Credits
 
 Built by [Chantelle Amoako-Atta](https://linkedin.com/in/chantelleaa) for the Quantathon judging team, with love and precision.
-
----
-
-## 📄 License
-
-[MIT License](LICENSE)
-
----
-
-Would you like this version added to the `README.md` in your GitHub repo, or do you want a version that includes badges and shields too? I can also generate a `judging_demo.gif` placeholder if needed.
