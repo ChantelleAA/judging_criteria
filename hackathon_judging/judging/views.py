@@ -911,85 +911,85 @@ def public_voting_results(request):
     return render(request, 'judging/public_results.html', context)
 
 
-# @staff_member_required
-# def admin_public_voting_results(request):
-#     """
-#     Admin view for public voting results with detailed analytics
-#     """
-#     # Get all public judgments for detailed analysis
-#     public_judgments = PublicJudgment.objects.select_related('team').all()
+@staff_member_required
+def admin_public_voting_results(request):
+    """
+    Admin view for public voting results with detailed analytics
+    """
+    # Get all public judgments for detailed analysis
+    public_judgments = PublicJudgment.objects.select_related('team').all()
     
-#     # Get teams with detailed public voting stats - FIXED COLUMN NAMES
-#     teams_with_public_votes = Team.objects.filter(
-#         publicjudgment__isnull=False
-#     ).distinct().annotate(
-#         public_vote_count=Count('publicjudgment'),
-#         avg_quantum_computing_quality=Avg('publicjudgment__quantum_computing_quality_quality'),
-#         avg_social_impact=Avg('publicjudgment__social_impact'), 
-#         avg_innovation=Avg('publicjudgment__innovation'),
-#         avg_presentation=Avg('publicjudgment__presentation'),
-#         avg_business_viability=Avg('publicjudgment__business_viability'),
-#     ).order_by('-public_vote_count')
+    # Get teams with detailed public voting stats - FIXED COLUMN NAMES
+    teams_with_public_votes = Team.objects.filter(
+        publicjudgment__isnull=False
+    ).distinct().annotate(
+        public_vote_count=Count('publicjudgment'),
+        avg_quantum_computing_quality=Avg('publicjudgment__quantum_computing_quality_quality'),
+        avg_social_impact=Avg('publicjudgment__social_impact'), 
+        avg_innovation=Avg('publicjudgment__innovation'),
+        avg_presentation=Avg('publicjudgment__presentation'),
+        avg_business_viability=Avg('publicjudgment__business_viability'),
+    ).order_by('-public_vote_count')
     
-#     # Calculate detailed statistics
-#     teams_data = []
-#     for team in teams_with_public_votes:
-#         if team.avg_quantum_computing_quality is not None:
-#             weighted_score = (
-#                 (team.avg_quantum_computing_quality or 0) * 0.40 +
-#                 (team.avg_social_impact or 0) * 0.25 +
-#                 (team.avg_innovation or 0) * 0.20 +
-#                 (team.avg_presentation or 0) * 0.10 +
-#                 (team.avg_business_viability or 0) * 0.05
-#             )
+    # Calculate detailed statistics
+    teams_data = []
+    for team in teams_with_public_votes:
+        if team.avg_quantum_computing_quality is not None:
+            weighted_score = (
+                (team.avg_quantum_computing_quality or 0) * 0.40 +
+                (team.avg_social_impact or 0) * 0.25 +
+                (team.avg_innovation or 0) * 0.20 +
+                (team.avg_presentation or 0) * 0.10 +
+                (team.avg_business_viability or 0) * 0.05
+            )
             
-#             # Get individual votes for this team for detailed analysis
-#             team_votes = PublicJudgment.objects.filter(team=team)
+            # Get individual votes for this team for detailed analysis
+            team_votes = PublicJudgment.objects.filter(team=team)
             
-#             teams_data.append({
-#                 'team': team,
-#                 'public_vote_count': team.public_vote_count,
-#                 'avg_quantum_computing_quality': round(team.avg_quantum_computing_quality, 2) if team.avg_quantum_computing_quality else 0,
-#                 'avg_social_impact': round(team.avg_social_impact, 2) if team.avg_social_impact else 0,
-#                 'avg_innovation': round(team.avg_innovation, 2) if team.avg_innovation else 0,
-#                 'avg_presentation': round(team.avg_presentation, 2) if team.avg_presentation else 0,
-#                 'avg_business_viability': round(team.avg_business_viability, 2) if team.avg_business_viability else 0,
-#                 'weighted_score': round(weighted_score, 2),
-#                 'votes': team_votes,
-#             })
+            teams_data.append({
+                'team': team,
+                'public_vote_count': team.public_vote_count,
+                'avg_quantum_computing_quality': round(team.avg_quantum_computing_quality, 2) if team.avg_quantum_computing_quality else 0,
+                'avg_social_impact': round(team.avg_social_impact, 2) if team.avg_social_impact else 0,
+                'avg_innovation': round(team.avg_innovation, 2) if team.avg_innovation else 0,
+                'avg_presentation': round(team.avg_presentation, 2) if team.avg_presentation else 0,
+                'avg_business_viability': round(team.avg_business_viability, 2) if team.avg_business_viability else 0,
+                'weighted_score': round(weighted_score, 2),
+                'votes': team_votes,
+            })
     
-#     # Sort by weighted score
-#     teams_data.sort(key=lambda x: x['weighted_score'], reverse=True)
+    # Sort by weighted score
+    teams_data.sort(key=lambda x: x['weighted_score'], reverse=True)
     
-#     # Add rankings
-#     for i, team_data in enumerate(teams_data, 1):
-#         team_data['rank'] = i
+    # Add rankings
+    for i, team_data in enumerate(teams_data, 1):
+        team_data['rank'] = i
     
-#     # Additional admin statistics
-#     total_public_votes = PublicJudgment.objects.count()
-#     teams_without_votes = Team.objects.filter(publicjudgment__isnull=True).count()
+    # Additional admin statistics
+    total_public_votes = PublicJudgment.objects.count()
+    teams_without_votes = Team.objects.filter(publicjudgment__isnull=True).count()
     
-#     # Voting patterns analysis - FIXED COLUMN NAMES
-#     criteria_averages = {
-#         'quantum_computing_quality': PublicJudgment.objects.aggregate(avg=Avg('quantum_computing_quality_quality'))['avg'],
-#         'social_impact': PublicJudgment.objects.aggregate(avg=Avg('social_impact'))['avg'],
-#         'innovation': PublicJudgment.objects.aggregate(avg=Avg('innovation'))['avg'],
-#         'presentation': PublicJudgment.objects.aggregate(avg=Avg('presentation'))['avg'],
-#         'business_viability': PublicJudgment.objects.aggregate(avg=Avg('business_viability'))['avg'],
-#     }
+    # Voting patterns analysis - FIXED COLUMN NAMES
+    criteria_averages = {
+        'quantum_computing_quality': PublicJudgment.objects.aggregate(avg=Avg('quantum_computing_quality_quality'))['avg'],
+        'social_impact': PublicJudgment.objects.aggregate(avg=Avg('social_impact'))['avg'],
+        'innovation': PublicJudgment.objects.aggregate(avg=Avg('innovation'))['avg'],
+        'presentation': PublicJudgment.objects.aggregate(avg=Avg('presentation'))['avg'],
+        'business_viability': PublicJudgment.objects.aggregate(avg=Avg('business_viability'))['avg'],
+    }
     
-#     context = {
-#         'teams_data': teams_data,
-#         'total_teams': len(teams_data),
-#         'total_public_votes': total_public_votes,
-#         'teams_without_votes': teams_without_votes,
-#         'criteria_averages': criteria_averages,
-#         'public_judgments': public_judgments,
-#         'page_title': 'Admin: Public Voting Results',
-#         'is_admin_view': True,
-#     }
+    context = {
+        'teams_data': teams_data,
+        'total_teams': len(teams_data),
+        'total_public_votes': total_public_votes,
+        'teams_without_votes': teams_without_votes,
+        'criteria_averages': criteria_averages,
+        'public_judgments': public_judgments,
+        'page_title': 'Admin: Public Voting Results',
+        'is_admin_view': True,
+    }
     
-#     return render(request, 'judging/admin_public_results.html', context)
+    return render(request, 'judging/admin_public_results.html', context)
 
 
 def judge_team_anonymous(request, judge_token, team_id):
@@ -1380,3 +1380,87 @@ def admin_results(request):
     }
     
     return render(request, 'judging/admin_results.html', context)
+
+
+# Add this function to your views.py
+
+@staff_member_required
+def admin_public_voting_results(request):
+    """
+    Admin view for public voting results with detailed analytics
+    """
+    # Get all public judgments for detailed analysis
+    public_judgments = PublicJudgment.objects.select_related('team').all()
+    
+    # Get teams with detailed public voting stats
+    teams_with_public_votes = Team.objects.filter(
+        publicjudgment__isnull=False
+    ).distinct().annotate(
+        public_vote_count=Count('publicjudgment'),
+        avg_quantum_tech=Avg('publicjudgment__quantum_tech_quality'),
+        avg_social_impact=Avg('publicjudgment__social_impact'), 
+        avg_innovation=Avg('publicjudgment__innovation'),
+        avg_presentation=Avg('publicjudgment__presentation'),
+        avg_business_viability=Avg('publicjudgment__business_viability'),
+    ).order_by('-public_vote_count')
+    
+    # Calculate detailed statistics
+    teams_data = []
+    for team in teams_with_public_votes:
+        if team.avg_quantum_tech is not None:
+            # Use CORRECT mapping for NEW criteria weights
+            weighted_score = (
+                (team.avg_innovation or 0) * 0.35 +           # Quantum Computing Relevance 35%
+                (team.avg_quantum_tech or 0) * 0.25 +         # Quantum Computing Quality 25%
+                (team.avg_social_impact or 0) * 0.25 +        # Social Impact Based on SDGs 25%
+                (team.avg_presentation or 0) * 0.15           # Presentation and Originality 15%
+            )
+            
+            # Get individual votes for this team for detailed analysis
+            team_votes = PublicJudgment.objects.filter(team=team)
+            
+            teams_data.append({
+                'team': team,
+                'public_vote_count': team.public_vote_count,
+                'avg_quantum_relevance': round(team.avg_innovation, 2) if team.avg_innovation else 0,
+                'avg_quantum_quality': round(team.avg_quantum_tech, 2) if team.avg_quantum_tech else 0,
+                'avg_social_impact': round(team.avg_social_impact, 2) if team.avg_social_impact else 0,
+                'avg_presentation': round(team.avg_presentation, 2) if team.avg_presentation else 0,
+                'avg_business_viability': round(team.avg_business_viability, 2) if team.avg_business_viability else 0,
+                'weighted_score': round(weighted_score, 2),
+                'votes': team_votes,
+            })
+    
+    # Sort by weighted score
+    teams_data.sort(key=lambda x: x['weighted_score'], reverse=True)
+    
+    # Add rankings
+    for i, team_data in enumerate(teams_data, 1):
+        team_data['rank'] = i
+    
+    # Additional admin statistics
+    total_public_votes = PublicJudgment.objects.count()
+    teams_without_votes = Team.objects.filter(publicjudgment__isnull=True).count()
+    
+    # Voting patterns analysis
+    criteria_averages = {
+        'quantum_relevance': PublicJudgment.objects.aggregate(avg=Avg('innovation'))['avg'],
+        'quantum_quality': PublicJudgment.objects.aggregate(avg=Avg('quantum_tech_quality'))['avg'],
+        'social_impact': PublicJudgment.objects.aggregate(avg=Avg('social_impact'))['avg'],
+        'presentation': PublicJudgment.objects.aggregate(avg=Avg('presentation'))['avg'],
+        'business_viability': PublicJudgment.objects.aggregate(avg=Avg('business_viability'))['avg'],
+    }
+    
+    context = {
+        'teams_data': teams_data,
+        'total_teams': len(teams_data),
+        'total_public_votes': total_public_votes,
+        'teams_without_votes': teams_without_votes,
+        'criteria_averages': criteria_averages,
+        'public_judgments': public_judgments,
+        'page_title': 'Admin: Public Voting Results',
+        'is_admin_view': True,
+    }
+    
+    return render(request, 'judging/admin_public_results.html', context)
+

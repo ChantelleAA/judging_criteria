@@ -103,10 +103,14 @@ class JudgingCriteriaAdmin(admin.ModelAdmin):
 @admin.register(TeamFinalScore)
 class TeamFinalScoreAdmin(admin.ModelAdmin):
     list_display = [
-        'team', 'rank', 'final_weighted_score', 
-        'quantum_tech_score', 'social_impact_score', 
-        'innovation_score', 'presentation_score', 
-        'business_viability_score', 'last_updated'
+        'team',
+        'quantum_computing_relevance',
+        'quantum_computing_quality', 
+        'social_impact_based_on_sdgs',
+        'presentation_and_originality',
+        'final_weighted_score',
+        'rank',
+        'last_updated'
     ]
     list_filter = ['rank', 'last_updated']
     search_fields = ['team__name']
@@ -229,21 +233,21 @@ class Command(BaseCommand):
 class PublicJudgmentAdmin(admin.ModelAdmin):
     list_display = [
         'team', 
-        'voter_ip', 
-        'quantum_tech_quality',
-        'social_impact',
-        'innovation', 
-        'presentation',
-        'business_viability',
-        'weighted_score_display',
+        'quantum_computing_quality', 
+        'social_impact_based_on_sdgs', 
+        'quantum_computing_relevance', 
+        'presentation_and_originality',
+        'weighted_score',
+        'voter_ip',
         'created_at'
     ]
     list_filter = [
-        'created_at',
-        'team',
-        'quantum_tech_quality',
-        'social_impact',
-        'innovation'
+        'team', 
+        'quantum_computing_quality', 
+        'social_impact_based_on_sdgs', 
+        'quantum_computing_relevance', 
+        'presentation_and_originality',
+        'created_at'
     ]
     search_fields = ['team__name', 'voter_ip', 'comments']
     readonly_fields = ['created_at', 'updated_at', 'weighted_score_display', 'average_score_display']
