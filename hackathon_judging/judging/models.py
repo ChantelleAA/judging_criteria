@@ -107,34 +107,75 @@ class Score(models.Model):
     def __str__(self):
         return f"{self.submission.team.name} - {self.criteria.name}: {self.score}"
 
+
 class TeamFinalScore(models.Model):
     """Calculated final scores for teams"""
     team = models.OneToOneField(Team, on_delete=models.CASCADE)
-    quantum_tech_score = models.DecimalField(max_digits=5, decimal_places=2, default=0)
-    social_impact_score = models.DecimalField(max_digits=5, decimal_places=2, default=0)
-    innovation_score = models.DecimalField(max_digits=5, decimal_places=2, default=0)
-    presentation_score = models.DecimalField(max_digits=5, decimal_places=2, default=0)
-    business_viability_score = models.DecimalField(max_digits=5, decimal_places=2, default=0)
+    quantum_computing_relevance = models.DecimalField(max_digits=5, decimal_places=2, default=0)
+    quantum_computing_quality = models.DecimalField(max_digits=5, decimal_places=2, default=0)
+    social_impact_based_on_sdgs = models.DecimalField(max_digits=5, decimal_places=2, default=0)
+    presentation_and_originality = models.DecimalField(max_digits=5, decimal_places=2, default=0)
     final_weighted_score = models.DecimalField(max_digits=6, decimal_places=2, default=0)
     rank = models.IntegerField(null=True, blank=True)
     last_updated = models.DateTimeField(auto_now=True)
     
     def calculate_final_score(self):
-        
+        """Calculate weighted final score using NEW criteria field names"""
         self.final_weighted_score = (
-            (self.innovation_score * 0.35) +        # Quantum Computing Relevance 35%
-            (self.quantum_tech_score * 0.25) +      # Quantum Computing Quality 25%
-            (self.social_impact_score * 0.25) +     # Social Impact Based on the SDGs 25%
-            (self.presentation_score * 0.15) +      # Presentation and Originality 15%
-            (self.business_viability_score * 0.00)  # Not used in new criteria
+            (self.quantum_computing_relevance * 0.35) +    # "Quantum Computing Relevance" 35%
+            (self.quantum_computing_quality * 0.25) +      # "Quantum Computing Quality" 25%
+            (self.social_impact_based_on_sdgs * 0.25) +    # "Social Impact Based on the SDGs" 25%
+            (self.presentation_and_originality * 0.15)     # "Presentation and Originality" 15%
         )
         self.save()
         return self.final_weighted_score
     
-    def __str__(self):
-        return f"{self.team.name} - Final Score: {self.final_weighted_score}"
+    def has_any_scores(self):
+        """Check if this team has received any judge scores"""
+        return self.team.submission_set.exists()
     
-
+    def get_score_breakdown(self):
+        """Get detailed breakdown with CORRECT field names"""
+        return {
+            'quantum_computing_relevance': {
+                'score': float(self.quantum_computing_relevance),
+                'weight': 35,
+                'weighted': float(self.quantum_computing_relevance * 0.35)
+            },
+            'quantum_computing_quality': {
+                'score': float(self.quantum_computing_quality),
+                'weight': 25,
+                'weighted': float(self.quantum_computing_quality * 0.25)
+            },
+            'social_impact_based_on_sdgs': {
+                'score': float(self.social_impact_based_on_sdgs),
+                'weight': 25,
+                'weighted': float(self.social_impact_based_on_sdgs * 0.25)
+            },
+            'presentation_and_originality': {
+                'score': float(self.presentation_and_originality),
+                'weight': 15,
+                'weighted': float(self.presentation_and_originality * 0.15)
+            },
+            'final_weighted_score': float(self.final_weighted_score)
+        }
+    
+    def get_judge_count(self):
+        """Get number of judges who have scored this team"""
+        return self.team.submission_set.count()
+    
+    def is_complete(self):
+        """Check if team has been scored by at least one judge"""
+        return self.has_any_scores() and self.final_weighted_score > 0
+    
+    class Meta:
+        ordering = ['-final_weighted_score', 'team__name']
+        verbose_name = "Team Final Score"
+        verbose_name_plural = "Team Final Scores"
+    
+    def __str__(self):
+        status = "✅" if self.is_complete() else "⏳"
+        return f"{status} {self.team.name} - {self.final_weighted_score:.2f}/5.0 ({self.get_judge_count()} judges)"
 
 class PublicJudgment(models.Model):
     """
@@ -143,36 +184,31 @@ class PublicJudgment(models.Model):
     team = models.ForeignKey('Team', on_delete=models.CASCADE)
     
     # Scoring criteria (1-5 scale, same as judge criteria)
-    quantum_tech_quality = models.IntegerField(
+    quantum_computing_quality = models.IntegerField(
         validators=[MinValueValidator(1), MaxValueValidator(5)],
         help_text="Technical implementation and quantum concepts (40% weight)"
     )
-    social_impact = models.IntegerField(
+    social_impact_based_on_sdgs = models.IntegerField(
         validators=[MinValueValidator(1), MaxValueValidator(5)],
         help_text="Potential to benefit society (25% weight)"
     )
-    innovation = models.IntegerField(
+    quantum_computing_relevance  = models.IntegerField(
         validators=[MinValueValidator(1), MaxValueValidator(5)],
         help_text="Creativity and novelty of approach (20% weight)"
     )
-    presentation = models.IntegerField(
+    presentation_and_originality = models.IntegerField(
         validators=[MinValueValidator(1), MaxValueValidator(5)],
         help_text="How well the idea is communicated (10% weight)"
     )
-    business_viability = models.IntegerField(
-        validators=[MinValueValidator(1), MaxValueValidator(5)],
-        help_text="Potential for real-world implementation (5% weight)"
-    )
-    
+
     # Optional comments
     comments = models.TextField(blank=True, null=True, help_text="Overall feedback")
     
     # Individual criteria comments (optional)
-    comment_quantum_tech = models.TextField(blank=True, null=True)
-    comment_social_impact = models.TextField(blank=True, null=True)
-    comment_innovation = models.TextField(blank=True, null=True)
-    comment_presentation = models.TextField(blank=True, null=True)
-    comment_business_viability = models.TextField(blank=True, null=True)
+    comment_quantum_computing_relevance = models.TextField(blank=True, null=True)
+    comment_quantum_computing_quality = models.TextField(blank=True, null=True)
+    comment_social_impact_based_on_sdgs = models.TextField(blank=True, null=True)
+    comment_presentation_and_originality = models.TextField(blank=True, null=True)
     
     # Tracking fields
     voter_ip = models.GenericIPAddressField(help_text="IP address of the voter")
@@ -198,40 +234,36 @@ class PublicJudgment(models.Model):
     def weighted_score(self):
         """Calculate weighted score using the same weights as judge criteria"""
         return (
-            self.quantum_tech_quality * 0.40 +
-            self.social_impact * 0.25 +
-            self.innovation * 0.20 +
-            self.presentation * 0.10 +
-            self.business_viability * 0.05
+            self.quantum_computing_quality * 0.35 +
+            self.social_impact_based_on_sdgs* 0.25 +
+            self.quantum_computing_relevance* 0.25 +
+            self.presentation_and_originality * 0.15 
         )
     
     @property
     def average_score(self):
         """Simple average of all criteria scores"""
         return (
-            self.quantum_tech_quality +
-            self.social_impact +
-            self.innovation +
-            self.presentation +
-            self.business_viability
+            self.quantum_computing_quality +
+            self.social_impact_based_on_sdgs+
+            self.quantum_computing_relevance+
+            self.presentation_and_originality
         ) / 5
     
     def get_criteria_scores(self):
         """Return all criteria scores as a dictionary"""
         return {
-            'quantum_tech_quality': self.quantum_tech_quality,
-            'social_impact': self.social_impact,
-            'innovation': self.innovation,
-            'presentation': self.presentation,
-            'business_viability': self.business_viability,
+            'quantum_computing_quality': self.quantum_computing_quality,
+            'social_impact_based_on_sdgs': self.social_impact_based_on_sdgs,
+            'quantum_computing_relevance': self.quantum_computing_relevance,
+            'presentation_and_originality': self.presentation_and_originality,
         }
     
     def get_criteria_comments(self):
         """Return all criteria comments as a dictionary"""
         return {
-            'quantum_tech': self.comment_quantum_tech,
-            'social_impact': self.comment_social_impact,
-            'innovation': self.comment_innovation,
-            'presentation': self.comment_presentation,
-            'business_viability': self.comment_business_viability,
+            'quantum_computing_quality': self.comment_quantum_computing_quality,
+            'social_impact_based_on_sdgs': self.comment_social_impact_based_on_sdgs,
+            'quantum_computing_relevance': self.comment_quantum_computing_relevance,
+            'presentation_and_originality': self.comment_presentation_and_originality,
         }
