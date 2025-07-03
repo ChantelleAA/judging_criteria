@@ -1,6 +1,6 @@
 {% extends 'judging/base.html' %}
 
-{% block title %}Public Judge Dashboard - Quantathon{% endblock %}
+{% block title %}Public Judge Dashboard - AIMS Ghana Quantathon 2025{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -17,28 +17,24 @@
     background-image: linear-gradient(135deg, #16a085 0%, #f4d03f 100%) !important;
 }
 
-/* Ensure no Bootstrap overrides */
 .card.gradient-welcome-card {
     background: linear-gradient(135deg, #16a085 0%, #f4d03f 100%) !important;
     background-color: #16a085 !important;
     background-image: linear-gradient(135deg, #16a085 0%, #f4d03f 100%) !important;
 }
 
-/* Additional specificity */
 div.card.gradient-welcome-card.border-0 {
     background: linear-gradient(135deg, #16a085 0%, #f4d03f 100%) !important;
     background-color: #16a085 !important;
     background-image: linear-gradient(135deg, #16a085 0%, #f4d03f 100%) !important;
 }
 
-/* Nuclear option - target any element with this class */
 * .gradient-welcome-card,
 *[class*="gradient-welcome-card"] {
     background: linear-gradient(135deg, #16a085 0%, #f4d03f 100%) !important;
     background-color: #16a085 !important;
     background-image: linear-gradient(135deg, #16a085 0%, #f4d03f 100%) !important;
 }
-
 </style>
 {% endblock %}
 
@@ -46,24 +42,28 @@ div.card.gradient-welcome-card.border-0 {
 <!-- Public Judge Welcome Section -->
 <div class="row">
     <div class="col-12 mb-4">
-        <div class="card border-0 gradient-welcome-card debug-bg" style="background-image: linear-gradient(135deg, #16a085 0%, #f4d03f 100%) !important; color: rgb(255, 255, 255); position: relative; min-height: 140px; box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3) !important;">
+        <div class="card border-0 gradient-welcome-card debug-bg" style="background-image: linear-gradient(135deg, #16a085 0%, #f4d03f 100%) !important; color: rgb(255, 255, 255); position: relative; min-height: 160px; box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3) !important;">
             <div class="card-body p-4" style="position: relative; z-index: 3; background: transparent !important;">
                 <div class="row align-items-center">
                     <div class="col-lg-8">
                         <h1 class="display-6 fw-bold mb-3" style="color: white !important;">
                             <i class="bi bi-globe me-3" style="color: white !important;"></i>
-                            Welcome, Public Judge!
+                            Welcome to AIMS Ghana Quantathon 2025!
                         </h1>
                         <div class="d-flex flex-wrap gap-2 mb-3">
                             <span class="badge bg-light text-dark px-3 py-2">
-                                <i class="bi bi-people-fill me-1"></i>Community Voting
+                                <i class="bi bi-people-fill me-1"></i>Public Judge
                             </span>
                             <span class="badge bg-light text-dark px-3 py-2">
-                                <i class="bi bi-star-fill me-1"></i>All Criteria
+                                <i class="bi bi-cpu me-1"></i>Quantum Science & Technology
+                            </span>
+                            <span class="badge bg-light text-dark px-3 py-2">
+                                <i class="bi bi-globe-americas me-1"></i>UN SDGs Focus
                             </span>
                         </div>
                         <p class="lead mb-0" style="color: white !important; opacity: 1;">
-                            Help shape the future of quantum innovation by judging these amazing teams!
+                            <strong>Theme:</strong> "Accelerating Capacity Building to Advance Quantum Science & Technology"<br>
+                            Help evaluate innovative quantum solutions addressing global challenges!
                         </p>
                     </div>
                     <div class="col-lg-4 text-lg-end">
@@ -88,15 +88,15 @@ div.card.gradient-welcome-card.border-0 {
                     <i class="bi bi-info-circle-fill fs-4 text-info"></i>
                 </div>
                 <div>
-                    <h5 class="fw-bold text-info mb-2">Public Judging Instructions</h5>
+                    <h5 class="fw-bold text-info mb-2">AIMS Ghana Quantathon 2025 - Public Judging Instructions</h5>
                     <p class="mb-2">
-                        As a public judge, you get to evaluate teams on <strong>all criteria</strong>. Your voice matters in determining the winners!
+                        As a public judge, you'll evaluate teams using the <strong>four judging pillars</strong> recommended by the Open Quantum Institute (OQI). Your voice matters in determining the winners!
                     </p>
                     <ul class="mb-0 small">
                         <li>You can judge each team only <strong>once</strong></li>
-                        <li>Please be fair and considerate in your scoring</li>
-                        <li>Consider the potential <strong>impact</strong> and <strong>innovation</strong> of each project</li>
-                        <li>Your judgments are anonymous and help create a balanced result</li>
+                        <li>Please be fair and thoughtful in your scoring</li>
+                        <li>Focus on <strong>quantum computing relevance</strong> and <strong>social impact via UN SDGs</strong></li>
+                        <li>Your judgments are anonymous and help create balanced results</li>
                     </ul>
                 </div>
             </div>
@@ -172,7 +172,7 @@ div.card.gradient-welcome-card.border-0 {
             <div class="card-header d-flex justify-content-between align-items-center">
                 <div>
                     <i class="bi bi-people-fill me-2"></i>
-                    Quantum Teams
+                    Quantum Innovation Teams
                 </div>
                 <div class="d-flex gap-2">
                     <span class="badge bg-info text-white px-4 py-3">
@@ -251,76 +251,91 @@ div.card.gradient-welcome-card.border-0 {
     </div>
 </div>
 
-<!-- Public Judging Guidelines -->
+<!-- AIMS Ghana 2025 Judging Guidelines -->
 {% if completed_judgments < total_teams %}
     <div class="row mt-4">
         <div class="col-12">
             <div class="card border-info" style="background: rgba(22, 160, 133, 0.05);">
                 <div class="card-header bg-transparent border-0">
                     <h5 class="text-info mb-0">
-                        <i class="bi bi-heart-fill me-2"></i>Public Judging Guidelines
+                        <i class="bi bi-lightbulb-fill me-2"></i>AIMS Ghana Quantathon 2025 - Judging Guidelines
                     </h5>
                 </div>
                 <div class="card-body">
                     <div class="row">
                         <div class="col-lg-6">
-                            <h6 class="fw-bold">Scoring Scale</h6>
+                            <h6 class="fw-bold">Scoring Scale (1-5 Points)</h6>
                             <div class="mb-2">
                                 <span class="badge bg-danger">1</span>
-                                <span><strong>Poor</strong> - Needs significant improvement</span>
+                                <span><strong>Weak</strong> - Does not meet expectations</span>
                             </div>
                             <div class="mb-2">
                                 <span class="badge" style="background-color: #ff6600;">2</span>
-                                <span><strong>Below Average</strong> - Some potential</span>
+                                <span><strong>Fair</strong> - Partially meets expectations</span>
                             </div>
                             <div class="mb-2">
                                 <span class="badge bg-warning">3</span>
-                                <span><strong>Average</strong> - Solid effort</span>
+                                <span><strong>Good</strong> - Meets expectations well</span>
                             </div>
                             <div class="mb-2">
                                 <span class="badge bg-info">4</span>
-                                <span><strong>Above Average</strong> - Very good</span>
+                                <span><strong>Very Good</strong> - Exceeds expectations</span>
                             </div>
                             <div class="mb-2">
                                 <span class="badge bg-success">5</span>
-                                <span><strong>Outstanding</strong> - Exceptional</span>
+                                <span><strong>Excellent</strong> - Outstanding performance</span>
                             </div>
                         </div>
                         <div class="col-lg-6">
-                            <h6 class="fw-bold">What You'll Judge</h6>
+                            <h6 class="fw-bold">Updated Judging Criteria (OQI Framework)</h6>
                             <ul class="list-unstyled">
                                 <li class="mb-2">
-                                    <span class="badge bg-info me-2">40%</span>
-                                    <strong>Quantum Tech Quality</strong>
-                                    <div class="small text-muted">Technical implementation and quantum concepts</div>
+                                    <span class="badge bg-primary me-2">35%</span>
+                                    <strong>Quantum Computing Relevance</strong>
+                                    <div class="small text-muted">Is QC essential? Is it well-justified? Real-world application?</div>
                                 </li>
                                 <li class="mb-2">
                                     <span class="badge bg-success me-2">25%</span>
-                                    <strong>Social Impact</strong>
-                                    <div class="small text-muted">Potential to benefit society</div>
+                                    <strong>Quantum Computing Quality</strong>
+                                    <div class="small text-muted">Appropriate algorithms? Functional code? Creative implementation?</div>
                                 </li>
                                 <li class="mb-2">
-                                    <span class="badge bg-primary me-2">20%</span>
-                                    <strong>Innovation</strong>
-                                    <div class="small text-muted">Creativity and novelty of approach</div>
-                                </li>
-                                <li class="mb-2">
-                                    <span class="badge bg-warning me-2">10%</span>
-                                    <strong>Presentation</strong>
-                                    <div class="small text-muted">How well the idea is communicated</div>
+                                    <span class="badge bg-info me-2">25%</span>
+                                    <strong>Social Impact Based on SDGs</strong>
+                                    <div class="small text-muted">Addresses UN SDGs? Scalable impact? Practical potential?</div>
                                 </li>
                                 <li>
-                                    <span class="badge bg-secondary me-2">5%</span>
-                                    <strong>Business Viability</strong>
-                                    <div class="small text-muted">Potential for real-world implementation</div>
+                                    <span class="badge bg-warning me-2">15%</span>
+                                    <strong>Presentation and Originality</strong>
+                                    <div class="small text-muted">Clear presentation? Compelling pitch? Original thinking?</div>
                                 </li>
                             </ul>
                         </div>
                     </div>
                     
                     <div class="alert alert-info border-0 mt-3">
-                        <i class="bi bi-heart me-2"></i>
-                        <strong>Thank you!</strong> Your participation as a public judge helps ensure fair and diverse evaluation of these innovative quantum projects.
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-heart me-2 fs-4"></i>
+                            <div>
+                                <strong>Thank you for being part of AIMS Ghana Quantathon 2025!</strong> Your participation as a public judge helps ensure fair evaluation of these innovative quantum projects that aim to advance capacity building in quantum science & technology.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Theme Information -->
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <div class="border rounded p-3" style="background: rgba(22, 160, 133, 0.05);">
+                                <h6 class="fw-bold text-center mb-3">
+                                    <i class="bi bi-target me-2"></i>About the Theme
+                                </h6>
+                                <div class="text-center">
+                                    <h5 class="text-primary mb-3">"Accelerating Capacity Building to Advance Quantum Science & Technology"</h5>
+                                    <p class="mb-2">Teams are developing quantum computing solutions that address real-world challenges aligned with the UN Sustainable Development Goals (SDGs).</p>
+                                    <p class="mb-0 small text-muted">Focus areas include education, healthcare, climate change, poverty reduction, clean energy, and other global challenges where quantum computing can make a transformative impact.</p>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -337,12 +352,17 @@ div.card.gradient-welcome-card.border-0 {
                     <div class="mb-3" style="font-size: 3rem; color: #16a085;">
                         <i class="bi bi-heart-fill"></i>
                     </div>
-                    <h3 class="text-success">Thank You!</h3>
-                    <p class="lead">You have successfully judged all teams in the Quantathon.</p>
-                    <p class="text-muted">Your contribution as a public judge is invaluable to the quantum community!</p>
-                    <a href="/results/all-judges/" class="btn btn-info mt-2">
-                        <i class="bi bi-bar-chart me-2"></i>View Live Results
-                    </a>
+                    <h3 class="text-success">Thank You for Judging AIMS Ghana Quantathon 2025!</h3>
+                    <p class="lead">You have successfully evaluated all teams in the competition.</p>
+                    <p class="text-muted">Your contribution helps advance quantum science & technology capacity building in Africa and beyond!</p>
+                    <div class="mt-3">
+                        <a href="/results/all-judges/" class="btn btn-info me-2">
+                            <i class="bi bi-bar-chart me-2"></i>View Live Results
+                        </a>
+                        <a href="{% url 'public_judge_access' %}" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-clockwise me-2"></i>Refresh Dashboard
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>
@@ -370,16 +390,13 @@ div.card.gradient-welcome-card.border-0 {
             gradientCard.style.setProperty('background-color', '#16a085', 'important');
             gradientCard.style.setProperty('background-image', 'linear-gradient(135deg, #16a085 0%, #f4d03f 100%)', 'important');
             
-            // Test with solid color first
+            setTimeout(() => {
+                console.log('Final computed background:', window.getComputedStyle(gradientCard).background);
                 
-                setTimeout(() => {
-
-                    console.log('Final computed background:', window.getComputedStyle(gradientCard).background);
-            
-            // Log all classes
-            console.log('Card classes:', gradientCard.className);
-            console.log('Card inline style:', gradientCard.style.cssText);
-            
+                // Log all classes
+                console.log('Card classes:', gradientCard.className);
+                console.log('Card inline style:', gradientCard.style.cssText);
+            }, 500);
         } else {
             console.error('Gradient card not found! Available cards:', document.querySelectorAll('.card'));
         }
@@ -426,16 +443,21 @@ div.card.gradient-welcome-card.border-0 {
         });
     });
 
-    // Encourage participation
+    // Encourage participation with helpful tips
     if ({{ completed_judgments }} === 0) {
         setTimeout(() => {
             const toast = document.createElement('div');
             toast.className = 'alert alert-info position-fixed';
-            toast.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+            toast.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px; animation: slideInRight 0.5s ease;';
             toast.innerHTML = `
-                <i class="bi bi-star me-2"></i>
-                <strong>Ready to start?</strong> Click on any team to begin judging!
-                <button type="button" class="btn-close ms-2" onclick="this.parentElement.remove()"></button>
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-lightbulb-fill text-warning me-2 fs-4"></i>
+                    <div>
+                        <strong>Ready to start judging?</strong><br>
+                        <small>Click on any team to begin evaluating their quantum innovation!</small>
+                    </div>
+                    <button type="button" class="btn-close ms-2" onclick="this.parentElement.parentElement.remove()"></button>
+                </div>
             `;
             document.body.appendChild(toast);
             
@@ -444,5 +466,66 @@ div.card.gradient-welcome-card.border-0 {
             }, 8000);
         }, 2000);
     }
+
+    // Show progress encouragement
+    if ({{ completed_judgments }} > 0 && {{ completed_judgments }} < {{ total_teams }}) {
+        setTimeout(() => {
+            const progressToast = document.createElement('div');
+            progressToast.className = 'alert alert-success position-fixed';
+            progressToast.style.cssText = 'top: 80px; right: 20px; z-index: 9999; min-width: 320px; animation: slideInRight 0.5s ease;';
+            progressToast.innerHTML = `
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-check-circle-fill text-success me-2 fs-4"></i>
+                    <div>
+                        <strong>Great progress!</strong><br>
+                        <small>You've judged {{ completed_judgments }} out of {{ total_teams }} teams. Keep going!</small>
+                    </div>
+                    <button type="button" class="btn-close ms-2" onclick="this.parentElement.parentElement.remove()"></button>
+                </div>
+            `;
+            document.body.appendChild(progressToast);
+            
+            setTimeout(() => {
+                if (progressToast.parentElement) progressToast.remove();
+            }, 6000);
+        }, 1500);
+    }
+
+    // Add animation styles
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes slideInRight {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        
+        .team-card {
+            transition: all 0.3s ease;
+        }
+        
+        .team-item[data-status="completed"] .team-card {
+            border-left: 4px solid #28a745;
+        }
+        
+        .team-item[data-status="pending"] .team-card {
+            border-left: 4px solid #17a2b8;
+        }
+        
+        .progress-ring {
+            transform: rotate(-90deg);
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        }
+    `;
+    document.head.appendChild(style);
 </script>
 {% endblock %}

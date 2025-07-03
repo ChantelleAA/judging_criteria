@@ -1,6 +1,6 @@
 {% extends 'judging/base.html' %}
 
-{% block title %}Public Voting Results - Quantathon{% endblock %}
+{% block title %}Public Voting Results - AIMS Ghana Quantathon 2025{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -124,15 +124,18 @@
 <!-- Header -->
 <div class="row mb-4">
     <div class="col-12">
-        <div class="card border-0 gradient-header-card" style="background: linear-gradient(135deg, #16a085 0%, #f4d03f 100%) !important; color: white; min-height: 120px;">
+        <div class="card border-0 gradient-header-card" style="background: linear-gradient(135deg, #16a085 0%, #f4d03f 100%) !important; color: white; min-height: 140px;">
             <div class="card-body p-4" style="background: transparent !important;">
                 <div class="row align-items-center">
                     <div class="col-lg-8">
                         <h1 class="display-6 fw-bold mb-2" style="color: white !important;">
-                            <i class="bi bi-trophy-fill me-3"></i>Public Voting Results
+                            <i class="bi bi-trophy-fill me-3"></i>AIMS Ghana Quantathon 2025 Results
                         </h1>
-                        <p class="lead mb-0" style="color: white !important; opacity: 0.9;">
-                            Community choice winners based on {{ total_public_votes }} public votes
+                        <p class="lead mb-1" style="color: white !important; opacity: 0.9;">
+                            Public voting results based on {{ total_public_votes }} community votes
+                        </p>
+                        <p class="mb-0" style="color: white !important; opacity: 0.8; font-size: 0.9rem;">
+                            <strong>Theme:</strong> "Accelerating Capacity Building to Advance Quantum Science & Technology"
                         </p>
                     </div>
                     <div class="col-lg-4 text-lg-end">
@@ -151,19 +154,19 @@
     <div class="col-md-3">
         <div class="stats-card">
             <div class="display-6 text-info fw-bold">{{ total_teams }}</div>
-            <div class="small text-muted">Teams Voted On</div>
+            <div class="small text-muted">Quantum Teams</div>
         </div>
     </div>
     <div class="col-md-3">
         <div class="stats-card">
             <div class="display-6 text-success fw-bold">{{ total_public_votes }}</div>
-            <div class="small text-muted">Total Public Votes</div>
+            <div class="small text-muted">Public Votes</div>
         </div>
     </div>
     <div class="col-md-3">
         <div class="stats-card">
             <div class="display-6 text-warning fw-bold">{{ avg_votes_per_team }}</div>
-            <div class="small text-muted">Avg Votes per Team</div>
+            <div class="small text-muted">Avg Votes/Team</div>
         </div>
     </div>
     <div class="col-md-3">
@@ -315,13 +318,13 @@
             <div class="col-md-4">
                 <div class="card border-success">
                     <div class="card-header bg-success bg-opacity-10">
-                        <h6 class="mb-0"><i class="bi bi-cpu me-2"></i>Best Quantum Tech</h6>
+                        <h6 class="mb-0"><i class="bi bi-cpu me-2"></i>Best QC Relevance</h6>
                     </div>
                     <div class="card-body text-center">
                         {% for team_data in teams_data %}
                             {% if forloop.first %}
                                 <h5 class="text-success">{{ team_data.team.name }}</h5>
-                                <p class="text-muted">{{ team_data.avg_quantum_tech }}/5.0</p>
+                                <p class="text-muted">{{ team_data.avg_quantum_relevance }}/5.0</p>
                             {% endif %}
                         {% endfor %}
                     </div>
@@ -337,7 +340,7 @@
         <div class="card">
             <div class="card-header d-flex justify-content-between align-items-center">
                 <h5 class="mb-0">
-                    <i class="bi bi-list-ol me-2"></i>Public Voting Rankings
+                    <i class="bi bi-list-ol me-2"></i>Public Voting Rankings - AIMS Ghana Quantathon 2025
                 </h5>
                 <div class="d-flex gap-2">
                     <div class="btn-group btn-group-sm">
@@ -377,39 +380,39 @@
                                         </div>
                                     </div>
                                     
-                                    <!-- Criteria Breakdown -->
+                                    <!-- Updated Criteria Breakdown for AIMS Ghana 2025 -->
                                     <div class="col-md-5">
                                         <div class="row g-2">
                                             <div class="col-6">
                                                 <div class="criteria-mini">
-                                                    <strong>Quantum Tech (40%)</strong>
+                                                    <strong>QC Relevance (35%)</strong>
                                                     <div class="score-bar">
-                                                        <div class="score-fill bg-info" style="width: {% widthratio team_data.avg_quantum_tech 5 100 %}%"></div>
+                                                        <div class="score-fill bg-primary" style="width: {% widthratio team_data.avg_quantum_relevance 5 100 %}%"></div>
                                                     </div>
-                                                    <small class="text-muted">{{ team_data.avg_quantum_tech }}/5</small>
+                                                    <small class="text-muted">{{ team_data.avg_quantum_relevance }}/5</small>
                                                 </div>
                                             </div>
                                             <div class="col-6">
                                                 <div class="criteria-mini">
-                                                    <strong>Social Impact (25%)</strong>
+                                                    <strong>QC Quality (25%)</strong>
                                                     <div class="score-bar">
-                                                        <div class="score-fill bg-success" style="width: {% widthratio team_data.avg_social_impact 5 100 %}%"></div>
+                                                        <div class="score-fill bg-success" style="width: {% widthratio team_data.avg_quantum_quality 5 100 %}%"></div>
+                                                    </div>
+                                                    <small class="text-muted">{{ team_data.avg_quantum_quality }}/5</small>
+                                                </div>
+                                            </div>
+                                            <div class="col-6">
+                                                <div class="criteria-mini">
+                                                    <strong>Social Impact SDGs (25%)</strong>
+                                                    <div class="score-bar">
+                                                        <div class="score-fill bg-info" style="width: {% widthratio team_data.avg_social_impact 5 100 %}%"></div>
                                                     </div>
                                                     <small class="text-muted">{{ team_data.avg_social_impact }}/5</small>
                                                 </div>
                                             </div>
                                             <div class="col-6">
                                                 <div class="criteria-mini">
-                                                    <strong>Innovation (20%)</strong>
-                                                    <div class="score-bar">
-                                                        <div class="score-fill bg-primary" style="width: {% widthratio team_data.avg_innovation 5 100 %}%"></div>
-                                                    </div>
-                                                    <small class="text-muted">{{ team_data.avg_innovation }}/5</small>
-                                                </div>
-                                            </div>
-                                            <div class="col-6">
-                                                <div class="criteria-mini">
-                                                    <strong>Presentation (10%)</strong>
+                                                    <strong>Presentation & Originality (15%)</strong>
                                                     <div class="score-bar">
                                                         <div class="score-fill bg-warning" style="width: {% widthratio team_data.avg_presentation 5 100 %}%"></div>
                                                     </div>
@@ -451,11 +454,10 @@
                                         <th>Rank</th>
                                         <th>Team</th>
                                         <th>Public Votes</th>
-                                        <th>Quantum Tech</th>
-                                        <th>Social Impact</th>
-                                        <th>Innovation</th>
-                                        <th>Presentation</th>
-                                        <th>Business</th>
+                                        <th>QC Relevance</th>
+                                        <th>QC Quality</th>
+                                        <th>Social Impact (SDGs)</th>
+                                        <th>Presentation & Originality</th>
                                         <th>Overall Score</th>
                                     </tr>
                                 </thead>
@@ -474,11 +476,10 @@
                                             <td>
                                                 <span class="badge bg-info">{{ team_data.public_vote_count }}</span>
                                             </td>
-                                            <td>{{ team_data.avg_quantum_tech }}</td>
+                                            <td>{{ team_data.avg_quantum_relevance }}</td>
+                                            <td>{{ team_data.avg_quantum_quality }}</td>
                                             <td>{{ team_data.avg_social_impact }}</td>
-                                            <td>{{ team_data.avg_innovation }}</td>
                                             <td>{{ team_data.avg_presentation }}</td>
-                                            <td>{{ team_data.avg_business_viability }}</td>
                                             <td>
                                                 <strong class="text-primary">{{ team_data.weighted_score }}</strong>
                                             </td>
@@ -494,48 +495,56 @@
     </div>
 </div>
 
-<!-- Voting Guidelines -->
+<!-- Updated Voting Guidelines for AIMS Ghana 2025 -->
 {% if teams_data %}
     <div class="row mt-4">
         <div class="col-12">
             <div class="card border-info" style="background: rgba(22, 160, 133, 0.05);">
                 <div class="card-header bg-transparent border-0">
                     <h5 class="text-info mb-0">
-                        <i class="bi bi-info-circle me-2"></i>About Public Voting Results
+                        <i class="bi bi-info-circle me-2"></i>About AIMS Ghana Quantathon 2025 Public Voting Results
                     </h5>
                 </div>
                 <div class="card-body">
                     <div class="row">
                         <div class="col-lg-6">
-                            <h6 class="fw-bold">Scoring System</h6>
+                            <h6 class="fw-bold">Updated Scoring System (OQI Framework)</h6>
                             <ul class="list-unstyled mb-0">
                                 <li class="mb-2">
-                                    <span class="badge bg-info me-2">40%</span>
-                                    <strong>Quantum Tech Quality</strong>
+                                    <span class="badge bg-primary me-2">35%</span>
+                                    <strong>Quantum Computing Relevance</strong>
+                                    <div class="small text-muted">Is QC essential? Well-justified? Real-world application?</div>
                                 </li>
                                 <li class="mb-2">
                                     <span class="badge bg-success me-2">25%</span>
-                                    <strong>Social Impact</strong>
+                                    <strong>Quantum Computing Quality</strong>
+                                    <div class="small text-muted">Appropriate algorithms? Functional code? Creative implementation?</div>
                                 </li>
                                 <li class="mb-2">
-                                    <span class="badge bg-primary me-2">20%</span>
-                                    <strong>Innovation</strong>
-                                </li>
-                                <li class="mb-2">
-                                    <span class="badge bg-warning me-2">10%</span>
-                                    <strong>Presentation</strong>
+                                    <span class="badge bg-info me-2">25%</span>
+                                    <strong>Social Impact Based on SDGs</strong>
+                                    <div class="small text-muted">Addresses UN SDGs? Scalable impact? Practical potential?</div>
                                 </li>
                                 <li>
-                                    <span class="badge bg-secondary me-2">5%</span>
-                                    <strong>Business Viability</strong>
+                                    <span class="badge bg-warning me-2">15%</span>
+                                    <strong>Presentation and Originality</strong>
+                                    <div class="small text-muted">Clear presentation? Compelling pitch? Original thinking?</div>
                                 </li>
                             </ul>
                         </div>
                         <div class="col-lg-6">
                             <h6 class="fw-bold">How It Works</h6>
-                            <p class="mb-2">Public votes are collected from community members who evaluate teams on all criteria.</p>
-                            <p class="mb-2">Scores are weighted and averaged to create fair rankings.</p>
-                            <p class="mb-0">Results update in real-time as new votes are submitted.</p>
+                            <p class="mb-2">Public votes are collected from community members who evaluate teams using the Open Quantum Institute (OQI) framework.</p>
+                            <p class="mb-2">Scores are weighted according to the importance of each criterion and averaged to create fair rankings.</p>
+                            <p class="mb-3">Results update in real-time as new votes are submitted.</p>
+                            
+                            <div class="alert alert-light border">
+                                <h6 class="fw-bold">
+                                    <i class="bi bi-target me-1"></i>Competition Theme
+                                </h6>
+                                <p class="mb-1"><strong>"Accelerating Capacity Building to Advance Quantum Science & Technology"</strong></p>
+                                <p class="mb-0 small text-muted">Teams develop quantum computing solutions addressing real-world challenges aligned with UN Sustainable Development Goals.</p>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -632,7 +641,7 @@
                 plugins: {
                     title: {
                         display: true,
-                        text: 'Team Performance Overview'
+                        text: 'AIMS Ghana Quantathon 2025 - Team Performance Overview'
                     }
                 },
                 scales: {
@@ -664,10 +673,10 @@
         charts.criteria = new Chart(ctx, {
             type: 'radar',
             data: {
-                labels: ['Quantum Tech', 'Social Impact', 'Innovation', 'Presentation', 'Business'],
+                labels: ['QC Relevance', 'QC Quality', 'Social Impact (SDGs)', 'Presentation & Originality'],
                 datasets: chartData.slice(0, 5).map((team, index) => ({
                     label: team.team_name,
-                    data: [4.2, 3.8, 4.0, 3.5, 3.2], // Sample data - replace with actual criteria scores
+                    data: [4.2, 3.8, 4.0, 3.5], // Sample data - replace with actual criteria scores
                     borderColor: `hsl(${index * 72}, 70%, 50%)`,
                     backgroundColor: `hsla(${index * 72}, 70%, 50%, 0.2)`,
                     borderWidth: 2
@@ -677,7 +686,7 @@
                 responsive: true,
                 maintainAspectRatio: false,
                 plugins: {
-                    title: { display: true, text: 'Top 5 Teams - Criteria Breakdown' }
+                    title: { display: true, text: 'Top 5 Teams - AIMS Ghana 2025 Criteria Breakdown' }
                 },
                 scales: {
                     r: {
@@ -713,68 +722,68 @@
                 responsive: true,
                 maintainAspectRatio: false,
                 plugins: {
-                    title: { display: true, text: 'Team Score Distribution' }
+                    title: { display: true, text: 'Team Score Distribution - AIMS Ghana 2025' }
                 }
             }
         });
     }
 
-function createVotingChart() {
-   if (charts.voting) charts.voting.destroy();
-   
-   const ctx = document.getElementById('votingCanvas').getContext('2d');
-   charts.voting = new Chart(ctx, {
-       type: 'doughnut',
-       data: {
-           labels: chartData.map(item => item.team_name),
-           datasets: [{
-               label: 'Vote Distribution',
-               data: chartData.map(item => item.vote_count),
-               backgroundColor: chartData.map((_, index) => 
-                   `hsla(${index * 360 / chartData.length}, 70%, 60%, 0.8)`
-               ),
-               borderColor: chartData.map((_, index) => 
-                   `hsl(${index * 360 / chartData.length}, 70%, 50%)`
-               ),
-               borderWidth: 2
-           }]
-       },
-       options: {
-           responsive: true,
-           maintainAspectRatio: false,
-           plugins: {
-               title: { 
-                   display: true, 
-                   text: 'Public Vote Distribution' 
-               },
-               legend: {
-                   position: 'right'
-               }
-           }
-       }
-   });
-}
+    function createVotingChart() {
+        if (charts.voting) charts.voting.destroy();
+        
+        const ctx = document.getElementById('votingCanvas').getContext('2d');
+        charts.voting = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: chartData.map(item => item.team_name),
+                datasets: [{
+                    label: 'Vote Distribution',
+                    data: chartData.map(item => item.vote_count),
+                    backgroundColor: chartData.map((_, index) => 
+                        `hsla(${index * 360 / chartData.length}, 70%, 60%, 0.8)`
+                    ),
+                    borderColor: chartData.map((_, index) => 
+                        `hsl(${index * 360 / chartData.length}, 70%, 50%)`
+                    ),
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    title: { 
+                        display: true, 
+                        text: 'Public Vote Distribution - AIMS Ghana 2025' 
+                    },
+                    legend: {
+                        position: 'right'
+                    }
+                }
+            }
+        });
+    }
 
-// Auto-refresh every 30 seconds
-setInterval(refreshResults, 30000);
+    // Auto-refresh every 30 seconds
+    setInterval(refreshResults, 30000);
 
-// Animate score bars on load
-document.addEventListener('DOMContentLoaded', function() {
-   setTimeout(() => {
-       document.querySelectorAll('.score-fill').forEach(bar => {
-           bar.style.width = bar.style.width;
-       });
-   }, 500);
-   
-   // Enable Bootstrap tabs
-   var triggerTabList = [].slice.call(document.querySelectorAll('#chartTabs a'));
-   triggerTabList.forEach(function (triggerEl) {
-       triggerEl.addEventListener('click', function (event) {
-           event.preventDefault();
-           var tab = new bootstrap.Tab(triggerEl);
-           tab.show();
-       });
-   });
-});
+    // Animate score bars on load
+    document.addEventListener('DOMContentLoaded', function() {
+        setTimeout(() => {
+            document.querySelectorAll('.score-fill').forEach(bar => {
+                bar.style.width = bar.style.width;
+            });
+        }, 500);
+        
+        // Enable Bootstrap tabs
+        var triggerTabList = [].slice.call(document.querySelectorAll('#chartTabs a'));
+        triggerTabList.forEach(function (triggerEl) {
+            triggerEl.addEventListener('click', function (event) {
+                event.preventDefault();
+                var tab = new bootstrap.Tab(triggerEl);
+                tab.show();
+            });
+        });
+    });
 </script>
 {% endblock %}

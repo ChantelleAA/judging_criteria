@@ -132,7 +132,7 @@ def custom_logout_view(request):
 
 
 def admin_results(request):
-    """Results dashboard – supplies JSON blobs for Chart.js - FIXED VERSION"""
+    
     if not request.user.is_authenticated:
         return redirect('judge_login')
 
@@ -185,7 +185,7 @@ def admin_results(request):
         teams_json.append({
             'team': tfs.team.name,                                    # Team name as string
             'final_weighted_score': float(tfs.final_weighted_score),  # Final score
-            'rank': tfs.rank,                                        # Add rank - THIS WAS MISSING!
+            'rank': tfs.rank,                                        
             'scores': scores_dict,                                   # Criteria scores
             'members': getattr(tfs.team, 'members', 'Team Members'), # Add members if available
             'description': getattr(tfs.team, 'description', ''),     # Add description if available
@@ -391,8 +391,62 @@ def judge_dashboard_anonymous(request, judge_token):
     }
     return render(request, 'judging/dashboard.html', context)
 
+# def judge_team_anonymous(request, judge_token, team_id):
+#     """Anonymous team judging using unique token"""
+#     try:
+#         judge = get_object_or_404(Judge, unique_token=judge_token)
+#         team = get_object_or_404(Team, id=team_id)
+#     except:
+#         messages.error(request, 'Invalid link. Please contact the administrator.')
+#         return redirect('home_anonymous')
+
+#     if Submission.objects.filter(judge=judge, team=team).exists():
+#         messages.warning(request, f'You have already judged {team.name}.')
+#         return redirect('judge_dashboard_anonymous', judge_token=judge_token)
+
+#     if request.method == 'POST':
+#         form = TeamScoreForm(request.POST, judge=judge, team=team)
+#         if form.is_valid():
+#             with transaction.atomic():
+#                 submission = Submission.objects.create(
+#                     judge=judge,
+#                     team=team,
+#                     comments=form.cleaned_data.get('comments', '')
+#                 )
+
+#                 # Save scores
+#                 for key in form.cleaned_data:
+#                     if key.startswith("score_"):
+#                         criterion_id = key.split("_")[1]
+#                         criterion = get_object_or_404(JudgingCriteria, id=criterion_id)
+#                         score_value = form.cleaned_data.get(key)
+#                         score_comment = form.cleaned_data.get(f'comment_{criterion_id}', '')
+
+#                         if score_value:
+#                             Score.objects.create(
+#                                 submission=submission,
+#                                 criteria=criterion,
+#                                 score=score_value,
+#                                 comments=score_comment
+#                             )
+
+#                 update_team_final_scores(team)
+#                 messages.success(request, f'Successfully submitted judgment for {team.name}!')
+#                 return redirect('judge_dashboard_anonymous', judge_token=judge_token)
+#     else:
+#         form = TeamScoreForm(judge=judge, team=team)
+
+#     context = {
+#         'form': form,
+#         'team': team,
+#         'judge': judge,
+#         'judge_token': judge_token,
+#         'is_anonymous': True,
+#     }
+#     return render(request, 'judging/judge_team.html', context)
+
 def judge_team_anonymous(request, judge_token, team_id):
-    """Anonymous team judging using unique token"""
+    """Anonymous team judging with role-based criteria - FIXED VERSION"""
     try:
         judge = get_object_or_404(Judge, unique_token=judge_token)
         team = get_object_or_404(Team, id=team_id)
@@ -400,44 +454,94 @@ def judge_team_anonymous(request, judge_token, team_id):
         messages.error(request, 'Invalid link. Please contact the administrator.')
         return redirect('home_anonymous')
 
+    # Check if already judged
     if Submission.objects.filter(judge=judge, team=team).exists():
         messages.warning(request, f'You have already judged {team.name}.')
         return redirect('judge_dashboard_anonymous', judge_token=judge_token)
 
     if request.method == 'POST':
-        form = TeamScoreForm(request.POST, judge=judge, team=team)
-        if form.is_valid():
+        # Debug: Print POST data
+        print(f"DEBUG: POST data received: {request.POST}")
+        
+        # Use the correct form based on your template
+        # Since your template shows hardcoded criteria names, let's handle them directly
+        try:
             with transaction.atomic():
+                # Extract scores from the hardcoded form fields in your template
+                quantum_relevance = request.POST.get('quantum_relevance')
+                quantum_quality = request.POST.get('quantum_quality') 
+                social_impact = request.POST.get('social_impact')
+                presentation = request.POST.get('presentation')
+                
+                # Validate all required scores are present
+                if not all([quantum_relevance, quantum_quality, social_impact, presentation]):
+                    messages.error(request, 'Please fill in all score fields.')
+                    context = {
+                        'team': team,
+                        'judge': judge,
+                        'judge_token': judge_token,
+                        'is_anonymous': True,
+                    }
+                    return render(request, 'judging/judge_team.html', context)
+                
+                # Create submission
                 submission = Submission.objects.create(
                     judge=judge,
                     team=team,
-                    comments=form.cleaned_data.get('comments', '')
+                    comments=request.POST.get('comments', '')
                 )
+                
+                print(f"DEBUG: Created submission with ID: {submission.id}")
 
-                # Save scores
-                for key in form.cleaned_data:
-                    if key.startswith("score_"):
-                        criterion_id = key.split("_")[1]
-                        criterion = get_object_or_404(JudgingCriteria, id=criterion_id)
-                        score_value = form.cleaned_data.get(key)
-                        score_comment = form.cleaned_data.get(f'comment_{criterion_id}', '')
-
-                        if score_value:
+                # Create scores for each criteria based on your hardcoded criteria
+                # You'll need to map these to your actual JudgingCriteria objects
+                criteria_mapping = {
+                    'quantum_relevance': 'Quantum Computing Relevance',
+                    'quantum_quality': 'Quantum Computing Quality', 
+                    'social_impact': 'Social Impact Based on the SDGs',
+                    'presentation': 'Presentation and Originality'
+                }
+                
+                for field_name, criteria_name in criteria_mapping.items():
+                    score_value = request.POST.get(field_name)
+                    comment_value = request.POST.get(f'comment_{field_name}', '')
+                    
+                    if score_value:
+                        try:
+                            # Get or create the criteria (adjust this based on your actual criteria setup)
+                            criteria = JudgingCriteria.objects.get(name=criteria_name)
+                            
                             Score.objects.create(
                                 submission=submission,
-                                criteria=criterion,
-                                score=score_value,
-                                comments=score_comment
+                                criteria=criteria,
+                                score=int(score_value),
+                                comments=comment_value
                             )
+                            print(f"DEBUG: Created score for {criteria_name}: {score_value}")
+                            
+                        except JudgingCriteria.DoesNotExist:
+                            print(f"WARNING: Criteria '{criteria_name}' not found")
+                            continue
+                        except ValueError:
+                            print(f"ERROR: Invalid score value for {criteria_name}: {score_value}")
+                            continue
 
+                # Update team final scores
                 update_team_final_scores(team)
+                
+                print(f"DEBUG: Successfully processed judgment for team {team.name}")
                 messages.success(request, f'Successfully submitted judgment for {team.name}!')
+                
+                # CRITICAL: Make sure this redirect happens and is the last statement
                 return redirect('judge_dashboard_anonymous', judge_token=judge_token)
-    else:
-        form = TeamScoreForm(judge=judge, team=team)
+                
+        except Exception as e:
+            print(f"ERROR: Exception during submission: {str(e)}")
+            messages.error(request, f'Error submitting judgment: {str(e)}')
+            # Fall through to render the form again
 
+    # GET request or form error - show the form
     context = {
-        'form': form,
         'team': team,
         'judge': judge,
         'judge_token': judge_token,
@@ -598,231 +702,6 @@ def judge_dashboard_anonymous(request, judge_token):
     }
     return render(request, 'judging/dashboard.html', context)
 
-def judge_team_anonymous(request, judge_token, team_id):
-    """Anonymous team judging with role-based criteria"""
-    try:
-        judge = get_object_or_404(Judge, unique_token=judge_token)
-        team = get_object_or_404(Team, id=team_id)
-    except:
-        messages.error(request, 'Invalid link. Please contact the administrator.')
-        return redirect('home_anonymous')
-
-    if Submission.objects.filter(judge=judge, team=team).exists():
-        messages.warning(request, f'You have already judged {team.name}.')
-        return redirect('judge_dashboard_anonymous', judge_token=judge_token)
-
-    # Get only the criteria this judge can evaluate
-    allowed_criteria = judge.get_allowed_criteria()
-
-    if request.method == 'POST':
-        form = RoleBasedTeamScoreForm(request.POST, judge=judge, team=team, allowed_criteria=allowed_criteria)
-        if form.is_valid():
-            with transaction.atomic():
-                submission = Submission.objects.create(
-                    judge=judge,
-                    team=team,
-                    comments=form.cleaned_data.get('comments', '')
-                )
-
-                # Save scores only for allowed criteria
-                for criterion in allowed_criteria:
-                    score_key = f"score_{criterion.id}"
-                    comment_key = f"comment_{criterion.id}"
-                    
-                    score_value = form.cleaned_data.get(score_key)
-                    score_comment = form.cleaned_data.get(comment_key, '')
-
-                    if score_value:
-                        Score.objects.create(
-                            submission=submission,
-                            criteria=criterion,
-                            score=score_value,
-                            comments=score_comment
-                        )
-
-                update_team_final_scores(team)
-                messages.success(request, f'Successfully submitted judgment for {team.name}!')
-                return redirect('judge_dashboard_anonymous', judge_token=judge_token)
-    else:
-        form = RoleBasedTeamScoreForm(judge=judge, team=team, allowed_criteria=allowed_criteria)
-
-    context = {
-        'form': form,
-        'team': team,
-        'judge': judge,
-        'judge_token': judge_token,
-        'is_anonymous': True,
-        'allowed_criteria': allowed_criteria,
-        'judge_type': judge.judge_type,
-        'judge_type_display': judge.get_judge_type_display(),
-    }
-    return render(request, 'judging/judge_team.html', context)
-
-
-def public_voting_results(request):
-    """
-    Display public voting results - accessible to everyone
-    """
-    # Get all teams with public judgments
-    teams_with_public_votes = Team.objects.filter(
-        publicjudgment__isnull=False
-    ).distinct().annotate(
-        # Count public votes
-        public_vote_count=Count('publicjudgment'),
-        
-        # Average scores for each criteria
-        avg_quantum_tech=Avg('publicjudgment__quantum_tech_quality'),
-        avg_social_impact=Avg('publicjudgment__social_impact'), 
-        avg_innovation=Avg('publicjudgment__innovation'),
-        avg_presentation=Avg('publicjudgment__presentation'),
-        avg_business_viability=Avg('publicjudgment__business_viability'),
-        
-        # Overall weighted average (same weights as judge criteria)
-        # Quantum Tech: 40%, Social Impact: 25%, Innovation: 20%, Presentation: 10%, Business: 5%
-    ).order_by('-public_vote_count')
-    
-    # Calculate weighted scores for each team
-    teams_data = []
-    for team in teams_with_public_votes:
-        if team.avg_quantum_tech is not None:  # Only include teams with votes
-            weighted_score = (
-                (team.avg_quantum_tech or 0) * 0.40 +
-                (team.avg_social_impact or 0) * 0.25 +
-                (team.avg_innovation or 0) * 0.20 +
-                (team.avg_presentation or 0) * 0.10 +
-                (team.avg_business_viability or 0) * 0.05
-            )
-            
-            teams_data.append({
-                'team': team,
-                'public_vote_count': team.public_vote_count,
-                'avg_quantum_tech': round(team.avg_quantum_tech, 2) if team.avg_quantum_tech else 0,
-                'avg_social_impact': round(team.avg_social_impact, 2) if team.avg_social_impact else 0,
-                'avg_innovation': round(team.avg_innovation, 2) if team.avg_innovation else 0,
-                'avg_presentation': round(team.avg_presentation, 2) if team.avg_presentation else 0,
-                'avg_business_viability': round(team.avg_business_viability, 2) if team.avg_business_viability else 0,
-                'weighted_score': round(weighted_score, 2),
-            })
-    
-    # Sort by weighted score (highest first)
-    teams_data.sort(key=lambda x: x['weighted_score'], reverse=True)
-    
-    # Add rankings
-    for i, team_data in enumerate(teams_data, 1):
-        team_data['rank'] = i
-    
-    # Get total public votes cast
-    total_public_votes = PublicJudgment.objects.count()
-    
-    # Get unique public voters (if you track this)
-    # unique_voters = PublicJudgment.objects.values('voter_ip').distinct().count()
-    
-    # Statistics for charts
-    vote_distribution = []
-    for team_data in teams_data:
-        vote_distribution.append({
-            'team_name': team_data['team'].name,
-            'vote_count': team_data['public_vote_count'],
-            'weighted_score': team_data['weighted_score']
-        })
-    
-    context = {
-        'teams_data': teams_data,
-        'total_teams': len(teams_data),
-        'total_public_votes': total_public_votes,
-        'vote_distribution_json': json.dumps(vote_distribution),
-        'page_title': 'Public Voting Results',
-    }
-    
-    return render(request, 'judging/public_results.html', context)
-
-def admin_public_voting_results(request):
-    """
-    Admin view for public voting results with detailed analytics
-    """
-    # Get all public judgments for detailed analysis
-    public_judgments = PublicJudgment.objects.select_related('team').all()
-    
-    # Get teams with detailed public voting stats
-    teams_with_public_votes = Team.objects.filter(
-        publicjudgment__isnull=False
-    ).distinct().annotate(
-        public_vote_count=Count('publicjudgment'),
-        avg_quantum_tech=Avg('publicjudgment__quantum_tech_quality'),
-        avg_social_impact=Avg('publicjudgment__social_impact'), 
-        avg_innovation=Avg('publicjudgment__innovation'),
-        avg_presentation=Avg('publicjudgment__presentation'),
-        avg_business_viability=Avg('publicjudgment__business_viability'),
-    ).order_by('-public_vote_count')
-    
-    # Calculate detailed statistics
-    teams_data = []
-    for team in teams_with_public_votes:
-        if team.avg_quantum_tech is not None:
-            weighted_score = (
-                (team.avg_quantum_tech or 0) * 0.40 +
-                (team.avg_social_impact or 0) * 0.25 +
-                (team.avg_innovation or 0) * 0.20 +
-                (team.avg_presentation or 0) * 0.10 +
-                (team.avg_business_viability or 0) * 0.05
-            )
-            
-            # Get individual votes for this team for detailed analysis
-            team_votes = PublicJudgment.objects.filter(team=team)
-            
-            teams_data.append({
-                'team': team,
-                'public_vote_count': team.public_vote_count,
-                'avg_quantum_tech': round(team.avg_quantum_tech, 2) if team.avg_quantum_tech else 0,
-                'avg_social_impact': round(team.avg_social_impact, 2) if team.avg_social_impact else 0,
-                'avg_innovation': round(team.avg_innovation, 2) if team.avg_innovation else 0,
-                'avg_presentation': round(team.avg_presentation, 2) if team.avg_presentation else 0,
-                'avg_business_viability': round(team.avg_business_viability, 2) if team.avg_business_viability else 0,
-                'weighted_score': round(weighted_score, 2),
-                'votes': team_votes,
-            })
-    
-    # Sort by weighted score
-    teams_data.sort(key=lambda x: x['weighted_score'], reverse=True)
-    
-    # Add rankings
-    for i, team_data in enumerate(teams_data, 1):
-        team_data['rank'] = i
-    
-    # Additional admin statistics
-    total_public_votes = PublicJudgment.objects.count()
-    teams_without_votes = Team.objects.filter(publicjudgment__isnull=True).count()
-    
-    # Voting patterns analysis
-    criteria_averages = {
-        'quantum_tech': PublicJudgment.objects.aggregate(avg=Avg('quantum_tech_quality'))['avg'],
-        'social_impact': PublicJudgment.objects.aggregate(avg=Avg('social_impact'))['avg'],
-        'innovation': PublicJudgment.objects.aggregate(avg=Avg('innovation'))['avg'],
-        'presentation': PublicJudgment.objects.aggregate(avg=Avg('presentation'))['avg'],
-        'business_viability': PublicJudgment.objects.aggregate(avg=Avg('business_viability'))['avg'],
-    }
-    
-    context = {
-        'teams_data': teams_data,
-        'total_teams': len(teams_data),
-        'total_public_votes': total_public_votes,
-        'teams_without_votes': teams_without_votes,
-        'criteria_averages': criteria_averages,
-        'public_judgments': public_judgments,
-        'page_title': 'Admin: Public Voting Results',
-        'is_admin_view': True,
-    }
-    
-    return render(request, 'judging/admin_public_results.html', context)
-
-# Add this to your views.py file
-
-from django.shortcuts import render, get_object_or_404, redirect
-from django.contrib import messages
-from django.db import IntegrityError
-from django.http import HttpResponseRedirect
-from django.urls import reverse
-from .models import Team, PublicJudgment
 
 def get_client_ip(request):
     """Get the client's IP address"""
@@ -835,7 +714,7 @@ def get_client_ip(request):
 
 def public_judge_team(request, team_id):
     """
-    Handle public judging of individual teams
+    Handle public judging - CORRECT CRITERIA MAPPING
     """
     team = get_object_or_404(Team, id=team_id)
     voter_ip = get_client_ip(request)
@@ -844,76 +723,84 @@ def public_judge_team(request, team_id):
     existing_vote = PublicJudgment.objects.filter(team=team, voter_ip=voter_ip).first()
     
     if existing_vote:
-        messages.warning(request, f'You have already voted for {team.name}. Thank you for your participation!')
+        messages.info(request, f'You have already voted for {team.name}. Thank you for your participation!')
         return redirect('public_judge_access')
     
     if request.method == 'POST':
         try:
-            # Extract scores from form - ensure they exist
-            quantum_tech_quality = request.POST.get('quantum_tech_quality')
-            social_impact = request.POST.get('social_impact')
-            innovation = request.POST.get('innovation')
-            presentation = request.POST.get('presentation')
-            business_viability = request.POST.get('business_viability')
+            # Extract scores using EXACT field names from your template
+            quantum_relevance = request.POST.get('quantum_relevance')          # 35%
+            quantum_quality = request.POST.get('quantum_quality')              # 25%  
+            social_impact = request.POST.get('social_impact')                  # 25%
+            presentation = request.POST.get('presentation')                    # 15%
             
             # Check if all required fields are present
-            if not all([quantum_tech_quality, social_impact, innovation, presentation, business_viability]):
+            if not all([quantum_relevance, quantum_quality, social_impact, presentation]):
                 messages.error(request, 'Please fill in all scoring criteria.')
                 return render(request, 'judging/public_judge_team.html', {'team': team})
             
-            # Convert to integers
-            quantum_tech_quality = int(quantum_tech_quality)
-            social_impact = int(social_impact)
-            innovation = int(innovation)
-            presentation = int(presentation)
-            business_viability = int(business_viability)
+            # Convert to floats and validate
+            quantum_relevance = float(quantum_relevance)
+            quantum_quality = float(quantum_quality)
+            social_impact = float(social_impact)
+            presentation = float(presentation)
             
             # Validate scores are in range
-            scores = [quantum_tech_quality, social_impact, innovation, presentation, business_viability]
+            scores = [quantum_relevance, quantum_quality, social_impact, presentation]
             if not all(1 <= score <= 5 for score in scores):
                 messages.error(request, 'All scores must be between 1 and 5.')
                 return render(request, 'judging/public_judge_team.html', {'team': team})
             
-            # Create the public judgment
+            # Create the public judgment with CORRECT mapping
+            # NOTE: We need to map the NEW criteria to the existing PublicJudgment fields
             public_judgment = PublicJudgment.objects.create(
                 team=team,
-                quantum_tech_quality=quantum_tech_quality,
-                social_impact=social_impact,
-                innovation=innovation,
-                presentation=presentation,
-                business_viability=business_viability,
+                # Map NEW criteria to existing model fields:
+                quantum_tech_quality=quantum_quality,      # "Quantum Computing Quality" (25%)
+                social_impact=social_impact,               # "Social Impact Based on the SDGs" (25%)
+                innovation=quantum_relevance,              # "Quantum Computing Relevance" (35%) -> use innovation field
+                presentation=presentation,                 # "Presentation and Originality" (15%)
+                business_viability=3,                      # Not used in new criteria, set default
+                
+                # Comments mapping
                 comments=request.POST.get('comments', '').strip(),
-                comment_quantum_tech=request.POST.get('comment_quantum_tech', '').strip(),
+                comment_quantum_tech=request.POST.get('comment_quantum_quality', '').strip(),
                 comment_social_impact=request.POST.get('comment_social_impact', '').strip(),
-                comment_innovation=request.POST.get('comment_innovation', '').strip(),
+                comment_innovation=request.POST.get('comment_quantum_relevance', '').strip(),  # Map relevance comment to innovation
                 comment_presentation=request.POST.get('comment_presentation', '').strip(),
-                comment_business_viability=request.POST.get('comment_business_viability', '').strip(),
+                comment_business_viability='',  # Not used
+                
+                # Tracking fields
                 voter_ip=voter_ip,
                 user_agent=request.META.get('HTTP_USER_AGENT', ''),
                 voter_email=request.POST.get('voter_email', '').strip(),
                 voter_name=request.POST.get('voter_name', '').strip()
             )
             
-            # Verify the vote was saved
-            print(f"DEBUG: Created PublicJudgment with ID: {public_judgment.id}")
-            print(f"DEBUG: Vote for team {team.name} by IP {voter_ip}")
-            print(f"DEBUG: Weighted score: {public_judgment.weighted_score}")
+            # Calculate and show the score
+            weighted_score = public_judgment.weighted_score
             
+            print(f"DEBUG: Created public judgment with weighted score: {weighted_score}")
+            print(f"DEBUG: Scores - Relevance: {quantum_relevance}, Quality: {quantum_quality}, Impact: {social_impact}, Presentation: {presentation}")
+            
+            # Success message with score rounded to 2 decimal places
             messages.success(
                 request, 
                 f'✅ Thank you for judging {team.name}! Your vote has been recorded. '
-                f'Weighted Score: {public_judgment.weighted_score:.2f}/5.0'
+                f'Your weighted score: {weighted_score:.2f}/5.0'
             )
-            return HttpResponseRedirect(reverse('public_judge_access'))
+            
+            # Redirect back to dashboard to continue judging
+            return redirect('public_judge_access')
             
         except (ValueError, TypeError) as e:
-            print(f"DEBUG: Error converting scores to integers: {e}")
+            print(f"DEBUG: Error converting scores: {e}")
             messages.error(request, 'Please fill in all required fields with valid scores (1-5).')
             return render(request, 'judging/public_judge_team.html', {'team': team})
             
         except IntegrityError as e:
-            print(f"DEBUG: IntegrityError - duplicate vote: {e}")
-            messages.warning(request, f'You have already voted for {team.name}. Thank you for your participation!')
+            print(f"DEBUG: Duplicate vote attempt: {e}")
+            messages.warning(request, f'You have already voted for {team.name}. Thank you!')
             return redirect('public_judge_access')
             
         except Exception as e:
@@ -926,7 +813,6 @@ def public_judge_team(request, team_id):
         'team': team,
     }
     return render(request, 'judging/public_judge_team.html', context)
-
 
 def public_judge_access(request):
     """
@@ -955,14 +841,6 @@ def public_judge_access(request):
         'remaining_teams': remaining_teams,
     }
     return render(request, 'judging/public_judge_access.html', context)
-
-# Add this to your views.py file
-
-from django.db.models import Avg, Count, Sum, Q
-from django.shortcuts import render
-from django.contrib.admin.views.decorators import staff_member_required
-from django.contrib.auth.decorators import login_required
-import json
 
 def public_voting_results(request):
     """
@@ -1115,3 +993,414 @@ def admin_public_voting_results(request):
     }
     
     return render(request, 'judging/admin_public_results.html', context)
+
+
+def judge_team_anonymous(request, judge_token, team_id):
+    """Anonymous team judging with CORRECT NEW criteria mapping"""
+    try:
+        judge = get_object_or_404(Judge, unique_token=judge_token)
+        team = get_object_or_404(Team, id=team_id)
+    except:
+        messages.error(request, 'Invalid link. Please contact the administrator.')
+        return redirect('home_anonymous')
+
+    if Submission.objects.filter(judge=judge, team=team).exists():
+        messages.warning(request, f'You have already judged {team.name}.')
+        return redirect('judge_dashboard_anonymous', judge_token=judge_token)
+
+    if request.method == 'POST':
+        try:
+            # Extract scores using EXACT field names from template
+            quantum_relevance = request.POST.get('quantum_relevance')
+            quantum_quality = request.POST.get('quantum_quality')
+            social_impact = request.POST.get('social_impact')
+            presentation = request.POST.get('presentation')
+            
+            # Validate all scores present
+            if not all([quantum_relevance, quantum_quality, social_impact, presentation]):
+                messages.error(request, 'Please fill in all score fields.')
+                context = {
+                    'team': team,
+                    'judge': judge,
+                    'judge_token': judge_token,
+                    'is_anonymous': True,
+                }
+                return render(request, 'judging/judge_team.html', context)
+            
+            # Convert and validate as floats
+            scores = {
+                'quantum_relevance': float(quantum_relevance),
+                'quantum_quality': float(quantum_quality),
+                'social_impact': float(social_impact),
+                'presentation': float(presentation)
+            }
+            
+            for field, score in scores.items():
+                if not (1 <= score <= 5):
+                    messages.error(request, f'All scores must be between 1 and 5.')
+                    context = {
+                        'team': team,
+                        'judge': judge,
+                        'judge_token': judge_token,
+                        'is_anonymous': True,
+                    }
+                    return render(request, 'judging/judge_team.html', context)
+            
+            with transaction.atomic():
+                submission = Submission.objects.create(
+                    judge=judge,
+                    team=team,
+                    comments=request.POST.get('comments', '')
+                )
+
+                # Map template fields to CORRECT database criteria names
+                criteria_mapping = {
+                    'quantum_relevance': 'Quantum Computing Relevance',        # 35%
+                    'quantum_quality': 'Quantum Computing Quality',            # 25%
+                    'social_impact': 'Social Impact Based on the SDGs',        # 25%
+                    'presentation': 'Presentation and Originality'             # 15%
+                }
+                
+                scores_created = 0
+                for field_name, criteria_name in criteria_mapping.items():
+                    try:
+                        criteria = JudgingCriteria.objects.get(name=criteria_name)
+                        score_value = scores[field_name]
+                        comment_value = request.POST.get(f'comment_{field_name}', '')
+                        
+                        Score.objects.create(
+                            submission=submission,
+                            criteria=criteria,
+                            score=score_value,
+                            comments=comment_value
+                        )
+                        scores_created += 1
+                        print(f"DEBUG: Created score for {criteria_name}: {score_value}")
+                        
+                    except JudgingCriteria.DoesNotExist:
+                        print(f"ERROR: Criteria '{criteria_name}' not found")
+                        available = list(JudgingCriteria.objects.values_list('name', flat=True))
+                        print(f"Available criteria: {available}")
+                        continue
+
+                if scores_created > 0:
+                    update_team_final_scores(team)
+                    messages.success(request, f'Successfully submitted judgment for {team.name}!')
+                    return redirect('judge_dashboard_anonymous', judge_token=judge_token)
+                else:
+                    messages.error(request, 'No scores were saved. Please contact administrator.')
+                    
+        except Exception as e:
+            print(f"ERROR: {e}")
+            messages.error(request, f'Error submitting judgment: {str(e)}')
+
+    context = {
+        'team': team,
+        'judge': judge,
+        'judge_token': judge_token,
+        'is_anonymous': True,
+    }
+    return render(request, 'judging/judge_team.html', context)
+
+
+def update_team_final_scores(team):
+    """Update team scores with CORRECT NEW criteria mapping"""
+    final_score, created = TeamFinalScore.objects.get_or_create(team=team)
+    
+    # Calculate average scores for each criteria
+    criteria_scores = {}
+    for criteria in JudgingCriteria.objects.all():
+        avg_score = Score.objects.filter(
+            submission__team=team, 
+            criteria=criteria
+        ).aggregate(avg=Avg('score'))['avg'] or 0
+        criteria_scores[criteria.name] = avg_score
+    
+    # Map CORRECT NEW criteria to existing model fields
+    final_score.quantum_tech_score = criteria_scores.get('Quantum Computing Quality', 0)        # 25%
+    final_score.social_impact_score = criteria_scores.get('Social Impact Based on the SDGs', 0) # 25%
+    final_score.innovation_score = criteria_scores.get('Quantum Computing Relevance', 0)        # 35% -> use innovation field
+    final_score.presentation_score = criteria_scores.get('Presentation and Originality', 0)     # 15%
+    final_score.business_viability_score = 0  # Not used in new criteria
+    
+    final_score.calculate_final_score()
+
+
+def calculate_final_score(self):
+    """Calculate weighted final score using CORRECT NEW criteria weights"""
+    # Map to NEW weights:
+    # innovation_score = Quantum Computing Relevance (35%)
+    # quantum_tech_score = Quantum Computing Quality (25%)  
+    # social_impact_score = Social Impact Based on the SDGs (25%)
+    # presentation_score = Presentation and Originality (15%)
+    
+    self.final_weighted_score = (
+        (self.innovation_score * 0.35) +        # Quantum Computing Relevance 35%
+        (self.quantum_tech_score * 0.25) +      # Quantum Computing Quality 25%
+        (self.social_impact_score * 0.25) +     # Social Impact Based on the SDGs 25%
+        (self.presentation_score * 0.15)        # Presentation and Originality 15%
+        # business_viability_score * 0.00 (not used)
+    )
+    self.save()
+    return self.final_weighted_score
+
+def update_team_final_scores(team):
+    """Update calculated scores for a team - FIXED FOR NEW CRITERIA"""
+    print(f"🔄 DEBUG: Updating final scores for team {team.name}")
+    
+    final_score, created = TeamFinalScore.objects.get_or_create(team=team)
+    if created:
+        print(f"✅ DEBUG: Created new TeamFinalScore for {team.name}")
+    else:
+        print(f"🔄 DEBUG: Updating existing TeamFinalScore for {team.name}")
+    
+    # Calculate average scores for each NEW criteria
+    criteria_scores = {}
+    for criteria in JudgingCriteria.objects.all():
+        avg_score = Score.objects.filter(
+            submission__team=team, 
+            criteria=criteria
+        ).aggregate(avg=Avg('score'))['avg'] or 0
+        criteria_scores[criteria.name] = avg_score
+        print(f"📊 DEBUG: {criteria.name}: avg={avg_score:.2f}")
+    
+    # Map NEW criteria names to model fields
+    final_score.quantum_tech_score = criteria_scores.get('Quantum Computing Quality', 0)
+    final_score.social_impact_score = criteria_scores.get('Social Impact Based on the SDGs', 0)
+    final_score.innovation_score = criteria_scores.get('Quantum Computing Relevance', 0)  # Map relevance to innovation field
+    final_score.presentation_score = criteria_scores.get('Presentation and Originality', 0)
+    final_score.business_viability_score = 0  # Not used in new criteria
+    
+    # Calculate and save final weighted score
+    old_score = final_score.final_weighted_score
+    final_score.calculate_final_score()
+    
+    print(f"📊 DEBUG: Final weighted score: {old_score} → {final_score.final_weighted_score}")
+    print(f"✅ DEBUG: Updated final scores for {team.name}")
+
+# Update these functions in your views.py
+
+def public_voting_results(request):
+    """Display public voting results with proper rounding"""
+    teams_with_public_votes = Team.objects.filter(
+        publicjudgment__isnull=False
+    ).distinct().annotate(
+        public_vote_count=Count('publicjudgment'),
+        avg_quantum_tech=Avg('publicjudgment__quantum_tech_quality'),
+        avg_social_impact=Avg('publicjudgment__social_impact'), 
+        avg_innovation=Avg('publicjudgment__innovation'),
+        avg_presentation=Avg('publicjudgment__presentation'),
+        avg_business_viability=Avg('publicjudgment__business_viability'),
+    ).order_by('-public_vote_count')
+    
+    teams_data = []
+    for team in teams_with_public_votes:
+        if team.avg_quantum_tech is not None:
+            # Calculate weighted score using float precision
+            weighted_score = (
+                (team.avg_innovation or 0) * 0.35 +           # Quantum Computing Relevance 35%
+                (team.avg_quantum_tech or 0) * 0.25 +         # Quantum Computing Quality 25%
+                (team.avg_social_impact or 0) * 0.25 +        # Social Impact Based on SDGs 25%
+                (team.avg_presentation or 0) * 0.15           # Presentation and Originality 15%
+            )
+            
+            teams_data.append({
+                'team': team,
+                'public_vote_count': team.public_vote_count,
+                # Round to 2 decimal places for display
+                'avg_quantum_relevance': round(team.avg_innovation, 2) if team.avg_innovation else 0,
+                'avg_quantum_quality': round(team.avg_quantum_tech, 2) if team.avg_quantum_tech else 0,
+                'avg_social_impact': round(team.avg_social_impact, 2) if team.avg_social_impact else 0,
+                'avg_presentation': round(team.avg_presentation, 2) if team.avg_presentation else 0,
+                'weighted_score': round(weighted_score, 2),
+            })
+    
+    # Sort by weighted score (highest first)
+    teams_data.sort(key=lambda x: x['weighted_score'], reverse=True)
+    
+    # Add rankings
+    for i, team_data in enumerate(teams_data, 1):
+        team_data['rank'] = i
+    
+    total_public_votes = PublicJudgment.objects.count()
+    
+    vote_distribution = []
+    for team_data in teams_data:
+        vote_distribution.append({
+            'team_name': team_data['team'].name,
+            'vote_count': team_data['public_vote_count'],
+            'weighted_score': team_data['weighted_score']
+        })
+    
+    context = {
+        'teams_data': teams_data,
+        'total_teams': len(teams_data),
+        'total_public_votes': total_public_votes,
+        'vote_distribution_json': json.dumps(vote_distribution),
+        'page_title': 'Public Voting Results',
+    }
+    
+    return render(request, 'judging/public_results.html', context)
+
+def export_results(request):
+    """Export results as JSON with proper decimal precision"""
+    results = []
+    for team_score in TeamFinalScore.objects.select_related('team').order_by('rank'):
+        results.append({
+            'rank': team_score.rank,
+            'team_name': team_score.team.name,
+            'quantum_relevance_score': round(team_score.innovation_score, 2),      # 35%
+            'quantum_quality_score': round(team_score.quantum_tech_score, 2),     # 25%
+            'social_impact_score': round(team_score.social_impact_score, 2),      # 25%
+            'presentation_score': round(team_score.presentation_score, 2),        # 15%
+            'business_viability_score': round(team_score.business_viability_score, 2), # 0%
+            'final_weighted_score': round(team_score.final_weighted_score, 2),
+        })
+    
+    return JsonResponse({'results': results}, indent=2)
+
+def judge_team(request, team_id):
+    """Judge a specific team - AUTHENTICATED VERSION WITH NEW CRITERIA"""
+    if not request.user.is_authenticated:
+        return redirect('judge_login')
+
+    judge = get_object_or_404(Judge, user=request.user)
+    team = get_object_or_404(Team, id=team_id)
+
+    if Submission.objects.filter(judge=judge, team=team).exists():
+        messages.warning(request, f'You have already judged {team.name}.')
+        return redirect('judge_dashboard')
+
+    # Get criteria this judge can evaluate
+    allowed_criteria = judge.get_allowed_criteria()
+
+    if request.method == 'POST':
+        try:
+            with transaction.atomic():
+                submission = Submission.objects.create(
+                    judge=judge,
+                    team=team,
+                    comments=request.POST.get('comments', '')
+                )
+
+                # Handle NEW criteria with template field names
+                criteria_mapping = {
+                    'quantum_relevance': 'Quantum Computing Relevance',
+                    'quantum_quality': 'Quantum Computing Quality',
+                    'social_impact': 'Social Impact Based on the SDGs',
+                    'presentation': 'Presentation and Originality'
+                }
+                
+                scores_created = 0
+                for field_name, criteria_name in criteria_mapping.items():
+                    score_value = request.POST.get(field_name)
+                    comment_value = request.POST.get(f'comment_{field_name}', '')
+                    
+                    if score_value:
+                        try:
+                            criteria = JudgingCriteria.objects.get(name=criteria_name)
+                            Score.objects.create(
+                                submission=submission,
+                                criteria=criteria,
+                                score=int(score_value),
+                                comments=comment_value
+                            )
+                            scores_created += 1
+                        except JudgingCriteria.DoesNotExist:
+                            print(f"Warning: Criteria '{criteria_name}' not found")
+                            continue
+
+                if scores_created > 0:
+                    update_team_final_scores(team)
+                    messages.success(request, f'Successfully submitted judgment for {team.name}!')
+                    return redirect('judge_dashboard')
+                else:
+                    messages.error(request, 'No scores were submitted. Please fill in at least one score.')
+                    
+        except Exception as e:
+            messages.error(request, f'Error submitting judgment: {str(e)}')
+
+    context = {
+        'team': team,
+        'judge': judge,
+        'allowed_criteria': allowed_criteria,
+    }
+    return render(request, 'judging/judge_team.html', context)
+
+
+def admin_results(request):
+    if not request.user.is_authenticated:
+        return redirect('judge_login')
+
+    if not (request.user.is_staff or hasattr(request.user, 'judge')):
+        messages.error(request, "You don't have permission to view results.")
+        return redirect('judge_dashboard')
+
+    # Get teams with final scores
+    teams_with_scores = (
+        TeamFinalScore.objects
+        .select_related('team')
+        .order_by('-final_weighted_score')
+    )
+
+    # Update ranks
+    for idx, tfs in enumerate(teams_with_scores, 1):
+        if tfs.rank != idx:
+            tfs.rank = idx
+            tfs.save(update_fields=['rank'])
+
+    # Get NEW criteria and calculate per-team averages
+    criteria_qs = JudgingCriteria.objects.all()
+    team_crit_avg = defaultdict(dict)
+
+    for crit in criteria_qs:
+        for row in (Score.objects
+                    .filter(criteria=crit)
+                    .values('submission__team')
+                    .annotate(avg=Avg('score'))):
+            team_id = row['submission__team']
+            team_crit_avg[team_id][crit.name] = float(row['avg'])
+
+    # Fill in missing criteria with 0
+    for t_id in team_crit_avg:
+        for crit in criteria_qs:
+            team_crit_avg[t_id].setdefault(crit.name, 0)
+
+    # Pack teams_json
+    teams_json = []
+    for tfs in teams_with_scores:
+        team_scores = team_crit_avg.get(tfs.team.id, {})
+        scores_dict = {}
+        for crit in criteria_qs:
+            scores_dict[crit.name] = team_scores.get(crit.name, 0)
+        
+        teams_json.append({
+            'team': tfs.team.name,
+            'final_weighted_score': float(tfs.final_weighted_score),
+            'rank': tfs.rank,
+            'scores': scores_dict,  # This should match criteriaLbl exactly
+            'members': getattr(tfs.team, 'members', 'Team Members'),
+            'description': getattr(tfs.team, 'description', ''),
+            'presentation_link': getattr(tfs.team, 'presentation_link', ''),
+        })
+
+    # Raw scores for charts
+    all_scores = list(
+        Score.objects.values(
+            'criteria__name',
+            'submission__team__name',
+            'submission__judge__id',
+            'score'
+        )
+    )
+
+    context = {
+        'teams_with_scores': teams_with_scores,
+        'total_submissions': Submission.objects.count(),
+        'total_judges': Judge.objects.count(),
+        'criteria_labels': json.dumps([c.name for c in criteria_qs]),
+        'teams_json': json.dumps(teams_json, cls=DjangoJSONEncoder),
+        'all_scores_json': json.dumps(all_scores, cls=DjangoJSONEncoder),
+    }
+    
+    return render(request, 'judging/admin_results.html', context)

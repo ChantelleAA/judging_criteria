@@ -1,6 +1,6 @@
 {% extends 'judging/base.html' %}
 
-{% block title %}Judge Dashboard - Quantathon{% endblock %}
+{% block title %}Judge Dashboard - AIMS Ghana Quantathon 2025{% endblock %}
 
 {% block content %}
 
@@ -20,7 +20,7 @@
             <div class="d-flex align-items-center">
                 <div class="me-3">
                     {% if judge_type == 'quantum_expert' %}
-                        <i class="bi bi-cpu-fill fs-4"></i>
+                        <!-- <i class="bi bi-cpu-fill fs-4"></i> -->
                     {% elif judge_type == 'general_judge' %}
                         <i class="bi bi-person-badge fs-4"></i>
                     {% else %}
@@ -30,20 +30,20 @@
                 <div>
                     <h6 class="mb-1 fw-bold">
                         {% if judge_type == 'quantum_expert' %}
-                            Quantum Expert Judge
+                            Expert Judge - AIMS Ghana Quantathon 2025
                         {% elif judge_type == 'general_judge' %}
-                            General Judge
+                            General Judge - AIMS Ghana Quantathon 2025
                         {% else %}
-                            Public Judge
+                            Public Judge - AIMS Ghana Quantathon 2025
                         {% endif %}
                     </h6>
                     <p class="mb-0 small">
                         {% if judge_type == 'quantum_expert' %}
-                            You will evaluate all criteria including quantum technical aspects.
+                            You will evaluate all four criteria using the Open Quantum Institute (OQI) framework.
                         {% elif judge_type == 'general_judge' %}
-                            You will evaluate: Social Impact, Presentation, and Business Viability.
+                            You will evaluate: Social Impact (SDGs), Presentation & Originality, and Quantum Computing aspects.
                         {% else %}
-                            You will evaluate all criteria as a member of the public.
+                            You will evaluate all criteria as a member of the public using the OQI framework.
                         {% endif %}
                     </p>
                 </div>
@@ -55,18 +55,17 @@
 <div class="row">
     <!-- Welcome Hero Section -->
     <div class="col-12 mb-4">
-        <div class="card border-0" style="background: #1a1a2e !important; backdrop-filter: none !important; color: white; overflow: hidden; position: relative; min-height: 140px; box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3) !important;">
+        <div class="card border-0" style="background: #340a37 !important; backdrop-filter: none !important; color: white; overflow: hidden; position: relative; min-height: 160px; box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3) !important;">
             <div class="card-body p-4" style="position: relative; z-index: 3; background: transparent !important;">
                 <div class="row align-items-center">
                     <div class="col-lg-8">
-
                         <h1 class="display-6 fw-bold mb-3" style="color: white !important;">
-                            <i class="bi bi-cpu-fill me-3" style="color: white !important;"></i>
+                            <!-- <i class="bi bi-cpu-fill me-3" style="color: white !important;"></i> -->
                             {% if is_admin_view %}
                                 <span class="badge bg-warning text-dark fs-6 me-2">ADMIN</span>
-                                Quantum Judge Dashboard
+                                AIMS Ghana Quantathon 2025
                             {% else %}
-                                Welcome, {{ judge.user.get_full_name }}!
+                                Welcome, {{judge.user.get_full_name|default:"Judge"}}
                             {% endif %}
                         </h1>
                         <div class="d-flex flex-wrap gap-2 mb-3">
@@ -75,18 +74,25 @@
                                     <i class="bi bi-shield-check me-1"></i>Administrator Preview
                                 </span>
                             {% else %}
-                                <!-- {% for area in judge.expertise_areas.all %}
-                                    <span class="badge bg-warning text-dark px-3 py-2">
-                                        <i class="bi bi-star-fill me-1"></i>{{ area.name }}
-                                    </span>
-                                {% endfor %} -->
+                                <!-- <span class="badge bg-light text-dark px-3 py-2">
+                                    <i class="bi bi-person-circle me-1"></i>{{ judge.user.get_full_name|default:"Judge" }}
+                                </span> -->
                             {% endif %}
+                            <!-- <span class="badge bg-light text-dark px-3 py-2">
+                                <i class="bi bi-cpu me-1"></i>Quantum Science & Technology
+                            </span>
+                            <span class="badge bg-light text-dark px-3 py-2">
+                                <i class="bi bi-globe-americas me-1"></i>UN SDGs Focus
+                            </span> -->
                         </div>
-                        <!-- <p class="lead mb-0" style="color: white !important; opacity: 1;">
-                            <i class="bi bi-calendar-event me-2" style="color: white !important;"></i>{{ "now"|date:"F d, Y" }}
-                            <span class="mx-3" style="color: white !important;">•</span>
-                            <i class="bi bi-clock me-2" style="color: white !important;"></i>{{ "now"|time:"g:i A" }}
+                        <!-- <p class="lead mb-1" style="color: white !important; opacity: 1;">
+                            <strong>Theme:</strong> "Accelerating Capacity Building to Advance Quantum Science & Technology"
                         </p> -->
+                        <p class="mb-0" style="color: white !important; opacity: 0.8; font-size: 0.9rem;">
+                            <!-- <i class="bi bi-calendar-event me-2" style="color: white !important;"></i>{{ "now"|date:"F d, Y" }}
+                            <span class="mx-3" style="color: white !important;">•</span>
+                            <i class="bi bi-clock me-2" style="color: white !important;"></i>{{ "now"|time:"g:i A" }} -->
+                        </p>
                     </div>
                     <div class="col-lg-4 text-lg-end">
                         <div class="quantum-logo" style="font-size: 4rem; opacity: 0.6; color: white !important;">
@@ -111,7 +117,7 @@
                     <circle cx="60" cy="60" r="54" stroke="#e5e7eb" stroke-width="8" fill="transparent"/>
                     <circle cx="60" cy="60" r="54" stroke="url(#gradient)" stroke-width="8" fill="transparent"
                             stroke-dasharray="339.292" 
-                            stroke-dashoffset="0"
+                            stroke-dashoffset="{% widthratio remaining_teams total_teams 339.292 %}"
                             stroke-linecap="round"
                             style="transform: rotate(-90deg); transform-origin: center;"
                             id="progress-circle"/>
@@ -143,13 +149,13 @@
             <div class="col-md-4 mb-3">
                 <div class="stat-card h-100 d-flex flex-column justify-content-center">
                     <div class="stat-number text-primary">{{ total_teams }}</div>
-                    <div class="stat-label">Total Teams</div>
+                    <div class="stat-label">Quantum Teams</div>
                 </div>
             </div>
             <div class="col-md-4 mb-3">
                 <div class="stat-card h-100 d-flex flex-column justify-content-center">
                     <div class="stat-number text-success">{{ completed_judgments }}</div>
-                    <div class="stat-label">Completed</div>
+                    <div class="stat-label">Evaluated</div>
                 </div>
             </div>
             <div class="col-md-4 mb-3">
@@ -169,14 +175,14 @@
             <div class="card-header d-flex justify-content-between align-items-center">
                 <div>
                     <i class="bi bi-people-fill me-2"></i>
-                    Quantum Teams
+                    Quantum Innovation Teams
                 </div>
-<div class="d-flex gap-2">
-    <span class="badge bg-quantum-gradient d-flex align-items-center justify-content-center px-4 py-2">
-        {{ teams.count }} Teams
-    </span>
-    {% if not is_admin_view %}
-        <div class="btn-group btn-group-sm">
+                <div class="d-flex gap-2">
+                    <span class="badge bg-quantum-gradient d-flex align-items-center justify-content-center px-4 py-2">
+                        {{ teams.count }} Teams
+                    </span>
+                    {% if not is_admin_view %}
+                        <div class="btn-group btn-group-sm">
                             <button class="btn btn-outline-light" onclick="filterTeams('all')">All</button>
                             <button class="btn btn-outline-light" onclick="filterTeams('pending')">Pending</button>
                             <button class="btn btn-outline-light" onclick="filterTeams('completed')">Completed</button>
@@ -212,6 +218,11 @@
                                         </div>
                                         
                                         <div class="col-lg-3">
+                                            <!-- {% if team.presentation_link %}
+                                                <a href="{{ team.presentation_link }}" target="_blank" class="btn btn-outline-info btn-sm">
+                                                    <i class="bi bi-play-circle me-1"></i>View Presentation
+                                                </a>
+                                            {% endif %} -->
                                         </div>
                                         
                                         <div class="col-lg-3 text-end">
@@ -221,18 +232,18 @@
                                                 </span>
                                             {% elif team.id in judged_teams %}
                                                 <span class="badge bg-success-subtle text-success px-4 py-3">
-                                                    <i class="bi bi-check-circle me-1"></i>Completed
+                                                    <i class="bi bi-check-circle me-1"></i>Evaluated
                                                 </span>
                                             {% else %}
                                                 {% if is_anonymous %}
                                                     <a href="{% url 'judge_team_anonymous' judge_token=judge_token team_id=team.id %}" 
                                                     class="btn btn-primary">
-                                                        <i class="bi bi-cpu me-1"></i>Judge Team
+                                                        <i class="bi bi-cpu me-1"></i>Evaluate Team
                                                     </a>
                                                 {% else %}
                                                     <a href="{% url 'judge_team' team.id %}" 
                                                     class="btn btn-primary">
-                                                        <i class="bi bi-cpu me-1"></i>Judge Team
+                                                        <i class="bi bi-cpu me-1"></i>Evaluate Team
                                                     </a>
                                                 {% endif %}
                                             {% endif %}
@@ -248,7 +259,7 @@
                             <i class="bi bi-cpu"></i>
                         </div>
                         <h4 class="text-muted">No Teams Available</h4>
-                        <p class="text-muted">Teams will appear here once they're added to the competition.</p>
+                        <p class="text-muted">Quantum innovation teams will appear here once they're added to the competition.</p>
                     </div>
                 {% endif %}
             </div>
@@ -256,72 +267,84 @@
     </div>
 </div>
 
-<!-- Judging Guidelines (if incomplete) -->
+<!-- AIMS Ghana 2025 Judging Guidelines (if incomplete) -->
 {% if completed_judgments < total_teams and not is_admin_view %}
     <div class="row mt-4">
         <div class="col-12">
             <div class="card border-info" style="background: rgba(59, 130, 246, 0.05);">
                 <div class="card-header bg-transparent border-0">
                     <h5 class="text-info mb-0">
-                        <i class="bi bi-info-circle-fill me-2"></i>Quantum Judging Guidelines
+                        <i class="bi bi-info-circle-fill me-2"></i>AIMS Ghana Quantathon 2025 - Judging Guidelines
                     </h5>
                 </div>
                 <div class="card-body">
                     <div class="row">
                         <div class="col-lg-6">
-                            <h6 class="fw-bold">Scoring Scale</h6>
+                            <h6 class="fw-bold">Scoring Scale (1-5 Points)</h6>
                             <div class="mb-2">
                                 <span class="badge bg-danger">1</span>
-                                <span><strong>Poor</strong></span>
+                                <span><strong>Weak</strong> - Does not meet expectations</span>
                             </div>
                             <div class="mb-2">
                                 <span class="badge" style="background-color: #ff6600;">2</span>
-                                <span><strong>Below Average</strong></span>
+                                <span><strong>Fair</strong> - Partially meets expectations</span>
                             </div>
                             <div class="mb-2">
                                 <span class="badge bg-warning">3</span>
-                                <span><strong>Average</strong></span>
+                                <span><strong>Good</strong> - Meets expectations well</span>
                             </div>
                             <div class="mb-2">
                                 <span class="badge bg-info">4</span>
-                                <span><strong>Above Average</strong></span>
+                                <span><strong>Very Good</strong> - Exceeds expectations</span>
                             </div>
                             <div class="mb-2">
                                 <span class="badge bg-success">5</span>
-                                <span><strong>Outstanding</strong></span>
+                                <span><strong>Excellent</strong> - Outstanding performance</span>
                             </div>
                         </div>
                         <div class="col-lg-6">
-                            <h6 class="fw-bold">Evaluation Criteria</h6>
+                            <h6 class="fw-bold">Evaluation Criteria (OQI Framework)</h6>
                             <ul class="list-unstyled">
                                 <li class="mb-2">
-                                    <span class="badge bg-quantum-gradient me-2">40%</span>
-                                    <strong>Quantum Tech Quality</strong>
+                                    <span class="badge bg-primary me-2">35%</span>
+                                    <strong>Quantum Computing Relevance</strong>
+                                    <div class="small text-muted">Is QC essential? Well-justified? Real-world application?</div>
                                 </li>
                                 <li class="mb-2">
                                     <span class="badge bg-success me-2">25%</span>
-                                    <strong>Social Impact</strong>
+                                    <strong>Quantum Computing Quality</strong>
+                                    <div class="small text-muted">Appropriate algorithms? Functional code? Creative implementation?</div>
                                 </li>
                                 <li class="mb-2">
-                                    <span class="badge bg-info me-2">20%</span>
-                                    <strong>Innovation</strong>
-                                </li>
-                                <li class="mb-2">
-                                    <span class="badge bg-warning me-2">10%</span>
-                                    <strong>Presentation</strong>
+                                    <span class="badge bg-info me-2">25%</span>
+                                    <strong>Social Impact Based on SDGs</strong>
+                                    <div class="small text-muted">Addresses UN SDGs? Scalable impact? Practical potential?</div>
                                 </li>
                                 <li>
-                                    <span class="badge bg-secondary me-2">5%</span>
-                                    <strong>Business Viability</strong>
+                                    <span class="badge bg-warning me-2">15%</span>
+                                    <strong>Presentation and Originality</strong>
+                                    <div class="small text-muted">Clear presentation? Compelling pitch? Original thinking?</div>
                                 </li>
                             </ul>
                         </div>
                     </div>
                     
+                    <!-- Theme Information -->
+                    <div class="alert alert-light border mt-3">
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-target me-3 fs-4 text-primary"></i>
+                            <div>
+                                <h6 class="fw-bold mb-1">Competition Theme</h6>
+                                <p class="mb-1"><strong>"Accelerating Capacity Building to Advance Quantum Science & Technology"</strong></p>
+                                <p class="mb-0 small text-muted">Teams are developing quantum computing solutions that address real-world challenges aligned with the UN Sustainable Development Goals (SDGs).</p>
+                            </div>
+                        </div>
+                    </div>
+                    
                     <div class="alert alert-warning border-0 mt-3">
                         <i class="bi bi-exclamation-triangle me-2"></i>
-                        <strong>Important:</strong> You can only submit your judgment once per team. 
-                        Please review your scores carefully before submitting.
+                        <strong>Important:</strong> You can only submit your evaluation once per team. 
+                        Please review your scores carefully before submitting, considering each criterion according to the OQI framework.
                     </div>
                 </div>
             </div>
@@ -338,8 +361,16 @@
                         <i class="bi bi-trophy-fill"></i>
                     </div>
                     <h3 class="text-success">Congratulations!</h3>
-                    <p class="lead">You have successfully judged all teams in the Quantathon.</p>
-                    <p class="text-muted">Thank you for your valuable contribution to quantum innovation!</p>
+                    <p class="lead">You have successfully evaluated all teams in the AIMS Ghana Quantathon 2025.</p>
+                    <p class="text-muted">Thank you for your valuable contribution to advancing quantum science & technology capacity building in Africa!</p>
+                    <div class="mt-3">
+                        <a href="/results/all-judges/" class="btn btn-outline-primary me-2">
+                            <i class="bi bi-bar-chart me-2"></i>View Live Results
+                        </a>
+                        <button class="btn btn-outline-secondary" onclick="location.reload()">
+                            <i class="bi bi-arrow-clockwise me-2"></i>Refresh Dashboard
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -440,6 +471,26 @@
         });
     });
 
+    // Enhanced progress circle animation
+    document.addEventListener('DOMContentLoaded', function() {
+        const progressCircle = document.getElementById('progress-circle');
+        if (progressCircle) {
+            const currentProgress = {{ completed_judgments }};
+            const totalTeams = {{ total_teams }};
+            const percentage = totalTeams > 0 ? (currentProgress / totalTeams) : 0;
+            
+            // Animate the progress circle
+            const circumference = 2 * Math.PI * 54;
+            const offset = circumference - (percentage * circumference);
+            
+            progressCircle.style.strokeDashoffset = circumference;
+            setTimeout(() => {
+                progressCircle.style.transition = 'stroke-dashoffset 1.5s ease-in-out';
+                progressCircle.style.strokeDashoffset = offset;
+            }, 500);
+        }
+    });
+
     // Add ripple animation
     const rippleStyle = document.createElement('style');
     rippleStyle.textContent = `
@@ -450,7 +501,70 @@
                 opacity: 0;
             }
         }
+        
+        .team-card {
+            transition: all 0.3s ease;
+        }
+        
+        .team-item[data-status="completed"] .team-card {
+            border-left: 4px solid #28a745;
+        }
+        
+        .team-item[data-status="pending"] .team-card {
+            border-left: 4px solid #ffc107;
+        }
+        
+        .progress-ring {
+            transform: rotate(-90deg);
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        }
     `;
     document.head.appendChild(rippleStyle);
+
+    // Show welcome message for first-time users
+    if ({{ completed_judgments }} === 0 && !{{ is_admin_view|yesno:"true,false" }}) {
+        setTimeout(() => {
+            const welcomeToast = document.createElement('div');
+            welcomeToast.className = 'alert alert-info position-fixed';
+            welcomeToast.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 350px; animation: slideInRight 0.5s ease;';
+            welcomeToast.innerHTML = `
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-lightbulb-fill text-warning me-3 fs-4"></i>
+                    <div>
+                        <strong>Welcome to AIMS Ghana Quantathon 2025!</strong><br>
+                        <small>Ready to evaluate quantum innovations? Click "Evaluate Team" to get started.</small>
+                    </div>
+                    <button type="button" class="btn-close ms-3" onclick="this.parentElement.parentElement.remove()"></button>
+                </div>
+            `;
+            document.body.appendChild(welcomeToast);
+            
+            setTimeout(() => {
+                if (welcomeToast.parentElement) {
+                    welcomeToast.remove();
+                }
+            }, 8000);
+        }, 2000);
+    }
+
+    // Add slide-in animation
+    const slideStyle = document.createElement('style');
+    slideStyle.textContent = `
+        @keyframes slideInRight {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+    `;
+    document.head.appendChild(slideStyle);
 </script>
 {% endblock %}

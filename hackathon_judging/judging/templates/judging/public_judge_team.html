@@ -1,5 +1,5 @@
 {% extends 'judging/base.html' %}
-{% block title %}Judge {{ team.name }} - Quantathon{% endblock %}
+{% block title %}Judge {{ team.name }} - AIMS Ghana Quantathon 2025{% endblock %}
 
 {% block content %}
 <!-- Back Navigation -->
@@ -41,9 +41,13 @@
                     </div>
                     <div class="col-lg-4 text-lg-end">
                         <div class="bg-white bg-opacity-20 rounded-3 p-3">
-                            <h6 class="mb-2">Public Judge</h6>
+                            <h6 class="mb-2">AIMS Ghana Quantathon 2025</h6>
+                            <span class="badge bg-light text-dark me-1 mb-1">Public Judge</span>
                             <span class="badge bg-light text-dark me-1 mb-1">Community Voting</span>
-                            <span class="badge bg-light text-dark me-1 mb-1">All Criteria</span>
+                            <div class="small mt-2">
+                                <strong>Theme:</strong> Accelerating Capacity Building<br>
+                                <strong>Focus:</strong> Quantum Science & Technology
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -73,7 +77,7 @@
         <div class="card">
             <div class="card-header">
                 <i class="bi bi-clipboard-check me-2"></i>
-                Evaluation Form
+                Public Evaluation Form - AIMS Ghana Quantathon 2025
             </div>
             <div class="card-body">
                 <form method="post" id="judgingForm">
@@ -81,39 +85,46 @@
                     
                     <!-- Scoring Criteria -->
                     <div class="criteria-sections">
-                        <!-- Quantum Tech Quality (40%) -->
+                        <!-- Quantum Computing Relevance (35%) -->
                         <div class="criteria-section mb-4">
                             <div class="row align-items-center">
                                 <div class="col-lg-6">
                                     <h5 class="text-primary mb-2">
-                                        <i class="bi bi-cpu-fill me-2"></i>
-                                        Quantum Tech Quality (Weight: 40%)
+                                        <!-- <i class="bi bi-cpu-fill me-2"></i> -->
+                                        Quantum Computing Relevance (Weight: 35%)
                                     </h5>
-                                    <p class="text-muted mb-3">Technical implementation and quantum concepts</p>
+                                    <div class="mb-3">
+                                        <p class="text-muted mb-2">Consider these questions:</p>
+                                        <ul class="small text-muted">
+                                            <li>Is quantum computing essential for solving this problem?</li>
+                                            <li>Has the team clearly explained why quantum computing is needed?</li>
+                                            <li>Does this address a real-world problem?</li>
+                                        </ul>
+                                    </div>
                                 </div>
                                 <div class="col-lg-6">
                                     <div class="d-flex align-items-center justify-content-lg-end">
                                         <div class="form-group">
-                                            <label for="quantum_tech_score">Score</label>
+                                            <label for="quantum_relevance_score">Score</label>
                                             <select class="form-control score-select"
-                                                    name="quantum_tech_quality"
+                                                    name="quantum_relevance"
                                                     required
                                                     onchange="showOnlyNumber(this)">
                                                 <option value="" selected hidden>— Select a Score —</option>
                                                 <option value="1" data-label="1">
-                                                    1 – Very Weak – Barely meets expectations or not at all.
+                                                    1 – Weak – Quantum computing not really needed
                                                 </option>
                                                 <option value="2" data-label="2">
-                                                    2 – Weak – Major gaps; needs significant improvement.
+                                                    2 – Fair – Some quantum relevance but unclear
                                                 </option>
                                                 <option value="3" data-label="3">
-                                                    3 – Fair – Adequate but unremarkable; meets minimum requirements.
+                                                    3 – Good – Clear quantum relevance
                                                 </option>
                                                 <option value="4" data-label="4">
-                                                    4 – Strong – Solid work with only minor issues.
+                                                    4 – Very Good – Strong case for quantum computing
                                                 </option>
                                                 <option value="5" data-label="5">
-                                                    5 – Exceptional – Outstanding; exceeds expectations on all points.
+                                                    5 – Excellent – Perfect quantum computing application
                                                 </option>
                                             </select>
                                         </div>
@@ -122,20 +133,81 @@
                             </div>
                             <div class="mt-3">
                                 <label class="form-label">Comments (Optional):</label>
-                                <textarea class="form-control" name="comment_quantum_tech" rows="2" 
-                                          placeholder="Share your thoughts on the quantum technology implementation..."></textarea>
+                                <textarea class="form-control" name="comment_quantum_relevance" rows="2" 
+                                          placeholder="Share your thoughts on why quantum computing is relevant for this solution..."></textarea>
                             </div>
                         </div>
 
-                        <!-- Social Impact (25%) -->
+                        <!-- Quantum Computing Quality (25%) -->
                         <div class="criteria-section mb-4">
                             <div class="row align-items-center">
                                 <div class="col-lg-6">
                                     <h5 class="text-primary mb-2">
-                                        <i class="bi bi-globe me-2"></i>
-                                        Social Impact (Weight: 25%)
+                                        <i class="bi bi-gear-fill me-2"></i>
+                                        Quantum Computing Quality (Weight: 25%)
                                     </h5>
-                                    <p class="text-muted mb-3">Potential to benefit society and address real-world problems</p>
+                                    <div class="mb-3">
+                                        <p class="text-muted mb-2">Consider these aspects:</p>
+                                        <ul class="small text-muted">
+                                            <li>Did they choose good quantum algorithms or methods?</li>
+                                            <li>Does the technical implementation make sense?</li>
+                                            <li>Is the quantum part well integrated into the solution?</li>
+                                            <li>Is there creativity in how they used quantum computing?</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                <div class="col-lg-6">
+                                    <div class="d-flex align-items-center justify-content-lg-end">
+                                        <div class="form-group">
+                                            <label for="quantum_quality_score">Score</label>
+                                            <select class="form-control score-select"
+                                                    name="quantum_quality"
+                                                    required
+                                                    onchange="showOnlyNumber(this)">
+                                                <option value="" selected hidden>— Select a Score —</option>
+                                                <option value="1" data-label="1">
+                                                    1 – Weak – Poor technical implementation
+                                                </option>
+                                                <option value="2" data-label="2">
+                                                    2 – Fair – Basic quantum implementation
+                                                </option>
+                                                <option value="3" data-label="3">
+                                                    3 – Good – Solid quantum technical work
+                                                </option>
+                                                <option value="4" data-label="4">
+                                                    4 – Very Good – Strong quantum implementation
+                                                </option>
+                                                <option value="5" data-label="5">
+                                                    5 – Excellent – Outstanding quantum technical work
+                                                </option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="mt-3">
+                                <label class="form-label">Comments (Optional):</label>
+                                <textarea class="form-control" name="comment_quantum_quality" rows="2" 
+                                          placeholder="Share your thoughts on the technical quality of their quantum solution..."></textarea>
+                            </div>
+                        </div>
+
+                        <!-- Social Impact Based on SDGs (25%) -->
+                        <div class="criteria-section mb-4">
+                            <div class="row align-items-center">
+                                <div class="col-lg-6">
+                                    <h5 class="text-primary mb-2">
+                                        <i class="bi bi-globe-americas me-2"></i>
+                                        Social Impact Based on the SDGs (Weight: 25%)
+                                    </h5>
+                                    <div class="mb-3">
+                                        <p class="text-muted mb-2">Consider these questions:</p>
+                                        <ul class="small text-muted">
+                                            <li>Does this solution address a UN Sustainable Development Goal?</li>
+                                            <li>Could this solution be used in other places or situations?</li>
+                                            <li>Does this have potential to solve real problems in Africa or globally?</li>
+                                        </ul>
+                                    </div>
                                 </div>
                                 <div class="col-lg-6">
                                     <div class="d-flex align-items-center justify-content-lg-end">
@@ -147,19 +219,19 @@
                                                     onchange="showOnlyNumber(this)">
                                                 <option value="" selected hidden>— Select a Score —</option>
                                                 <option value="1" data-label="1">
-                                                    1 – Very Weak – Barely meets expectations or not at all.
+                                                    1 – Weak – Limited social impact potential
                                                 </option>
                                                 <option value="2" data-label="2">
-                                                    2 – Weak – Major gaps; needs significant improvement.
+                                                    2 – Fair – Some social benefit possible
                                                 </option>
                                                 <option value="3" data-label="3">
-                                                    3 – Fair – Adequate but unremarkable; meets minimum requirements.
+                                                    3 – Good – Clear social impact and SDG connection
                                                 </option>
                                                 <option value="4" data-label="4">
-                                                    4 – Strong – Solid work with only minor issues.
+                                                    4 – Very Good – Strong potential for social impact
                                                 </option>
                                                 <option value="5" data-label="5">
-                                                    5 – Exceptional – Outstanding; exceeds expectations on all points.
+                                                    5 – Excellent – Transformative social impact potential
                                                 </option>
                                             </select>
                                         </div>
@@ -169,65 +241,27 @@
                             <div class="mt-3">
                                 <label class="form-label">Comments (Optional):</label>
                                 <textarea class="form-control" name="comment_social_impact" rows="2" 
-                                          placeholder="Share your thoughts on the social impact potential..."></textarea>
+                                          placeholder="Share your thoughts on the social impact and connection to UN SDGs..."></textarea>
                             </div>
                         </div>
 
-                        <!-- Innovation (20%) -->
-                        <div class="criteria-section mb-4">
-                            <div class="row align-items-center">
-                                <div class="col-lg-6">
-                                    <h5 class="text-primary mb-2">
-                                        <i class="bi bi-lightbulb-fill me-2"></i>
-                                        Innovation (Weight: 20%)
-                                    </h5>
-                                    <p class="text-muted mb-3">Creativity and novelty of approach</p>
-                                </div>
-                                <div class="col-lg-6">
-                                    <div class="d-flex align-items-center justify-content-lg-end">
-                                        <div class="form-group">
-                                            <label for="innovation_score">Score</label>
-                                            <select class="form-control score-select"
-                                                    name="innovation"
-                                                    required
-                                                    onchange="showOnlyNumber(this)">
-                                                <option value="" selected hidden>— Select a Score —</option>
-                                                <option value="1" data-label="1">
-                                                    1 – Very Weak – Barely meets expectations or not at all.
-                                                </option>
-                                                <option value="2" data-label="2">
-                                                    2 – Weak – Major gaps; needs significant improvement.
-                                                </option>
-                                                <option value="3" data-label="3">
-                                                    3 – Fair – Adequate but unremarkable; meets minimum requirements.
-                                                </option>
-                                                <option value="4" data-label="4">
-                                                    4 – Strong – Solid work with only minor issues.
-                                                </option>
-                                                <option value="5" data-label="5">
-                                                    5 – Exceptional – Outstanding; exceeds expectations on all points.
-                                                </option>
-                                            </select>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="mt-3">
-                                <label class="form-label">Comments (Optional):</label>
-                                <textarea class="form-control" name="comment_innovation" rows="2" 
-                                          placeholder="Share your thoughts on the innovation and creativity..."></textarea>
-                            </div>
-                        </div>
-
-                        <!-- Presentation (10%) -->
+                        <!-- Presentation and Originality (15%) -->
                         <div class="criteria-section mb-4">
                             <div class="row align-items-center">
                                 <div class="col-lg-6">
                                     <h5 class="text-primary mb-2">
                                         <i class="bi bi-presentation me-2"></i>
-                                        Presentation (Weight: 10%)
+                                        Presentation and Originality (Weight: 15%)
                                     </h5>
-                                    <p class="text-muted mb-3">How well the idea is communicated and presented</p>
+                                    <div class="mb-3">
+                                        <p class="text-muted mb-2">Consider these aspects:</p>
+                                        <ul class="small text-muted">
+                                            <li>Did they explain their problem and solution clearly?</li>
+                                            <li>Was their presentation well-organized and engaging?</li>
+                                            <li>Did they show their prototype or demonstrate their idea?</li>
+                                            <li>Is there original thinking or creative ideas?</li>
+                                        </ul>
+                                    </div>
                                 </div>
                                 <div class="col-lg-6">
                                     <div class="d-flex align-items-center justify-content-lg-end">
@@ -239,19 +273,19 @@
                                                     onchange="showOnlyNumber(this)">
                                                 <option value="" selected hidden>— Select a Score —</option>
                                                 <option value="1" data-label="1">
-                                                    1 – Very Weak – Barely meets expectations or not at all.
+                                                    1 – Weak – Unclear presentation, no originality
                                                 </option>
                                                 <option value="2" data-label="2">
-                                                    2 – Weak – Major gaps; needs significant improvement.
+                                                    2 – Fair – Basic presentation, some originality
                                                 </option>
                                                 <option value="3" data-label="3">
-                                                    3 – Fair – Adequate but unremarkable; meets minimum requirements.
+                                                    3 – Good – Clear presentation with original ideas
                                                 </option>
                                                 <option value="4" data-label="4">
-                                                    4 – Strong – Solid work with only minor issues.
+                                                    4 – Very Good – Engaging presentation, creative ideas
                                                 </option>
                                                 <option value="5" data-label="5">
-                                                    5 – Exceptional – Outstanding; exceeds expectations on all points.
+                                                    5 – Excellent – Outstanding presentation, highly original
                                                 </option>
                                             </select>
                                         </div>
@@ -261,53 +295,7 @@
                             <div class="mt-3">
                                 <label class="form-label">Comments (Optional):</label>
                                 <textarea class="form-control" name="comment_presentation" rows="2" 
-                                          placeholder="Share your thoughts on the presentation quality..."></textarea>
-                            </div>
-                        </div>
-
-                        <!-- Business Viability (5%) -->
-                        <div class="criteria-section mb-4">
-                            <div class="row align-items-center">
-                                <div class="col-lg-6">
-                                    <h5 class="text-primary mb-2">
-                                        <i class="bi bi-graph-up me-2"></i>
-                                        Business Viability (Weight: 5%)
-                                    </h5>
-                                    <p class="text-muted mb-3">Potential for real-world implementation and commercial success</p>
-                                </div>
-                                <div class="col-lg-6">
-                                    <div class="d-flex align-items-center justify-content-lg-end">
-                                        <div class="form-group">
-                                            <label for="business_viability_score">Score</label>
-                                            <select class="form-control score-select"
-                                                    name="business_viability"
-                                                    required
-                                                    onchange="showOnlyNumber(this)">
-                                                <option value="" selected hidden>— Select a Score —</option>
-                                                <option value="1" data-label="1">
-                                                    1 – Very Weak – Barely meets expectations or not at all.
-                                                </option>
-                                                <option value="2" data-label="2">
-                                                    2 – Weak – Major gaps; needs significant improvement.
-                                                </option>
-                                                <option value="3" data-label="3">
-                                                    3 – Fair – Adequate but unremarkable; meets minimum requirements.
-                                                </option>
-                                                <option value="4" data-label="4">
-                                                    4 – Strong – Solid work with only minor issues.
-                                                </option>
-                                                <option value="5" data-label="5">
-                                                    5 – Exceptional – Outstanding; exceeds expectations on all points.
-                                                </option>
-                                            </select>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="mt-3">
-                                <label class="form-label">Comments (Optional):</label>
-                                <textarea class="form-control" name="comment_business_viability" rows="2" 
-                                          placeholder="Share your thoughts on the business viability..."></textarea>
+                                          placeholder="Share your thoughts on their presentation and original ideas..."></textarea>
                             </div>
                         </div>
                     </div>
@@ -320,7 +308,7 @@
                         </h5>
                         <div class="mb-3">
                             <textarea class="form-control" name="comments" rows="4" 
-                                      placeholder="Share your overall thoughts about this team's project..."></textarea>
+                                      placeholder="Share your overall thoughts about this team's quantum project and its potential..."></textarea>
                         </div>
                     </div>
 
@@ -355,45 +343,97 @@
         <div class="card border-info">
             <div class="card-header bg-info bg-opacity-10">
                 <i class="bi bi-lightbulb me-2"></i>
-                Scoring Guide
+                AIMS Ghana Quantathon 2025 - Public Judging Guide
             </div>
             <div class="card-body">
                 <div class="row g-3 text-center">
                     <div class="col-md">
                         <div class="p-3 bg-danger bg-opacity-10 rounded-3 h-100">
                             <h5 class="text-danger">1</h5>
-                            <span class="badge bg-danger-subtle text-danger">Very Weak</span>
-                            <p class="small mt-2 text-muted">Barely meets expectations or not at all.</p>
+                            <span class="badge bg-danger-subtle text-danger">Weak</span>
+                            <p class="small mt-2 text-muted">Does not meet expectations or has significant problems.</p>
                         </div>
                     </div>
                     <div class="col-md">
                         <div class="p-3 bg-warning bg-opacity-10 rounded-3 h-100">
                             <h5 class="text-warning">2</h5>
-                            <span class="badge bg-warning-subtle text-warning">Weak</span>
-                            <p class="small mt-2 text-muted">Major gaps; needs significant improvement.</p>
+                            <span class="badge bg-warning-subtle text-warning">Fair</span>
+                            <p class="small mt-2 text-muted">Partially meets expectations but needs improvement.</p>
                         </div>
                     </div>
                     <div class="col-md">
                         <div class="p-3 bg-info bg-opacity-10 rounded-3 h-100">
                             <h5 class="text-info">3</h5>
-                            <span class="badge bg-info-subtle text-info">Fair</span>
-                            <p class="small mt-2 text-muted">Adequate but unremarkable; meets minimum requirements.</p>
+                            <span class="badge bg-info-subtle text-info">Good</span>
+                            <p class="small mt-2 text-muted">Meets expectations well, solid work.</p>
                         </div>
                     </div>
                     <div class="col-md">
                         <div class="p-3 bg-primary bg-opacity-10 rounded-3 h-100">
                             <h5 class="text-primary">4</h5>
-                            <span class="badge bg-primary-subtle text-primary">Strong</span>
-                            <p class="small mt-2 text-muted">Solid work with only minor issues.</p>
+                            <span class="badge bg-primary-subtle text-primary">Very Good</span>
+                            <p class="small mt-2 text-muted">Exceeds expectations, impressive work.</p>
                         </div>
                     </div>
                     <div class="col-md">
                         <div class="p-3 bg-success bg-opacity-10 rounded-3 h-100">
                             <h5 class="text-success">5</h5>
-                            <span class="badge bg-success-subtle text-success">Exceptional</span>
-                            <p class="small mt-2 text-muted">Outstanding; exceeds expectations on all points.</p>
+                            <span class="badge bg-success-subtle text-success">Excellent</span>
+                            <p class="small mt-2 text-muted">Outstanding work that goes above and beyond.</p>
                         </div>
                     </div>
+                </div>
+                
+                <!-- Updated criteria info for AIMS Ghana 2025 -->
+                <div class="row mt-4">
+                    <div class="col-12">
+                        <h6 class="fw-bold text-center mb-3">What You're Judging - AIMS Ghana Quantathon 2025</h6>
+                        <div class="row g-3">
+                            <div class="col-md-3">
+                                <div class="text-center p-3 border rounded">
+                                    <div class="fw-bold text-primary mb-2">35%</div>
+                                    <div class="small"><strong>Quantum Computing Relevance</strong></div>
+                                    <div class="tiny text-muted mt-1">Is QC essential for this problem?</div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="text-center p-3 border rounded">
+                                    <div class="fw-bold text-success mb-2">25%</div>
+                                    <div class="small"><strong>Quantum Computing Quality</strong></div>
+                                    <div class="tiny text-muted mt-1">How good is the technical implementation?</div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="text-center p-3 border rounded">
+                                    <div class="fw-bold text-info mb-2">25%</div>
+                                    <div class="small"><strong>Social Impact (SDGs)</strong></div>
+                                    <div class="tiny text-muted mt-1">Does it address UN development goals?</div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="text-center p-3 border rounded">
+                                    <div class="fw-bold text-warning mb-2">15%</div>
+                                    <div class="small"><strong>Presentation & Originality</strong></div>
+                                    <div class="tiny text-muted mt-1">How well presented and creative?</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- About the theme -->
+                <div class="alert alert-info border-0 mt-4">
+                    <h6 class="fw-bold">
+                        <i class="bi bi-info-circle me-2"></i>
+                        About AIMS Ghana Quantathon 2025
+                    </h6>
+                    <p class="mb-2">
+                        <strong>Theme:</strong> "Accelerating Capacity Building to Advance Quantum Science & Technology"
+                    </p>
+                    <p class="mb-0">
+                        Teams are using quantum computing to solve real-world problems that align with the UN Sustainable Development Goals (SDGs). 
+                        Your vote helps determine which solutions have the most potential to make a positive impact.
+                    </p>
                 </div>
             </div>
         </div>
@@ -405,7 +445,7 @@
 <script>
     // Form validation
     document.getElementById('judgingForm').addEventListener('submit', function(e) {
-        const scoreInputs = this.querySelectorAll('select[name*="quantum_tech_quality"], select[name*="social_impact"], select[name*="innovation"], select[name*="presentation"], select[name*="business_viability"]');
+        const scoreInputs = this.querySelectorAll('select[name*="quantum_relevance"], select[name*="quantum_quality"], select[name*="social_impact"], select[name*="presentation"]');
         let allValid = true;
         let emptyFields = [];
 
@@ -448,16 +488,38 @@
         // Set selected option text to just the number
         selectedOption.textContent = selectedOption.getAttribute("data-label");
 
-        // Reset other options to full label
+        // Reset other options to full label based on criteria type
         for (let i = 0; i < select.options.length; i++) {
             if (i !== selectedIndex) {
                 const option = select.options[i];
                 const val = option.getAttribute("data-label");
-                if (val === "1") option.textContent = "1 – Very Weak – Barely meets expectations or not at all.";
-                if (val === "2") option.textContent = "2 – Weak – Major gaps; needs significant improvement.";
-                if (val === "3") option.textContent = "3 – Fair – Adequate but unremarkable; meets minimum requirements.";
-                if (val === "4") option.textContent = "4 – Strong – Solid work with only minor issues.";
-                if (val === "5") option.textContent = "5 – Exceptional – Outstanding; exceeds expectations on all points.";
+                const selectName = select.getAttribute("name");
+                
+                if (selectName === "quantum_relevance") {
+                    if (val === "1") option.textContent = "1 – Weak – Quantum computing not really needed";
+                    if (val === "2") option.textContent = "2 – Fair – Some quantum relevance but unclear";
+                    if (val === "3") option.textContent = "3 – Good – Clear quantum relevance";
+                    if (val === "4") option.textContent = "4 – Very Good – Strong case for quantum computing";
+                    if (val === "5") option.textContent = "5 – Excellent – Perfect quantum computing application";
+                } else if (selectName === "quantum_quality") {
+                    if (val === "1") option.textContent = "1 – Weak – Poor technical implementation";
+                    if (val === "2") option.textContent = "2 – Fair – Basic quantum implementation";
+                    if (val === "3") option.textContent = "3 – Good – Solid quantum technical work";
+                    if (val === "4") option.textContent = "4 – Very Good – Strong quantum implementation";
+                    if (val === "5") option.textContent = "5 – Excellent – Outstanding quantum technical work";
+                } else if (selectName === "social_impact") {
+                    if (val === "1") option.textContent = "1 – Weak – Limited social impact potential";
+                    if (val === "2") option.textContent = "2 – Fair – Some social benefit possible";
+                    if (val === "3") option.textContent = "3 – Good – Clear social impact and SDG connection";
+                    if (val === "4") option.textContent = "4 – Very Good – Strong potential for social impact";
+                    if (val === "5") option.textContent = "5 – Excellent – Transformative social impact potential";
+                } else if (selectName === "presentation") {
+                    if (val === "1") option.textContent = "1 – Weak – Unclear presentation, no originality";
+                    if (val === "2") option.textContent = "2 – Fair – Basic presentation, some originality";
+                    if (val === "3") option.textContent = "3 – Good – Clear presentation with original ideas";
+                    if (val === "4") option.textContent = "4 – Very Good – Engaging presentation, creative ideas";
+                    if (val === "5") option.textContent = "5 – Excellent – Outstanding presentation, highly original";
+                }
             }
         }
     }
@@ -514,5 +576,124 @@
             localStorage.removeItem(`public_judge_${teamId}_${element.name}`);
         });
     });
+
+    // Add encouraging message for first-time users
+    document.addEventListener('DOMContentLoaded', function() {
+        // Check if this is user's first time judging
+        const hasJudgedBefore = localStorage.getItem('has_judged_before');
+        if (!hasJudgedBefore) {
+            setTimeout(() => {
+                const welcomeToast = document.createElement('div');
+                welcomeToast.className = 'alert alert-info position-fixed';
+                welcomeToast.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 350px; animation: slideIn 0.5s ease;';
+                welcomeToast.innerHTML = `
+                    <div class="d-flex align-items-center">
+                        <i class="bi bi-heart-fill text-info me-3 fs-4"></i>
+                        <div>
+                            <strong>Welcome to Public Judging!</strong><br>
+                            <small>Your voice matters in shaping quantum innovation. Take your time to evaluate each aspect carefully.</small>
+                        </div>
+                        <button type="button" class="btn-close ms-3" onclick="this.parentElement.parentElement.remove(); localStorage.setItem('has_judged_before', 'true');"></button>
+                    </div>
+                `;
+                document.body.appendChild(welcomeToast);
+                
+                // Auto-remove after 10 seconds
+                setTimeout(() => {
+                    if (welcomeToast.parentElement) {
+                        welcomeToast.remove();
+                        localStorage.setItem('has_judged_before', 'true');
+                    }
+                }, 10000);
+            }, 1500);
+        }
+    });
 </script>
+
+<!-- Add slide-in animation for the welcome toast -->
+<style>
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+.tiny {
+    font-size: 0.7rem;
+}
+
+.criteria-section {
+    transition: border-left 0.3s ease;
+    padding-left: 1rem;
+    margin-left: -1rem;
+    border-radius: 8px;
+}
+
+.criteria-section:hover {
+    background-color: rgba(22, 160, 133, 0.02);
+}
+
+/* Enhanced form styling for better UX */
+.form-group label {
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 0.5rem;
+}
+
+.score-select {
+    min-width: 200px;
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    padding: 0.5rem;
+    transition: all 0.3s ease;
+}
+
+.score-select:focus {
+    border-color: #16a085;
+    box-shadow: 0 0 0 0.2rem rgba(22, 160, 133, 0.25);
+}
+
+.score-select.is-valid {
+    border-color: #28a745;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'%3e%3cpath fill='%2328a745' d='m2.3 6.73.94-.94 1.18 1.18-.94.94L2.3 6.73z'/%3e%3cpath fill='%2328a745' d='m6.25 2.25-.94.94L4.13 2.01l.94-.94 1.18 1.18z'/%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right calc(0.375em + 0.1875rem) center;
+    background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
+}
+
+.score-select.is-invalid {
+    border-color: #dc3545;
+}
+
+/* Responsive improvements */
+@media (max-width: 768px) {
+    .criteria-section .row {
+        flex-direction: column;
+    }
+    
+    .criteria-section .col-lg-6:last-child {
+        margin-top: 1rem;
+    }
+    
+    .d-flex.justify-content-between {
+        flex-direction: column;
+        align-items: stretch !important;
+        gap: 1rem;
+    }
+    
+    .d-flex.justify-content-between > div:last-child {
+        display: flex;
+        gap: 0.5rem;
+    }
+    
+    .score-select {
+        min-width: 100%;
+    }
+}
+</style>
 {% endblock %}

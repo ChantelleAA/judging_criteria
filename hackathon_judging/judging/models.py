@@ -120,15 +120,13 @@ class TeamFinalScore(models.Model):
     last_updated = models.DateTimeField(auto_now=True)
     
     def calculate_final_score(self):
-        """Calculate weighted final score"""
-        # Weights: Quantum Tech (40%), Social Impact (25%), Innovation (20%), 
-        # Presentation (10%), Business Viability (5%)
+        
         self.final_weighted_score = (
-            (self.quantum_tech_score * 0.40) +
-            (self.social_impact_score * 0.25) +
-            (self.innovation_score * 0.20) +
-            (self.presentation_score * 0.10) +
-            (self.business_viability_score * 0.05)
+            (self.innovation_score * 0.35) +        # Quantum Computing Relevance 35%
+            (self.quantum_tech_score * 0.25) +      # Quantum Computing Quality 25%
+            (self.social_impact_score * 0.25) +     # Social Impact Based on the SDGs 25%
+            (self.presentation_score * 0.15) +      # Presentation and Originality 15%
+            (self.business_viability_score * 0.00)  # Not used in new criteria
         )
         self.save()
         return self.final_weighted_score

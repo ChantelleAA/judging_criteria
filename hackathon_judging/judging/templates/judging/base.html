@@ -16,15 +16,15 @@
     <style>
         :root {
             /* Quantum-inspired color palette */
-            --quantum-purple: #6B46C1;
-            --quantum-blue: #3B82F6;
-            --quantum-cyan: #06B6D4;
-            --quantum-pink: #EC4899;
-            --quantum-violet: #8B5CF6;
-            --quantum-indigo: #4F46E5;
+            --quantum-purple: #6e0919;
+            --quantum-blue: #f9f9f9;
+            --quantum-cyan: #2a0a3f;
+            --quantum-pink: #2a0a3f;
+            --quantum-violet: #6e0919;
+            --quantum-indigo: #2a0a3f;
             
             /* Neutral colors */
-            --quantum-dark: #0F172A;
+            --quantum-dark: #2a0a3f;
             --quantum-gray-900: #1E293B;
             --quantum-gray-800: #334155;
             --quantum-gray-700: #475569;
@@ -32,7 +32,7 @@
             --quantum-gray-50: #F8FAFC;
             
             /* Gradients */
-            --gradient-quantum: linear-gradient(135deg, var(--quantum-purple) 0%, var(--quantum-pink) 50%, var(--quantum-cyan) 100%);
+            --gradient-quantum: linear-gradient(135deg, var(--quantum-purple) 40%, var(--quantum-pink) 60%);
             --gradient-dark: linear-gradient(135deg, var(--quantum-dark) 0%, var(--quantum-gray-900) 100%);
             --gradient-card: linear-gradient(145deg, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.7) 100%);
             
@@ -98,7 +98,7 @@
             background: rgba(255, 255, 255, 0.95) !important;
             backdrop-filter: blur(20px);
             border: 1px solid var(--glass-border);
-            border-radius: 24px;
+            border-radius: 0px;
             box-shadow: 
                 0 25px 50px rgba(0, 0, 0, 0.1),
                 0 0 0 1px rgba(255, 255, 255, 0.1);
@@ -109,7 +109,7 @@
 
         /* Navigation */
         .navbar {
-            background: rgba(15, 23, 42, 0.9) !important;
+            background: rgba(42, 10, 63, 1) !important;
             backdrop-filter: blur(20px);
             padding: 1.2rem 0;
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
@@ -161,7 +161,7 @@
             background: rgba(255, 255, 255, 0.98) !important;
             backdrop-filter: blur(20px);
             border: 1px solid rgba(0, 0, 0, 0.1) !important;
-            border-radius: 20px;
+            border-radius: 0px;
             box-shadow: 
                 0 20px 40px rgba(0, 0, 0, 0.1),
                 0 0 0 1px rgba(255, 255, 255, 0.1);
@@ -190,7 +190,7 @@
         }
 
         .card-header {
-            background: rgba(15, 23, 42, 0.95) !important;
+            background: rgba(128, 0, 0, 40) !important;
             color: white !important;
             border: none;
             padding: 1.5rem 2rem;
@@ -199,6 +199,7 @@
             font-family: 'Space Grotesk', sans-serif;
             position: relative;
         }
+
 
         .card-header::before {
             content: '';
@@ -536,7 +537,7 @@
 
         /* Footer */
         .footer {
-            background: rgba(15, 23, 42, 0.95);
+            background: rgba(128, 0, 0, 40);
             color: white;
             padding: 3rem 0;
             margin-top: 4rem;
@@ -574,12 +575,14 @@
 </head>
 <body>
     <!-- Navigation -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-        <div class="container">
-            <a class="navbar-brand" href="{% url 'home' %}">
-                <i class="bi bi-cpu-fill me-2"></i>
-                QUANTATHON
-            </a>
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container">
+        <a class="navbar-brand" href="{% url 'home' %}">
+            {% load static %}
+            <img src="{% static 'images/Quantathon_logo.png' %}" 
+                 alt="Quantum Hackathon in a Box - AIMS Ghana Quantathon 2025" 
+                 style="max-height: 80px; max-width: 300px; opacity: 0.9;">
+        </a>
             
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>

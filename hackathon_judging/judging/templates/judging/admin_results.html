@@ -4,9 +4,7 @@
 {% block title %}Analytics Dashboard - Quantathon{% endblock %}
 
 {% block content %}
-<!-- Header with Controls -->
 <script src="https://cdn.jsdelivr.net/npm/chartjs-chart-box-and-violin@4"></script>
-<!-- <script src="https://cdn.jsdelivr.net/npm/chartjs-chart-matrix@2"></script> -->
 
 <div class="row mb-4">
     <div class="col-lg-8">
@@ -34,7 +32,7 @@
 <!-- Summary Statistics -->
 <div class="row mb-4">
     <div class="col-lg-3 col-md-6 mb-3">
-        <div class="stat-card border-start border-primary border-4">
+        <div class="stat-card border-start  border-4">
             <div class="stat-number text-primary">{{ teams_with_scores.count }}</div>
             <div class="stat-label">Competing Teams</div>
             <div class="small text-muted mt-1">
@@ -43,7 +41,7 @@
         </div>
     </div>
     <div class="col-lg-3 col-md-6 mb-3">
-        <div class="stat-card border-start border-success border-4">
+        <div class="stat-card  border-4">
             <div class="stat-number text-success">{{ total_submissions }}</div>
             <div class="stat-label">Total Judgments</div>
             <div class="small text-muted mt-1">
@@ -52,7 +50,7 @@
         </div>
     </div>
     <div class="col-lg-3 col-md-6 mb-3">
-        <div class="stat-card border-start border-info border-4">
+        <div class="stat-card border-start  border-4">
             <div class="stat-number text-info">{{ total_judges }}</div>
             <div class="stat-label">Expert Judges</div>
             <div class="small text-muted mt-1">
@@ -61,7 +59,7 @@
         </div>
     </div>
     <div class="col-lg-3 col-md-6 mb-3">
-        <div class="stat-card border-start border-warning border-4">
+        <div class="stat-card border-start  border-4">
             <div class="stat-number text-warning">{% widthratio total_submissions total_judges 1 %}%</div>
             <div class="stat-label">Completion Rate</div>
             <div class="small text-muted mt-1">
@@ -98,18 +96,36 @@
                                         {% endif %}
                                         
                                         <div class="mt-3 mb-3">
-                                            {% if team_score.rank == 1 %}
-                                                <div class="display-1 text-warning">🥇</div>
+                                           {% if team_score.rank == 1 %}
+                                                <div class="medal-container mb-3">
+                                                    {% load static %}
+                                                    <img src="{% static 'images/medals/Medal 1.png' %}" 
+                                                        alt="Gold Medal - 1st Place" 
+                                                        class="medal-image gold-medal animate-medal"
+                                                        style="width: 80px; height: 80px; object-fit: contain; filter: drop-shadow(0 4px 12px rgba(255, 215, 0, 0.4)); transition: all 0.3s ease;">
+                                                </div>
                                             {% elif team_score.rank == 2 %}
-                                                <div class="display-1 text-secondary">🥈</div>
+                                                <div class="medal-container mb-3">
+                                                    {% load static %}
+                                                    <img src="{% static 'images/medals/Medal 2.png' %}" 
+                                                        alt="Silver Medal - 2nd Place" 
+                                                        class="medal-image silver-medal animate-medal"
+                                                        style="width: 80px; height: 80px; object-fit: contain; filter: drop-shadow(0 4px 12px rgba(192, 192, 192, 0.4)); transition: all 0.3s ease;">
+                                                </div>
                                             {% elif team_score.rank == 3 %}
-                                                <div class="display-1" style="color: #CD7F32;">🥉</div>
+                                                <div class="medal-container mb-3">
+                                                    {% load static %}
+                                                    <img src="{% static 'images/medals/Medal 3.png' %}" 
+                                                        alt="Bronze Medal - 3rd Place" 
+                                                        class="medal-image bronze-medal animate-medal"
+                                                        style="width: 80px; height: 80px; object-fit: contain; filter: drop-shadow(0 4px 12px rgba(205, 127, 50, 0.4)); transition: all 0.3s ease;">
+                                                </div>
                                             {% endif %}
                                         </div>
                                         
                                         <h5 class="fw-bold">{{ team_score.team.name }}</h5>
                                         <div class="display-6 fw-bold mb-2 bg-quantum-gradient" 
-                                             style="-webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;">
+                                             style="-webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: white;">
                                             {{ team_score.final_weighted_score|floatformat:2 }}
                                         </div>
                                         <p class="text-muted mb-0">
@@ -186,7 +202,7 @@
 
 
 <!-- Detailed Rankings Table with Expandable Rows -->
-<div class="row">
+<div class="r<div class="row">
     <div class="col-12">
         <div class="card">
             <div class="card-header d-flex justify-content-between align-items-center">
@@ -195,14 +211,14 @@
                     Complete Rankings
                 </h4>
                 <div class="d-flex gap-2">
-                    <button class="btn btn-sm btn-outline-secondary" onclick="toggleAllDetails()">
+                    <button class="btn btn-sm btn-outline-secondary text-white" onclick="toggleAllDetails()">
                         <i class="bi bi-arrows-expand me-1" id="toggleIcon"></i>
                         <span id="toggleText">Expand All</span>
                     </button>
-                    <button class="btn btn-sm btn-outline-primary" onclick="exportTableCSV()">
+                    <button class="btn btn-sm btn-outline-primary text-white" onclick="exportTableCSV()">
                         <i class="bi bi-filetype-csv me-1"></i>CSV
                     </button>
-                    <button class="btn btn-sm btn-outline-success" onclick="window.print()">
+                    <button class="btn btn-sm btn-outline-success text-white" onclick="window.print()">
                         <i class="bi bi-printer me-1"></i>Print
                     </button>
                 </div>
@@ -210,19 +226,18 @@
             <div class="card-body p-0">
                 {% if teams_with_scores %}
                     <div class="table-responsive">
-                        <table class="table table-hover mb-0" id="rankingsTable">
-                            <thead class="table-dark">
+                        <table class="table table-hover mb-1" id="rankingsTable">
+                            <thead class="table-dark fw-normal">
                                 <tr>
-                                    <th class="text-center" width="50"></th>
+                                    <th class="text-center" width="30"></th>
                                     <th class="text-center" width="80">Rank</th>
                                     <th>Team</th>
-                                    <th class="text-center">Quantum Tech Quality<br><small>(40%)</small></th>
-                                    <th class="text-center">Social Impact<br><small>(25%)</small></th>
-                                    <th class="text-center">Innovation<br><small>(20%)</small></th>
-                                    <th class="text-center">Presentation<br><small>(10%)</small></th>
-                                    <th class="text-center">Business Viability<br><small>(5%)</small></th>
-                                    <th class="text-center" width="120"><strong>Final Score</strong></th>
-                                    <th class="text-center" width="100">Actions</th>
+                                    <th class="text-center fw-normal">Quantum Computing Relevance<br><small>(35%)</small></th>
+                                    <th class="text-center fw-normal">Quantum Computing Quality<br><small>(25%)</small></th>
+                                    <th class="text-center fw-normal">Social Impact Based on SDGs<br><small>(25%)</small></th>
+                                    <th class="text-center fw-normal">Presentation and Originality<br><small>(15%)</small></th>
+                                    <th class="text-center fw-normal" width="120">Final Score</th>
+                                    <!-- <th class="text-center fw-normal" width="100">Actions</th> -->
                                 </tr>
                             </thead>
                             <tbody>
@@ -231,386 +246,96 @@
                                     <tr class="{% if team_score.rank <= 3 %}table-warning{% endif %} team-row" 
                                         onclick="toggleTeamDetails('team-{{ forloop.counter0 }}')"
                                         style="cursor: pointer;">
+                                        
+                                        <!-- Fixed expand icon cell -->
                                         <td class="text-center">
-                                            <i class="bi bi-chevron-right expand-icon" id="icon-team-{{ forloop.counter0 }}"></i>
+                                            <div class="expand-icon-container">
+                                                <i class="bi bi-chevron-right expand-icon" id="icon-team-{{ forloop.counter0 }}"></i>
+                                            </div>
                                         </td>
-                                        <td class="text-center fw-bold">
+                                        
+                                        <!-- Fixed rank badge cell -->
+                                        <td class="text-center">
                                             {% if team_score.rank == 1 %}
-                                                <span class="badge bg-warning text-dark fs-6 p-2">🥇 {{ team_score.rank }}</span>
+                                                <span class="badge bg-warning text-dark rank-badge">🥇 {{ team_score.rank }}</span>
                                             {% elif team_score.rank == 2 %}
-                                                <span class="badge bg-secondary fs-6 p-2">🥈 {{ team_score.rank }}</span>
+                                                <span class="badge bg-secondary rank-badge">🥈 {{ team_score.rank }}</span>
                                             {% elif team_score.rank == 3 %}
-                                                <span class="badge bg-warning bg-opacity-50 text-dark fs-6 p-2">🥉 {{ team_score.rank }}</span>
+                                                <span class="badge bg-warning bg-opacity-40 text-dark rank-badge">🥉 {{ team_score.rank }}</span>
                                             {% else %}
-                                                <span class="badge bg-light text-dark fs-6 p-2">{{ team_score.rank }}</span>
+                                                <span class="badge bg-light text-dark rank-badge">{{ team_score.rank }}</span>
                                             {% endif %}
                                         </td>
-                                        <td>
+                                        
+                                        <!-- Fixed team name cell -->
+                                        <td class="team-name-cell">
                                             <div class="d-flex align-items-center">
-                                                <div class="me-3">
-                                                    <div class="bg-quantum-gradient rounded-circle d-flex align-items-center justify-content-center" 
-                                                         style="width: 40px; height: 40px;">
-                                                        <i class="bi bi-cpu text-white"></i>
-                                                    </div>
-                                                </div>
                                                 <div>
-                                                    <h6 class="mb-1 fw-bold">{{ team_score.team.name }}</h6>
-                                                    <small class="text-muted">{{ team_score.team.members|truncatewords:4 }}</small>
+                                                    <h5 class="team-name">{{ team_score.team.name }}</h5>
                                                 </div>
                                             </div>
                                         </td>
+                                        
+                                        <!-- Score cells with consistent alignment -->
                                         <td class="text-center">
                                             <div class="score-cell">
-                                                <span class="badge bg-primary bg-opacity-20 text-dark fw-bold fs-6 p-2">
+                                                <span class="text-dark fw-bold">
                                                     {{ team_score.quantum_tech_score|floatformat:1 }}
                                                 </span>
-                                                <div class="progress mt-1" style="height: 4px;">
+                                                <div class="progress mt-1">
                                                     <div class="progress-bar bg-primary" style="width: {% widthratio team_score.quantum_tech_score 5 100 %}%"></div>
                                                 </div>
                                             </div>
                                         </td>
+                                        
                                         <td class="text-center">
                                             <div class="score-cell">
-                                                <span class="badge bg-success bg-opacity-20 text-dark fw-bold fs-6 p-2">
+                                                <span class="text-dark fw-bold">
                                                     {{ team_score.social_impact_score|floatformat:1 }}
                                                 </span>
-                                                <div class="progress mt-1" style="height: 4px;">
+                                                <div class="progress mt-1">
                                                     <div class="progress-bar bg-success" style="width: {% widthratio team_score.social_impact_score 5 100 %}%"></div>
                                                 </div>
                                             </div>
                                         </td>
+                                        
                                         <td class="text-center">
                                             <div class="score-cell">
-                                                <span class="badge bg-info bg-opacity-20 text-dark fw-bold fs-6 p-2">
+                                                <span class="text-dark fw-bold">
                                                     {{ team_score.innovation_score|floatformat:1 }}
                                                 </span>
-                                                <div class="progress mt-1" style="height: 4px;">
+                                                <div class="progress mt-1">
                                                     <div class="progress-bar bg-info" style="width: {% widthratio team_score.innovation_score 5 100 %}%"></div>
                                                 </div>
                                             </div>
                                         </td>
+                                        
                                         <td class="text-center">
                                             <div class="score-cell">
-                                                <span class="badge bg-warning bg-opacity-20 text-dark fw-bold fs-6 p-2">
-                                                    {{ team_score.presentation_score|floatformat:1 }}
+                                                <span class="text-dark fw-bold">
+                                                    {{ team_score.presentation_score|floatformat:2 }}
                                                 </span>
-                                                <div class="progress mt-1" style="height: 4px;">
+                                                <div class="progress mt-1">
                                                     <div class="progress-bar bg-warning" style="width: {% widthratio team_score.presentation_score 5 100 %}%"></div>
                                                 </div>
                                             </div>
                                         </td>
-                                        <td class="text-center">
-                                            <div class="score-cell">
-                                                <span class="badge bg-secondary bg-opacity-20 text-dark fw-bold fs-6 p-2">
-                                                    {{ team_score.business_viability_score|floatformat:1 }}
-                                                </span>
-                                                <div class="progress mt-1" style="height: 4px;">
-                                                    <div class="progress-bar bg-secondary" style="width: {% widthratio team_score.business_viability_score 5 100 %}%"></div>
-                                                </div>
-                                            </div>
-                                        </td>
+                                        
+                                        <!-- Fixed final score cell -->
                                         <td class="text-center">
                                             <div class="final-score">
-                                                <div class="display-5 fw-bold bg-dark" 
-                                                     style="-webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;">
-                                                    {{ team_score.final_weighted_score|floatformat:2 }}
-                                                </div>
-                                                <!-- <div class="small text-muted">
-                                                    Final Score
-                                                </div> -->
+                                                {{ team_score.final_weighted_score|floatformat:2 }}
                                             </div>
                                         </td>
-                                        <td class="text-center">
-                                            <div class="btn-group btn-group-sm">
-                                                {% if team_score.team.presentation_link %}
-                                                    <a href="{{ team_score.team.presentation_link }}" 
-                                                       target="_blank" 
-                                                       class="btn btn-outline-success"
-                                                       onclick="event.stopPropagation();">
-                                                        <i class="bi bi-play-circle"></i>
-                                                    </a>
-                                                {% endif %}
-                                                <button class="btn btn-outline-primary" 
-                                                        onclick="event.stopPropagation(); exportTeamReport('{{ team_score.team.name|escapejs }}')">
-                                                    <i class="bi bi-download"></i>
-                                                </button>
-                                            </div>
-                                        </td>
+                                        
                                     </tr>
                                     
-                                    <!-- Expandable Details Row -->
+                                    <!-- Expandable Details Row (unchanged) -->
                                     <tr class="team-details-row" id="details-team-{{ forloop.counter0 }}" style="display: none;">
                                         <td colspan="10" class="p-0">
+                                            <!-- Your existing expandable content remains the same -->
                                             <div class="team-details-content" style="background: linear-gradient(135deg, rgba(107, 70, 193, 0.05) 0%, rgba(59, 130, 246, 0.05) 100%); border-left: 4px solid var(--quantum-purple);">
-                                                <div class="container-fluid p-4">
-                                                    <!-- Team Details Content -->
-                                                    <div class="row mb-4">
-                                                        <div class="col-md-8">
-                                                            <div class="card h-100" style="border: none; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
-                                                                <div class="card-header bg-light">
-                                                                    <h6 class="mb-0">
-                                                                        <i class="bi bi-graph-up me-2"></i>Detailed Score Breakdown
-                                                                    </h6>
-                                                                </div>
-                                                                <div class="card-body">
-                                                                    <div class="row g-3">
-                                                                        <!-- Quantum Tech Quality -->
-                                                                        <div class="col-md-6 mb-3">
-                                                                            <div class="d-flex justify-content-between align-items-center mb-2">
-                                                                                <span class="fw-medium">Quantum Tech Quality</span>
-                                                                                <div class="text-end">
-                                                                                    <span class="fw-bold" style="font-size: 1.2rem;">{{ team_score.quantum_tech_score|floatformat:1 }}</span>
-                                                                                    <span class="text-muted small">(40%)</span>
-                                                                                </div>
-                                                                            </div>
-                                                                            <div class="progress" style="height: 8px;">
-                                                                                <div class="progress-bar {% if team_score.quantum_tech_score >= 4 %}bg-success{% elif team_score.quantum_tech_score >= 3 %}bg-warning{% elif team_score.quantum_tech_score >= 2 %}bg-info{% else %}bg-danger{% endif %}" 
-                                                                                     style="width: {% widthratio team_score.quantum_tech_score 5 100 %}%">
-                                                                                </div>
-                                                                            </div>
-                                                                            <div class="small text-muted mt-1">{{ team_score.quantum_tech_score|floatformat:1 }}/5.0</div>
-                                                                        </div>
-                                                                        
-                                                                        <!-- Social Impact -->
-                                                                        <div class="col-md-6 mb-3">
-                                                                            <div class="d-flex justify-content-between align-items-center mb-2">
-                                                                                <span class="fw-medium">Social Impact</span>
-                                                                                <div class="text-end">
-                                                                                    <span class="fw-bold" style="font-size: 1.2rem;">{{ team_score.social_impact_score|floatformat:1 }}</span>
-                                                                                    <span class="text-muted small">(25%)</span>
-                                                                                </div>
-                                                                            </div>
-                                                                            <div class="progress" style="height: 8px;">
-                                                                                <div class="progress-bar {% if team_score.social_impact_score >= 4 %}bg-success{% elif team_score.social_impact_score >= 3 %}bg-warning{% elif team_score.social_impact_score >= 2 %}bg-info{% else %}bg-danger{% endif %}" 
-                                                                                     style="width: {% widthratio team_score.social_impact_score 5 100 %}%">
-                                                                                </div>
-                                                                            </div>
-                                                                            <div class="small text-muted mt-1">{{ team_score.social_impact_score|floatformat:1 }}/5.0</div>
-                                                                        </div>
-                                                                        
-                                                                        <!-- Innovation -->
-                                                                        <div class="col-md-6 mb-3">
-                                                                            <div class="d-flex justify-content-between align-items-center mb-2">
-                                                                                <span class="fw-medium">Innovation</span>
-                                                                                <div class="text-end">
-                                                                                    <span class="fw-bold" style="font-size: 1.2rem;">{{ team_score.innovation_score|floatformat:1 }}</span>
-                                                                                    <span class="text-muted small">(20%)</span>
-                                                                                </div>
-                                                                            </div>
-                                                                            <div class="progress" style="height: 8px;">
-                                                                                <div class="progress-bar {% if team_score.innovation_score >= 4 %}bg-success{% elif team_score.innovation_score >= 3 %}bg-warning{% elif team_score.innovation_score >= 2 %}bg-info{% else %}bg-danger{% endif %}" 
-                                                                                     style="width: {% widthratio team_score.innovation_score 5 100 %}%">
-                                                                                </div>
-                                                                            </div>
-                                                                            <div class="small text-muted mt-1">{{ team_score.innovation_score|floatformat:1 }}/5.0</div>
-                                                                        </div>
-                                                                        
-                                                                        <!-- Presentation -->
-                                                                        <div class="col-md-6 mb-3">
-                                                                            <div class="d-flex justify-content-between align-items-center mb-2">
-                                                                                <span class="fw-medium">Presentation</span>
-                                                                                <div class="text-end">
-                                                                                    <span class="fw-bold" style="font-size: 1.2rem;">{{ team_score.presentation_score|floatformat:1 }}</span>
-                                                                                    <span class="text-muted small">(10%)</span>
-                                                                                </div>
-                                                                            </div>
-                                                                            <div class="progress" style="height: 8px;">
-                                                                                <div class="progress-bar {% if team_score.presentation_score >= 4 %}bg-success{% elif team_score.presentation_score >= 3 %}bg-warning{% elif team_score.presentation_score >= 2 %}bg-info{% else %}bg-danger{% endif %}" 
-                                                                                     style="width: {% widthratio team_score.presentation_score 5 100 %}%">
-                                                                                </div>
-                                                                            </div>
-                                                                            <div class="small text-muted mt-1">{{ team_score.presentation_score|floatformat:1 }}/5.0</div>
-                                                                        </div>
-                                                                        
-                                                                        <!-- Business Viability -->
-                                                                        <div class="col-md-6 mb-3">
-                                                                            <div class="d-flex justify-content-between align-items-center mb-2">
-                                                                                <span class="fw-medium">Business Viability</span>
-                                                                                <div class="text-end">
-                                                                                    <span class="fw-bold" style="font-size: 1.2rem;">{{ team_score.business_viability_score|floatformat:1 }}</span>
-                                                                                    <span class="text-muted small">(5%)</span>
-                                                                                </div>
-                                                                            </div>
-                                                                            <div class="progress" style="height: 8px;">
-                                                                                <div class="progress-bar {% if team_score.business_viability_score >= 4 %}bg-success{% elif team_score.business_viability_score >= 3 %}bg-warning{% elif team_score.business_viability_score >= 2 %}bg-info{% else %}bg-danger{% endif %}" 
-                                                                                     style="width: {% widthratio team_score.business_viability_score 5 100 %}%">
-                                                                                </div>
-                                                                            </div>
-                                                                            <div class="small text-muted mt-1">{{ team_score.business_viability_score|floatformat:1 }}/5.0</div>
-                                                                        </div>
-                                                                    </div>
-                                                                    
-                                                                    <hr class="my-4">
-                                                                    
-                                                                    <div class="text-center">
-                                                                        <h6 class="text-muted mb-2">Weighted Final Score</h6>
-                                                                       <div style="font-size: 2.5rem; font-weight: bold; color: var(--quantum-purple);">
-                                                                            {{ team_score.final_weighted_score|floatformat:2 }}
-                                                                        </div>
-                                                                          
-                                                                        <div class="text-muted">
-                                                                            <i class="bi bi-trophy-fill me-1" style="color: gold;"></i>
-                                                                            Rank #{{ team_score.rank }}
-                                                                        </div>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                        
-                                                        <div class="col-md-4">
-                                                            <div class="card h-100" style="border: none; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
-                                                                <div class="card-header bg-light">
-                                                                    <h6 class="mb-0">
-                                                                        <i class="bi bi-people me-2"></i>Team Information
-                                                                    </h6>
-                                                                </div>
-                                                                <div class="card-body">
-                                                                    <div class="mb-3">
-                                                                        <strong>Team Members:</strong>
-                                                                        <p class="mb-2 small">{{ team_score.team.members|default:"Not specified" }}</p>
-                                                                    </div>
-                                                                    
-                                                                    <div class="mb-3">
-                                                                        <strong>Performance Summary:</strong>
-                                                                        <div class="row text-center mt-2">
-                                                                            <div class="col-6">
-                                                                                <div class="border rounded p-2">
-                                                                                    <div class="fw-bold text-primary">
-                                                                                        {% with team_score.quantum_tech_score|floatformat:1 as qt %}
-                                                                                        {% with team_score.social_impact_score|floatformat:1 as si %}
-                                                                                        {% with team_score.innovation_score|floatformat:1 as in %}
-                                                                                        {% with team_score.presentation_score|floatformat:1 as pr %}
-                                                                                        {% with team_score.business_viability_score|floatformat:1 as bv %}
-                                                                                        {% with qt|add:si|add:in|add:pr|add:bv as max_temp %}
-                                                                                        {{ team_score.quantum_tech_score|floatformat:1 }}
-                                                                                        {% endwith %}
-                                                                                        {% endwith %}
-                                                                                        {% endwith %}
-                                                                                        {% endwith %}
-                                                                                        {% endwith %}
-                                                                                        {% endwith %}
-                                                                                    </div>
-                                                                                    <small class="text-muted">Best Score</small>
-                                                                                </div>
-                                                                            </div>
-                                                                            <div class="col-6">
-                                                                                <div class="border rounded p-2">
-                                                                                    <div class="fw-bold text-secondary">{{ team_score.business_viability_score|floatformat:1 }}</div>
-                                                                                    <small class="text-muted">Lowest Score</small>
-                                                                                </div>
-                                                                            </div>
-                                                                        </div>
-                                                                    </div>
-                                                                    
-                                                                    {% if team_score.team.presentation_link %}
-                                                                    <div class="mb-3">
-                                                                        <a href="{{ team_score.team.presentation_link }}" target="_blank" class="btn btn-outline-primary w-100">
-                                                                            <i class="bi bi-play-circle me-2"></i>View Presentation
-                                                                        </a>
-                                                                    </div>
-                                                                    {% endif %}
-                                                                    
-                                                                    <div class="text-center">
-                                                                        <canvas id="teamRadarChart-{{ forloop.counter0 }}" style="max-height: 200px;"></canvas>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    
-                                                    <!-- Analysis Section -->
-                                                    <div class="row">
-                                                        <div class="col-12">
-                                                            <div class="card" style="border: none; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
-                                                                <div class="card-header bg-light">
-                                                                    <h6 class="mb-0">
-                                                                        <i class="bi bi-bar-chart me-2"></i>Performance Analysis
-                                                                    </h6>
-                                                                </div>
-                                                                <div class="card-body">
-                                                                    <div class="row">
-                                                                        <div class="col-md-6">
-                                                                            <h6 class="text-success">Strengths (≥ 4.0)</h6>
-                                                                            <ul class="list-unstyled">
-                                                                                {% if team_score.quantum_tech_score >= 4 %}
-                                                                                    <li class="mb-1">
-                                                                                        <i class="bi bi-check-circle-fill text-success me-2"></i>
-                                                                                        <strong>Quantum Tech Quality:</strong> {{ team_score.quantum_tech_score|floatformat:1 }}/5
-                                                                                    </li>
-                                                                                {% endif %}
-                                                                                {% if team_score.social_impact_score >= 4 %}
-                                                                                    <li class="mb-1">
-                                                                                        <i class="bi bi-check-circle-fill text-success me-2"></i>
-                                                                                        <strong>Social Impact:</strong> {{ team_score.social_impact_score|floatformat:1 }}/5
-                                                                                    </li>
-                                                                                {% endif %}
-                                                                                {% if team_score.innovation_score >= 4 %}
-                                                                                    <li class="mb-1">
-                                                                                        <i class="bi bi-check-circle-fill text-success me-2"></i>
-                                                                                        <strong>Innovation:</strong> {{ team_score.innovation_score|floatformat:1 }}/5
-                                                                                    </li>
-                                                                                {% endif %}
-                                                                                {% if team_score.presentation_score >= 4 %}
-                                                                                    <li class="mb-1">
-                                                                                        <i class="bi bi-check-circle-fill text-success me-2"></i>
-                                                                                        <strong>Presentation:</strong> {{ team_score.presentation_score|floatformat:1 }}/5
-                                                                                    </li>
-                                                                                {% endif %}
-                                                                                {% if team_score.business_viability_score >= 4 %}
-                                                                                    <li class="mb-1">
-                                                                                        <i class="bi bi-check-circle-fill text-success me-2"></i>
-                                                                                        <strong>Business Viability:</strong> {{ team_score.business_viability_score|floatformat:1 }}/5
-                                                                                    </li>
-                                                                                {% endif %}
-                                                                            </ul>
-                                                                            {% if team_score.quantum_tech_score < 4 and team_score.social_impact_score < 4 and team_score.innovation_score < 4 and team_score.presentation_score < 4 and team_score.business_viability_score < 4 %}
-                                                                                <p class="text-muted small">No scores above 4.0</p>
-                                                                            {% endif %}
-                                                                        </div>
-                                                                        <div class="col-md-6">
-                                                                            <h6 class="text-warning">Areas for Improvement (< 4.0)</h6>
-                                                                            <ul class="list-unstyled">
-                                                                                {% if team_score.quantum_tech_score < 4 %}
-                                                                                    <li class="mb-1">
-                                                                                        <i class="bi bi-exclamation-circle-fill text-warning me-2"></i>
-                                                                                        <strong>Quantum Tech Quality:</strong> {{ team_score.quantum_tech_score|floatformat:1 }}/5
-                                                                                    </li>
-                                                                                {% endif %}
-                                                                                {% if team_score.social_impact_score < 4 %}
-                                                                                    <li class="mb-1">
-                                                                                        <i class="bi bi-exclamation-circle-fill text-warning me-2"></i>
-                                                                                        <strong>Social Impact:</strong> {{ team_score.social_impact_score|floatformat:1 }}/5
-                                                                                    </li>
-                                                                                {% endif %}
-                                                                                {% if team_score.innovation_score < 4 %}
-                                                                                    <li class="mb-1">
-                                                                                        <i class="bi bi-exclamation-circle-fill text-warning me-2"></i>
-                                                                                        <strong>Innovation:</strong> {{ team_score.innovation_score|floatformat:1 }}/5
-                                                                                    </li>
-                                                                                {% endif %}
-                                                                                {% if team_score.presentation_score < 4 %}
-                                                                                    <li class="mb-1">
-                                                                                        <i class="bi bi-exclamation-circle-fill text-warning me-2"></i>
-                                                                                        <strong>Presentation:</strong> {{ team_score.presentation_score|floatformat:1 }}/5
-                                                                                    </li>
-                                                                                {% endif %}
-                                                                                {% if team_score.business_viability_score < 4 %}
-                                                                                    <li class="mb-1">
-                                                                                        <i class="bi bi-exclamation-circle-fill text-warning me-2"></i>
-                                                                                        <strong>Business Viability:</strong> {{ team_score.business_viability_score|floatformat:1 }}/5
-                                                                                    </li>
-                                                                                {% endif %}
-                                                                            </ul>
-                                                                            {% if team_score.quantum_tech_score >= 4 and team_score.social_impact_score >= 4 and team_score.innovation_score >= 4 and team_score.presentation_score >= 4 and team_score.business_viability_score >= 4 %}
-                                                                                <p class="text-muted small">All scores above 4.0! 🎉</p>
-                                                                            {% endif %}
-                                                                        </div>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
+                                                
                                             </div>
                                         </td>
                                     </tr>
@@ -782,7 +507,64 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 
 <style>
-/* Expandable Rows Styles */
+/* Medal Animation Styles */
+.medal-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.medal-image {
+    cursor: pointer;
+    transform-origin: center;
+}
+
+.medal-image:hover {
+    transform: scale(1.1) rotate(5deg);
+    filter: brightness(1.1) drop-shadow(0 6px 16px rgba(0, 0, 0, 0.3)) !important;
+}
+
+.gold-medal:hover {
+    filter: brightness(1.1) drop-shadow(0 6px 16px rgba(255, 215, 0, 0.6)) !important;
+}
+
+.silver-medal:hover {
+    filter: brightness(1.1) drop-shadow(0 6px 16px rgba(192, 192, 192, 0.6)) !important;
+}
+
+.bronze-medal:hover {
+    filter: brightness(1.1) drop-shadow(0 6px 16px rgba(205, 127, 50, 0.6)) !important;
+}
+
+/* Subtle floating animation */
+.animate-medal {
+    animation: float-medal 3s ease-in-out infinite;
+}
+
+@keyframes float-medal {
+    0%, 100% { 
+        transform: translateY(0px); 
+    }
+    50% { 
+        transform: translateY(-5px); 
+    }
+}
+
+/* Responsive medal sizes */
+@media (max-width: 768px) {
+    .medal-image {
+        width: 60px !important;
+        height: 60px !important;
+    }
+}
+
+@media (max-width: 576px) {
+    .medal-image {
+        width: 50px !important;
+        height: 50px !important;
+    }
+}
+
 .team-row {
     transition: all 0.2s ease;
     cursor: pointer;
@@ -849,6 +631,69 @@ document.addEventListener('DOMContentLoaded', function() {
         margin-bottom: 1rem;
     }
 }
+.rank-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 60px;
+    height: 36px;
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+/* Fix team name alignment */
+.team-name-cell {
+    vertical-align: middle;
+}
+
+.team-name {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 600;
+    line-height: 1.2;
+}
+
+/* Fix final score size */
+.final-score {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: var(--quantum-purple);
+    line-height: 1;
+}
+
+/* Ensure all table cells are properly aligned */
+.table td {
+    vertical-align: middle;
+}
+
+/* Score cell improvements */
+.score-cell {
+    padding: 0.5rem;
+}
+
+.score-cell .fw-bold {
+    font-size: 1rem;
+}
+
+/* Progress bar consistency */
+.progress {
+    height: 4px;
+}
+
+/* Button group alignment */
+.action-buttons {
+    white-space: nowrap;
+}
+
+/* Fix expand icon alignment */
+.expand-icon-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    min-height: 40px;
+}
+
 </style>
 
 {% endblock %}
@@ -865,15 +710,14 @@ const criteriaLbl = {{ criteria_labels|safe }};
 const rawScores = {{ all_scores_json|safe }};
 
 /* ------------- 1. Helper palette and constants -------------------- */
-const palette = ['#6B46C1','#06B6D4','#3B82F6','#8B5CF6','#EC4899'];
+const palette = ['#2B29F0','#06B6D4','#3B82F6','#8B5CF6','#EC4899'];
 
 // FIXED: Criteria weights with CORRECT names
 const criteriaWeights = {
-    "Quantum Tech Quality": 40,    // ✅ Fixed: was "Quantum Tech"
-    "Social Impact": 25,           // ✅ Correct
-    "Innovation": 20,              // ✅ Correct  
-    "Presentation": 10,            // ✅ Correct
-    "Business Viability": 5        // ✅ Fixed: was "Business"
+    "Quantum Computing Relevance": 35, 
+    "Quantum Computing Quality": 25,  
+    "Social Impact Based on SDGs": 25,          
+    "Presentation and Originality": 15,          
 };
 
 /* ------------- 2. Final Scores (bar) ---------------- */
@@ -884,7 +728,8 @@ new Chart(document.getElementById('overviewChart'), {
         datasets: [{
             label: 'Final Score',
             data: teamsData.map(t => t.final_weighted_score),
-            backgroundColor: palette[0]
+            backgroundColor: palette[0],
+            hoverBackgroundColor: '#2C0083'
         }]
     },
     options: {
@@ -898,7 +743,20 @@ new Chart(document.getElementById('overviewChart'), {
     }
 });
 
-/* ------------- 3. Per-Criterion grouped bar --------- */
+console.log('=== CHART DEBUG ===');
+console.log('Criteria Labels:', criteriaLbl);
+console.log('Teams Data:', teamsData);
+
+if (teamsData.length > 0) {
+    console.log('First team scores object:', teamsData[0].scores);
+    console.log('Score keys:', Object.keys(teamsData[0].scores));
+    
+    // Test mapping
+    criteriaLbl.forEach(c => {
+        console.log(`Looking for "${c}":`, teamsData[0].scores[c]);
+    });
+}
+
 new Chart(document.getElementById('criterionChart'), {
     type: 'bar',
     data: {
@@ -915,12 +773,11 @@ new Chart(document.getElementById('criterionChart'), {
             title: { display: true, text: 'Per-Criterion Scores' }
         },
         scales: {
-            y: { beginAtZero: true, max: 5 }  // Fixed to 5-point scale
+            y: { beginAtZero: true, max: 5 } 
         }
     }
 });
 
-/* ------------- 4. Radar comparison (top 3) ---------- */
 const top3 = teamsData.slice(0, 3);
 new Chart(document.getElementById('comparisonChart'), {
     type: 'radar',

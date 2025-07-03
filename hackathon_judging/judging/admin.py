@@ -46,7 +46,7 @@ class TeamAdmin(admin.ModelAdmin):
     def get_average_score(self, obj):
         try:
             final_score = obj.teamfinalscore
-            return f"{final_score.final_weighted_score:.2f}"
+            return f"{final_score.final_weighted_score:.2f}/5.0"
         except TeamFinalScore.DoesNotExist:
             return "Not calculated"
     get_average_score.short_description = 'Final Score'
@@ -90,6 +90,11 @@ class ScoreAdmin(admin.ModelAdmin):
         return obj.submission.submitted_at
     get_submission_date.short_description = 'Submitted'
 
+    def get_avg_score(self, obj):
+        avg = obj.scores.aggregate(avg=Avg('score'))['avg']
+        return f"{avg:.2f}" if avg else "N/A"
+    get_avg_score.short_description = 'Avg Score'
+
 @admin.register(JudgingCriteria)
 class JudgingCriteriaAdmin(admin.ModelAdmin):
     list_display = ('name', 'weight')
@@ -115,6 +120,17 @@ class TeamFinalScoreAdmin(admin.ModelAdmin):
             team_score.calculate_final_score()
         self.message_user(request, f"Recalculated scores for {queryset.count()} teams.")
     recalculate_scores.short_description = "Recalculate final scores"
+
+    def get_score_breakdown(self, obj):
+        breakdown = [
+            f"Quantum Relevance: {obj.innovation_score:.2f} × 35% = {obj.innovation_score * 0.35:.2f}",
+            f"Quantum Quality: {obj.quantum_tech_score:.2f} × 25% = {obj.quantum_tech_score * 0.25:.2f}",
+            f"Social Impact: {obj.social_impact_score:.2f} × 25% = {obj.social_impact_score * 0.25:.2f}",
+            f"Presentation: {obj.presentation_score:.2f} × 15% = {obj.presentation_score * 0.15:.2f}",
+            f"<strong>Final: {obj.final_weighted_score:.2f}</strong>",
+        ]
+        return format_html("<br>".join(breakdown))
+    get_score_breakdown.short_description = 'Score Calculation'
 
 # Custom admin site configuration
 admin.site.site_header = "Hackathon Judging System"
@@ -264,11 +280,11 @@ class PublicJudgmentAdmin(admin.ModelAdmin):
     )
     
     def weighted_score_display(self, obj):
-        return f"{obj.weighted_score:.2f}"
+        return f"{obj.weighted_score:.2f}/5.0"
     weighted_score_display.short_description = "Weighted Score"
     
     def average_score_display(self, obj):
-        return f"{obj.average_score:.2f}"
+        return f"{obj.average_score:.2f}/5.0"
     average_score_display.short_description = "Average Score"
 
 # Register the admin
