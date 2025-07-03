@@ -183,22 +183,22 @@ def admin_results(request):
             scores_dict[crit.name] = team_scores.get(crit.name, 0)
         
         teams_json.append({
-            'team': tfs.team.name,                                    # Team name as string
-            'final_weighted_score': float(tfs.final_weighted_score),  # Final score
+            'team': tfs.team.name,                                    
+            'final_weighted_score': float(tfs.final_weighted_score), 
             'rank': tfs.rank,                                        
-            'scores': scores_dict,                                   # Criteria scores
-            'members': getattr(tfs.team, 'members', 'Team Members'), # Add members if available
-            'description': getattr(tfs.team, 'description', ''),     # Add description if available
-            'presentation_link': getattr(tfs.team, 'presentation_link', ''), # Add presentation link if available
+            'scores': scores_dict,                                  
+            'members': getattr(tfs.team, 'members', 'Team Members'), 
+            'description': getattr(tfs.team, 'description', ''),    
+            'presentation_link': getattr(tfs.team, 'presentation_link', ''), 
         })
 
-    # ---------- 4. Raw per-judge scores -----------------
+  
     all_scores = list(
         Score.objects.values(
-            'criteria__name',          # e.g. "Innovation"
+            'criteria__name',         
             'submission__team__name',  # e.g. "QBits"
             'submission__judge__id',   # judge id (int)
-            'score'                    # 1-10
+            'score'                
         )
     )
 
@@ -213,10 +213,7 @@ def admin_results(request):
         'teams_json':      json.dumps(teams_json,  cls=DjangoJSONEncoder),
         'all_scores_json': json.dumps(all_scores,  cls=DjangoJSONEncoder),
     }
-    
-    # Debug logging - you can remove this after testing
-    print("DEBUG - First team data:", teams_json[0] if teams_json else "No teams")
-    print("DEBUG - Criteria labels:", [c.name for c in criteria_qs])
+
     
     return render(request, 'judging/admin_results.html', context)
 
@@ -1242,22 +1239,7 @@ def public_voting_results(request):
     
     return render(request, 'judging/public_results.html', context)
 
-def export_results(request):
-    """Export results as JSON with proper decimal precision"""
-    results = []
-    for team_score in TeamFinalScore.objects.select_related('team').order_by('rank'):
-        results.append({
-            'rank': team_score.rank,
-            'team_name': team_score.team.name,
-            'quantum_relevance_score': round(team_score.innovation_score, 2),      # 35%
-            'quantum_quality_score': round(team_score.quantum_tech_score, 2),     # 25%
-            'social_impact_score': round(team_score.social_impact_score, 2),      # 25%
-            'presentation_score': round(team_score.presentation_score, 2),        # 15%
-            'business_viability_score': round(team_score.business_viability_score, 2), # 0%
-            'final_weighted_score': round(team_score.final_weighted_score, 2),
-        })
-    
-    return JsonResponse({'results': results}, indent=2)
+
 
 def judge_team(request, team_id):
     """Judge a specific team - AUTHENTICATED VERSION WITH NEW CRITERIA"""
