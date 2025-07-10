@@ -1,0 +1,6 @@
+[build]
+builder = "nixpacks"
+
+[deploy]
+startCommand = "gunicorn hackathon_judging.wsgi --log-file -"
+releaseCommand = "python manage.py migrate && python manage.py collectstatic --noinput"
