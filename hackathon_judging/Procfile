@@ -1,2 +1,2 @@
-release: bash -c "python manage.py migrate && python manage.py collectstatic --noinput"
+release: bash -c "python manage.py migrate && python manage.py loaddata all_data.json && python manage.py collectstatic --noinput"
 web: gunicorn hackathon_judging.wsgi --log-file -
