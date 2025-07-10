@@ -104,7 +104,8 @@ WSGI_APPLICATION = 'hackathon_judging.wsgi.application'
 
 DATABASES = {
     'default': dj_database_url.config(
-        default=os.environ.get('DATABASE_URL', f"sqlite:///{BASE_DIR / 'db.sqlite3'}"),
+        default='postgresql://postgres:cwcYbBXhVEdOjIFQSOmxnSnbTmbMiKAe@maglev.proxy.rlwy.net:35104/railway',
+        # default=os.environ.get('DATABASE_URL', f"sqlite:///{BASE_DIR / 'db.sqlite3'}"),
         conn_max_age=600,
     )
 }
