@@ -662,6 +662,8 @@ def generate_judge_links(request):
         'judge_links': judge_links,
         'master_results_url': master_results_url,
         'public_judge_url': request.build_absolute_uri('/public-judge/'),
+            'public_judge_simple_url': request.build_absolute_uri('/public-judge-simple/'),
+
     }
     
     return render(request, 'judging/judge_links.html', context)
@@ -1464,3 +1466,140 @@ def admin_public_voting_results(request):
     
     return render(request, 'judging/admin_public_results.html', context)
 
+# Add these views to your views.py
+
+def public_judge_simple_access(request):
+    """
+    Simple public judge dashboard - only Social Impact + Presentation
+    """
+    teams = Team.objects.all().order_by('name')
+    voter_ip = get_client_ip(request)
+    
+    # Check for existing votes using different marker for simple judges
+    judged_teams = PublicJudgment.objects.filter(
+        voter_ip=voter_ip,
+        voter_name__icontains='[SIMPLE]'  # Mark simple judge votes
+    ).values_list('team_id', flat=True)
+    
+    # Calculate statistics
+    total_teams = teams.count()
+    completed_judgments = len(judged_teams)
+    remaining_teams = total_teams - completed_judgments
+    
+    context = {
+        'teams': teams,
+        'judged_teams': list(judged_teams),
+        'total_teams': total_teams,
+        'completed_judgments': completed_judgments,
+        'remaining_teams': remaining_teams,
+        'is_simple_judge': True,
+    }
+    return render(request, 'judging/public_judge_simple_access.html', context)
+
+
+def public_judge_simple_team(request, team_id):
+    """
+    Handle simple public judging - only Social Impact + Presentation
+    """
+    team = get_object_or_404(Team, id=team_id)
+    voter_ip = get_client_ip(request)
+    
+    # Check if this IP has already voted for this team as simple judge
+    existing_vote = PublicJudgment.objects.filter(
+        team=team, 
+        voter_ip=voter_ip,
+        voter_name__icontains='[SIMPLE]'
+    ).first()
+    
+    if existing_vote:
+        messages.info(request, f'You have already voted for {team.name}. Thank you!')
+        return redirect('public_judge_simple_access')
+    
+    if request.method == 'POST':
+        try:
+            # Extract only the 2 criteria for simple judges
+            social_impact = request.POST.get('social_impact')
+            presentation = request.POST.get('presentation')
+            
+            # Check if required fields are present
+            if not all([social_impact, presentation]):
+                messages.error(request, 'Please fill in both scoring criteria.')
+                return render(request, 'judging/public_judge_simple_team.html', {
+                    'team': team, 
+                    'is_simple_judge': True
+                })
+            
+            # Convert and validate
+            social_impact = float(social_impact)
+            presentation = float(presentation)
+            
+            # Validate scores are in range
+            if not all(1 <= score <= 5 for score in [social_impact, presentation]):
+                messages.error(request, 'All scores must be between 1 and 5.')
+                return render(request, 'judging/public_judge_simple_team.html', {
+                    'team': team,
+                    'is_simple_judge': True
+                })
+            
+            # Create the public judgment - mark as simple judge
+            voter_name = request.POST.get('voter_name', '').strip()
+            if not voter_name.startswith('[SIMPLE]'):
+                voter_name = f'[SIMPLE] {voter_name}' if voter_name else '[SIMPLE] Anonymous'
+            
+            public_judgment = PublicJudgment.objects.create(
+                team=team,
+                
+                # REUSE EXISTING FIELDS - map to your current PublicJudgment model
+                # Based on your views.py, these seem to be the correct field names:
+                social_impact=social_impact,               # Social Impact Based on the SDGs
+                presentation=presentation,                 # Presentation and Originality
+                
+                # Set defaults for other criteria (not evaluated by simple judges)
+                quantum_computing_quality=3,              # Default/neutral score
+                innovation=3,                              # Default/neutral score (quantum relevance)
+                business_viability=3,                      # Default/neutral score
+                
+                # Comments
+                comments=request.POST.get('comments', '').strip(),
+                comment_social_impact=request.POST.get('comment_social_impact', '').strip(),
+                comment_presentation=request.POST.get('comment_presentation', '').strip(),
+                
+                # Tracking fields
+                voter_ip=voter_ip,
+                user_agent=request.META.get('HTTP_USER_AGENT', ''),
+                voter_email=request.POST.get('voter_email', '').strip(),
+                voter_name=voter_name
+            )
+            
+            # The existing weighted_score property will calculate automatically
+            # It will include the default scores for criteria they didn't evaluate
+            
+            messages.success(
+                request, 
+                f'✅ Thank you for judging {team.name}! Your vote has been recorded. '
+                f'(Social Impact: {social_impact}/5, Presentation: {presentation}/5)'
+            )
+            
+            return redirect('public_judge_simple_access')
+            
+        except (ValueError, TypeError):
+            messages.error(request, 'Please fill in all required fields with valid scores (1-5).')
+            return render(request, 'judging/public_judge_simple_team.html', {
+                'team': team,
+                'is_simple_judge': True
+            })
+            
+        except Exception as e:
+            print(f"DEBUG: Error in simple judge voting: {e}")
+            messages.error(request, f'An error occurred while submitting your vote.')
+            return render(request, 'judging/public_judge_simple_team.html', {
+                'team': team,
+                'is_simple_judge': True
+            })
+    
+    # GET request - show the judging form
+    context = {
+        'team': team,
+        'is_simple_judge': True,
+    }
+    return render(request, 'judging/public_judge_simple_team.html', context)

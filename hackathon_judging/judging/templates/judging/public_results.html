@@ -1,6 +1,6 @@
 {% extends 'judging/base.html' %}
 
-{% block title %}Public Voting Results - AIMS Ghana Quantathon 2025{% endblock %}
+{% block title %}Top 3 Teams Results - AIMS Ghana Quantathon 2025{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -9,49 +9,51 @@
     background-color: #16a085 !important;
 }
 
-.results-card {
+.winner-card {
     transition: all 0.3s ease;
-    border: 1px solid #e9ecef;
-    border-radius: 12px;
-    margin-bottom: 1rem;
-}
-
-.results-card:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 8px 25px rgba(0,0,0,0.1);
-}
-
-.rank-badge {
-    font-size: 1.5rem;
-    width: 60px;
-    height: 60px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 50%;
-    font-weight: bold;
-}
-
-.rank-1 { background: linear-gradient(135deg, #FFD700, #FFA500); color: #fff; }
-.rank-2 { background: linear-gradient(135deg, #C0C0C0, #A9A9A9); color: #fff; }
-.rank-3 { background: linear-gradient(135deg, #CD7F32, #B87333); color: #fff; }
-.rank-other { background: linear-gradient(135deg, #6c757d, #495057); color: #fff; }
-
-.score-bar {
-    height: 8px;
-    border-radius: 4px;
-    background: #e9ecef;
+    border-radius: 15px;
+    margin-bottom: 2rem;
     overflow: hidden;
+    position: relative;
 }
 
-.score-fill {
-    height: 100%;
-    transition: width 0.8s ease;
+.winner-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 35px rgba(0,0,0,0.15);
 }
 
-.criteria-mini {
-    font-size: 0.75rem;
-    margin-bottom: 0.25rem;
+.winner-card.first-place {
+    background: linear-gradient(135deg, #FFD700, #FFA500);
+    color: white;
+    transform: scale(1.05);
+}
+
+.winner-card.second-place {
+    background: linear-gradient(135deg, #C0C0C0, #A9A9A9);
+    color: white;
+}
+
+.winner-card.third-place {
+    background: linear-gradient(135deg, #CD7F32, #B87333);
+    color: white;
+}
+
+.rank-crown {
+    position: absolute;
+    top: -15px;
+    right: 20px;
+    font-size: 3rem;
+    opacity: 0.8;
+}
+
+.vote-count-badge {
+    font-size: 1.5rem;
+    padding: 1rem 1.5rem;
+    border-radius: 50px;
+    font-weight: bold;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
 }
 
 .stats-card {
@@ -61,6 +63,12 @@
     padding: 1.5rem;
     text-align: center;
     height: 100%;
+    transition: all 0.3s ease;
+}
+
+.stats-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.1);
 }
 
 .chart-container {
@@ -76,46 +84,66 @@
     margin-bottom: 2rem;
 }
 
-.chart-tabs {
-    border-bottom: 1px solid #dee2e6;
-    margin-bottom: 1.5rem;
-}
-
-.chart-tabs .nav-link {
-    border: none;
-    color: #16a085;
-    font-weight: 500;
-}
-
-.chart-tabs .nav-link.active {
-    background-color: #16a085;
-    color: white;
-    border-radius: 8px;
-}
-
-.analytics-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 1rem;
-    margin-bottom: 2rem;
-}
-
-.analytics-card {
+.all-teams-card {
     background: white;
     border: 1px solid #e9ecef;
-    border-radius: 8px;
-    padding: 1.5rem;
-    text-align: center;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    border-radius: 10px;
+    padding: 1rem;
+    margin-bottom: 0.5rem;
+    transition: all 0.3s ease;
 }
 
-.section-toggle {
-    cursor: pointer;
-    user-select: none;
+.all-teams-card:hover {
+    background: rgba(22, 160, 133, 0.05);
+    transform: translateX(5px);
 }
 
-.section-toggle:hover {
-    background-color: rgba(22, 160, 133, 0.1);
+.vote-bar {
+    height: 25px;
+    background: #e9ecef;
+    border-radius: 15px;
+    overflow: hidden;
+    position: relative;
+}
+
+.vote-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #16a085, #f4d03f);
+    border-radius: 15px;
+    transition: width 1s ease;
+    display: flex;
+    align-items: center;
+    justify-content: end;
+    padding-right: 10px;
+    color: white;
+    font-weight: bold;
+    font-size: 0.9rem;
+}
+
+.participation-indicator {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: rgba(40, 167, 69, 0.1);
+    color: #28a745;
+    padding: 0.5rem 1rem;
+    border-radius: 25px;
+    font-size: 0.9rem;
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+}
+
+.winner-card.first-place {
+    animation: float 3s ease-in-out infinite;
+}
+
+@media (max-width: 768px) {
+    .winner-card.first-place {
+        transform: scale(1);
+    }
 }
 </style>
 {% endblock %}
@@ -124,15 +152,15 @@
 <!-- Header -->
 <div class="row mb-4">
     <div class="col-12">
-        <div class="card border-0 gradient-header-card" style="background: linear-gradient(135deg, #16a085 0%, #f4d03f 100%) !important; color: white; min-height: 140px;">
+        <div class="card border-0 gradient-header-card" style="background: linear-gradient(135deg, #16a085 0%, #f4d03f 100%) !important; color: white; min-height: 160px;">
             <div class="card-body p-4" style="background: transparent !important;">
                 <div class="row align-items-center">
                     <div class="col-lg-8">
                         <h1 class="display-6 fw-bold mb-2" style="color: white !important;">
-                            <i class="bi bi-trophy-fill me-3"></i>AIMS Ghana Quantathon 2025 Results
+                            <i class="bi bi-trophy-fill me-3"></i>Top 3 Teams - AIMS Ghana Quantathon 2025
                         </h1>
                         <p class="lead mb-1" style="color: white !important; opacity: 0.9;">
-                            Public voting results based on {{ total_public_votes }} community votes
+                            Community's favorite teams based on {{ total_votes }} public selections
                         </p>
                         <p class="mb-0" style="color: white !important; opacity: 0.8; font-size: 0.9rem;">
                             <strong>Theme:</strong> "Accelerating Capacity Building to Advance Quantum Science & Technology"
@@ -154,19 +182,19 @@
     <div class="col-md-3">
         <div class="stats-card">
             <div class="display-6 text-info fw-bold">{{ total_teams }}</div>
-            <div class="small text-muted">Quantum Teams</div>
+            <div class="small text-muted">Participating Teams</div>
         </div>
     </div>
     <div class="col-md-3">
         <div class="stats-card">
-            <div class="display-6 text-success fw-bold">{{ total_public_votes }}</div>
-            <div class="small text-muted">Public Votes</div>
+            <div class="display-6 text-success fw-bold">{{ total_votes }}</div>
+            <div class="small text-muted">Community Votes</div>
         </div>
     </div>
     <div class="col-md-3">
         <div class="stats-card">
-            <div class="display-6 text-warning fw-bold">{{ avg_votes_per_team }}</div>
-            <div class="small text-muted">Avg Votes/Team</div>
+            <div class="display-6 text-warning fw-bold">{{ total_voters }}</div>
+            <div class="small text-muted">People Voted</div>
         </div>
     </div>
     <div class="col-md-3">
@@ -181,7 +209,7 @@
 <div class="row mb-4">
     <div class="col-12">
         <div class="d-flex gap-2 flex-wrap">
-            <a href="{% url 'public_judge_access' %}" class="btn btn-outline-info">
+            <a href="{% url 'public_top3_selection' %}" class="btn btn-outline-info">
                 <i class="bi bi-arrow-left me-2"></i>Back to Voting
             </a>
             <button class="btn btn-outline-secondary" onclick="refreshResults()">
@@ -190,450 +218,298 @@
             <button class="btn btn-outline-primary" onclick="toggleSection('chartsSection')">
                 <i class="bi bi-bar-chart me-2"></i>Show/Hide Charts
             </button>
-            <button class="btn btn-outline-success" onclick="toggleSection('analyticsSection')">
-                <i class="bi bi-graph-up me-2"></i>Show/Hide Analytics
+            <button class="btn btn-outline-success" onclick="toggleSection('allTeamsSection')">
+                <i class="bi bi-list me-2"></i>Show All Teams
             </button>
         </div>
     </div>
+</div>
+
+<!-- Top 3 Winners -->
+<div class="row mb-5">
+    <div class="col-12">
+        <h2 class="text-center mb-4">
+            <i class="bi bi-star-fill text-warning me-2"></i>
+            Community's Top 3 Favorite Teams
+        </h2>
+    </div>
+    
+    {% if top_3_teams %}
+        <!-- First Place -->
+        <div class="col-lg-4 order-lg-2 mb-4">
+            <div class="winner-card first-place text-center p-4">
+                <div class="rank-crown">👑</div>
+                <div class="mb-3">
+                    <div class="display-1 fw-bold">1st</div>
+                    <h3 class="fw-bold">{{ top_3_teams.0.team_name }}</h3>
+                </div>
+                <div class="vote-count-badge bg-white text-warning">
+                    <i class="bi bi-heart-fill"></i>
+                    {{ top_3_teams.0.vote_count }} selections
+                </div>
+                <div class="mt-3">
+                    <div class="participation-indicator bg-white text-warning">
+                        <i class="bi bi-people-fill"></i>
+                        {{ top_3_teams.0.vote_percentage }}% of voters chose this team
+                    </div>
+                </div>
+                {% if top_3_teams.0.team_description %}
+                    <p class="mt-3 mb-0" style="opacity: 0.9;">{{ top_3_teams.0.team_description|truncatewords:20 }}</p>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Second Place -->
+        <div class="col-lg-4 order-lg-1 mb-4">
+            <div class="winner-card second-place text-center p-4">
+                <div class="mb-3">
+                    <div class="display-2 fw-bold">2nd</div>
+                    <h4 class="fw-bold">{{ top_3_teams.1.team_name }}</h4>
+                </div>
+                <div class="vote-count-badge bg-white text-secondary">
+                    <i class="bi bi-heart-fill"></i>
+                    {{ top_3_teams.1.vote_count }} selections
+                </div>
+                <div class="mt-3">
+                    <div class="participation-indicator bg-white text-secondary">
+                        <i class="bi bi-people-fill"></i>
+                        {{ top_3_teams.1.vote_percentage }}% of voters
+                    </div>
+                </div>
+                {% if top_3_teams.1.team_description %}
+                    <p class="mt-3 mb-0" style="opacity: 0.9;">{{ top_3_teams.1.team_description|truncatewords:20 }}</p>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Third Place -->
+        <div class="col-lg-4 order-lg-3 mb-4">
+            <div class="winner-card third-place text-center p-4">
+                <div class="mb-3">
+                    <div class="display-2 fw-bold">3rd</div>
+                    <h4 class="fw-bold">{{ top_3_teams.2.team_name }}</h4>
+                </div>
+                <div class="vote-count-badge bg-white" style="color: #CD7F32;">
+                    <i class="bi bi-heart-fill"></i>
+                    {{ top_3_teams.2.vote_count }} selections
+                </div>
+                <div class="mt-3">
+                    <div class="participation-indicator bg-white" style="color: #CD7F32;">
+                        <i class="bi bi-people-fill"></i>
+                        {{ top_3_teams.2.vote_percentage }}% of voters
+                    </div>
+                </div>
+                {% if top_3_teams.2.team_description %}
+                    <p class="mt-3 mb-0" style="opacity: 0.9;">{{ top_3_teams.2.team_description|truncatewords:20 }}</p>
+                {% endif %}
+            </div>
+        </div>
+    {% else %}
+        <div class="col-12">
+            <div class="text-center py-5">
+                <div class="mb-4" style="font-size: 4rem; color: #16a085; opacity: 0.5;">
+                    <i class="bi bi-heart"></i>
+                </div>
+                <h4 class="text-muted">No Votes Yet</h4>
+                <p class="text-muted">Results will appear here once community voting begins.</p>
+                <a href="{% url 'public_top3_selection' %}" class="btn btn-info">
+                    <i class="bi bi-star me-2"></i>Start Voting
+                </a>
+            </div>
+        </div>
+    {% endif %}
 </div>
 
 <!-- Charts Section -->
 <div id="chartsSection" class="chart-section" style="display: none;">
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h3 class="text-primary mb-0">
-            <i class="bi bi-bar-chart me-2"></i>Public Voting Analytics
+            <i class="bi bi-bar-chart me-2"></i>Voting Analytics
         </h3>
         <button class="btn btn-sm btn-outline-secondary" onclick="toggleSection('chartsSection')">
             <i class="bi bi-x-circle me-1"></i>Hide Charts
         </button>
     </div>
     
-    <!-- Chart Tabs -->
-    <ul class="nav nav-tabs chart-tabs" id="chartTabs">
-        <li class="nav-item">
-            <a class="nav-link active" data-bs-toggle="tab" href="#overviewChart">Overview</a>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link" data-bs-toggle="tab" href="#criteriaChart">By Criteria</a>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link" data-bs-toggle="tab" href="#comparisonChart">Team Comparison</a>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link" data-bs-toggle="tab" href="#votingChart">Voting Patterns</a>
-        </li>
-    </ul>
-
-    <!-- Chart Content -->
-    <div class="tab-content">
-        <!-- Overview Chart -->
-        <div class="tab-pane fade show active" id="overviewChart">
-            <div class="chart-container">
-                <canvas id="overviewCanvas"></canvas>
+    <div class="row">
+        <div class="col-lg-6 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0">Top 10 Teams by Votes</h6>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container" style="height: 300px;">
+                        <canvas id="topTeamsChart"></canvas>
+                    </div>
+                </div>
             </div>
         </div>
-        
-        <!-- Criteria Chart -->
-        <div class="tab-pane fade" id="criteriaChart">
-            <div class="chart-container">
-                <canvas id="criteriaCanvas"></canvas>
-            </div>
-        </div>
-        
-        <!-- Comparison Chart -->
-        <div class="tab-pane fade" id="comparisonChart">
-            <div class="chart-container">
-                <canvas id="comparisonCanvas"></canvas>
-            </div>
-        </div>
-        
-        <!-- Voting Patterns Chart -->
-        <div class="tab-pane fade" id="votingChart">
-            <div class="chart-container">
-                <canvas id="votingCanvas"></canvas>
+        <div class="col-lg-6 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0">Vote Distribution</h6>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container" style="height: 300px;">
+                        <canvas id="distributionChart"></canvas>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Analytics Section -->
-<div id="analyticsSection" class="chart-section" style="display: none;">
+<!-- All Teams Section -->
+<div id="allTeamsSection" class="chart-section" style="display: none;">
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h3 class="text-success mb-0">
-            <i class="bi bi-graph-up me-2"></i>Detailed Analytics
+            <i class="bi bi-list me-2"></i>All Teams Results
         </h3>
-        <button class="btn btn-sm btn-outline-secondary" onclick="toggleSection('analyticsSection')">
-            <i class="bi bi-x-circle me-1"></i>Hide Analytics
+        <button class="btn btn-sm btn-outline-secondary" onclick="toggleSection('allTeamsSection')">
+            <i class="bi bi-x-circle me-1"></i>Hide All Teams
         </button>
     </div>
     
-    <div class="analytics-grid">
-        <div class="analytics-card">
-            <h4 class="text-info">{{ total_public_votes }}</h4>
-            <p class="text-muted mb-0">Total Votes Cast</p>
-        </div>
-        <div class="analytics-card">
-            <h4 class="text-success">{{ total_teams }}</h4>
-            <p class="text-muted mb-0">Teams Participating</p>
-        </div>
-        <div class="analytics-card">
-            <h4 class="text-warning">{{ avg_votes_per_team }}</h4>
-            <p class="text-muted mb-0">Avg Votes/Team</p>
-        </div>
-        <div class="analytics-card">
-            <h4 class="text-primary">100%</h4>
-            <p class="text-muted mb-0">Participation Rate</p>
-        </div>
-    </div>
-    
-    <!-- Top Performers -->
-    {% if teams_data %}
-        <div class="row">
-            <div class="col-md-4">
-                <div class="card border-warning">
-                    <div class="card-header bg-warning bg-opacity-10">
-                        <h6 class="mb-0"><i class="bi bi-trophy me-2"></i>Top Scorer</h6>
+    {% if all_teams_results %}
+        {% for team in all_teams_results %}
+            <div class="all-teams-card">
+                <div class="row align-items-center">
+                    <div class="col-md-1 text-center">
+                        <span class="badge {% if team.rank <= 3 %}bg-warning{% else %}bg-secondary{% endif %} fs-6">
+                            #{{ team.rank }}
+                        </span>
                     </div>
-                    <div class="card-body text-center">
-                        <h5 class="text-warning">{{ teams_data.0.team.name }}</h5>
-                        <p class="text-muted">{{ teams_data.0.weighted_score }}/5.0</p>
+                    <div class="col-md-4">
+                        <h6 class="mb-1 fw-bold">{{ team.team_name }}</h6>
+                        {% if team.team_members %}
+                            <small class="text-muted">{{ team.team_members }}</small>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-5">
+                        <div class="vote-bar">
+                            <div class="vote-fill" style="width: {% widthratio team.vote_count max_votes 100 %}%;">
+                                {{ team.vote_count }} votes
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-2 text-end">
+                        <span class="badge bg-info">{{ team.vote_percentage }}%</span>
                     </div>
                 </div>
             </div>
-            <div class="col-md-4">
-                <div class="card border-info">
-                    <div class="card-header bg-info bg-opacity-10">
-                        <h6 class="mb-0"><i class="bi bi-heart me-2"></i>Most Voted</h6>
-                    </div>
-                    <div class="card-body text-center">
-                        {% for team_data in teams_data %}
-                            {% if forloop.first %}
-                                <h5 class="text-info">{{ team_data.team.name }}</h5>
-                                <p class="text-muted">{{ team_data.public_vote_count }} votes</p>
-                            {% endif %}
-                        {% endfor %}
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="card border-success">
-                    <div class="card-header bg-success bg-opacity-10">
-                        <h6 class="mb-0"><i class="bi bi-cpu me-2"></i>Best QC Relevance</h6>
-                    </div>
-                    <div class="card-body text-center">
-                        {% for team_data in teams_data %}
-                            {% if forloop.first %}
-                                <h5 class="text-success">{{ team_data.team.name }}</h5>
-                                <p class="text-muted">{{ team_data.avg_quantum_relevance }}/5.0</p>
-                            {% endif %}
-                        {% endfor %}
-                    </div>
-                </div>
-            </div>
-        </div>
+        {% endfor %}
     {% endif %}
 </div>
 
-<!-- Results Table/Cards -->
-<div class="row">
+<!-- About Section -->
+<div class="row mt-4">
     <div class="col-12">
-        <div class="card">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <h5 class="mb-0">
-                    <i class="bi bi-list-ol me-2"></i>Public Voting Rankings - AIMS Ghana Quantathon 2025
+        <div class="card border-info" style="background: rgba(22, 160, 133, 0.05);">
+            <div class="card-header bg-transparent border-0">
+                <h5 class="text-info mb-0">
+                    <i class="bi bi-info-circle me-2"></i>About These Results
                 </h5>
-                <div class="d-flex gap-2">
-                    <div class="btn-group btn-group-sm">
-                        <button class="btn btn-outline-light active" onclick="showCardsView()">Cards</button>
-                        <button class="btn btn-outline-light" onclick="showTableView()">Table</button>
-                    </div>
-                </div>
             </div>
-            <div class="card-body p-0">
-                
-                <!-- Cards View -->
-                <div id="cardsView">
-                    {% if teams_data %}
-                        {% for team_data in teams_data %}
-                            <div class="results-card p-4 m-3">
-                                <div class="row align-items-center">
-                                    <!-- Rank -->
-                                    <div class="col-md-1 text-center">
-                                        <div class="rank-badge {% if team_data.rank == 1 %}rank-1{% elif team_data.rank == 2 %}rank-2{% elif team_data.rank == 3 %}rank-3{% else %}rank-other{% endif %}">
-                                            {{ team_data.rank }}
-                                        </div>
-                                    </div>
-                                    
-                                    <!-- Team Info -->
-                                    <div class="col-md-4">
-                                        <h5 class="fw-bold text-dark mb-2">{{ team_data.team.name }}</h5>
-                                        <p class="text-secondary mb-2">
-                                            <i class="bi bi-people me-1"></i>{{ team_data.team.members }}
-                                        </p>
-                                        <div class="d-flex gap-2">
-                                            <span class="badge bg-info text-white">
-                                                {{ team_data.public_vote_count }} votes
-                                            </span>
-                                            <span class="badge bg-success text-white">
-                                                {{ team_data.weighted_score }}/5.0
-                                            </span>
-                                        </div>
-                                    </div>
-                                    
-                                    <!-- Updated Criteria Breakdown for AIMS Ghana 2025 -->
-                                    <div class="col-md-5">
-                                        <div class="row g-2">
-                                            <div class="col-6">
-                                                <div class="criteria-mini">
-                                                    <strong>QC Relevance (35%)</strong>
-                                                    <div class="score-bar">
-                                                        <div class="score-fill bg-primary" style="width: {% widthratio team_data.avg_quantum_relevance 5 100 %}%"></div>
-                                                    </div>
-                                                    <small class="text-muted">{{ team_data.avg_quantum_relevance }}/5</small>
-                                                </div>
-                                            </div>
-                                            <div class="col-6">
-                                                <div class="criteria-mini">
-                                                    <strong>QC Quality (25%)</strong>
-                                                    <div class="score-bar">
-                                                        <div class="score-fill bg-success" style="width: {% widthratio team_data.avg_quantum_quality 5 100 %}%"></div>
-                                                    </div>
-                                                    <small class="text-muted">{{ team_data.avg_quantum_quality }}/5</small>
-                                                </div>
-                                            </div>
-                                            <div class="col-6">
-                                                <div class="criteria-mini">
-                                                    <strong>Social Impact SDGs (25%)</strong>
-                                                    <div class="score-bar">
-                                                        <div class="score-fill bg-info" style="width: {% widthratio team_data.avg_social_impact 5 100 %}%"></div>
-                                                    </div>
-                                                    <small class="text-muted">{{ team_data.avg_social_impact }}/5</small>
-                                                </div>
-                                            </div>
-                                            <div class="col-6">
-                                                <div class="criteria-mini">
-                                                    <strong>Presentation & Originality (15%)</strong>
-                                                    <div class="score-bar">
-                                                        <div class="score-fill bg-warning" style="width: {% widthratio team_data.avg_presentation 5 100 %}%"></div>
-                                                    </div>
-                                                    <small class="text-muted">{{ team_data.avg_presentation }}/5</small>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    
-                                    <!-- Overall Score -->
-                                    <div class="col-md-2 text-center">
-                                        <div class="display-6 fw-bold text-primary">{{ team_data.weighted_score }}</div>
-                                        <small class="text-muted">Overall Score</small>
-                                    </div>
-                                </div>
-                            </div>
-                        {% endfor %}
-                    {% else %}
-                        <div class="text-center py-5">
-                            <div class="mb-4" style="font-size: 4rem; color: #16a085; opacity: 0.5;">
-                                <i class="bi bi-inbox"></i>
-                            </div>
-                            <h4 class="text-muted">No Public Votes Yet</h4>
-                            <p class="text-muted">Results will appear here once public voting begins.</p>
-                            <a href="{% url 'public_judge_access' %}" class="btn btn-info">
-                                <i class="bi bi-star me-2"></i>Start Voting
-                            </a>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-lg-6">
+                        <h6 class="fw-bold">How the Voting Works</h6>
+                        <p class="mb-2">Community members select their <strong>top 3 favorite teams</strong> from all participating teams in the AIMS Ghana Quantathon 2025.</p>
+                        <p class="mb-2">Each person can vote for exactly 3 teams, and all selections are counted equally.</p>
+                        <p class="mb-3">Results are updated in real-time as new votes come in.</p>
+                        
+                        <h6 class="fw-bold">Selection Criteria</h6>
+                        <p class="mb-0">Voters choose teams based on their overall impression of the quantum computing solutions and their potential impact on addressing UN Sustainable Development Goals.</p>
+                    </div>
+                    <div class="col-lg-6">
+                        <div class="alert alert-light border">
+                            <h6 class="fw-bold">
+                                <i class="bi bi-target me-1"></i>Competition Theme
+                            </h6>
+                            <p class="mb-1"><strong>"Accelerating Capacity Building to Advance Quantum Science & Technology"</strong></p>
+                            <p class="mb-0 small text-muted">Teams develop quantum computing solutions addressing real-world challenges aligned with UN Sustainable Development Goals.</p>
                         </div>
-                    {% endif %}
-                </div>
-                
-                <!-- Table View (Hidden by default) -->
-                <div id="tableView" style="display: none;">
-                    {% if teams_data %}
-                        <div class="table-responsive">
-                            <table class="table table-hover">
-                                <thead class="table-light">
-                                    <tr>
-                                        <th>Rank</th>
-                                        <th>Team</th>
-                                        <th>Public Votes</th>
-                                        <th>QC Relevance</th>
-                                        <th>QC Quality</th>
-                                        <th>Social Impact (SDGs)</th>
-                                        <th>Presentation & Originality</th>
-                                        <th>Overall Score</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for team_data in teams_data %}
-                                        <tr>
-                                            <td>
-                                                <span class="badge {% if team_data.rank == 1 %}bg-warning{% elif team_data.rank == 2 %}bg-secondary{% elif team_data.rank == 3 %}bg-primary{% else %}bg-light text-dark{% endif %} fs-6">
-                                                    {{ team_data.rank }}
-                                                </span>
-                                            </td>
-                                            <td>
-                                                <strong>{{ team_data.team.name }}</strong>
-                                                <br><small class="text-muted">{{ team_data.team.members }}</small>
-                                            </td>
-                                            <td>
-                                                <span class="badge bg-info">{{ team_data.public_vote_count }}</span>
-                                            </td>
-                                            <td>{{ team_data.avg_quantum_relevance }}</td>
-                                            <td>{{ team_data.avg_quantum_quality }}</td>
-                                            <td>{{ team_data.avg_social_impact }}</td>
-                                            <td>{{ team_data.avg_presentation }}</td>
-                                            <td>
-                                                <strong class="text-primary">{{ team_data.weighted_score }}</strong>
-                                            </td>
-                                        </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
+                        
+                        <div class="mt-3">
+                            <h6 class="fw-bold">Voting Statistics</h6>
+                            <ul class="list-unstyled mb-0">
+                                <li class="mb-1">
+                                    <i class="bi bi-people-fill text-info me-2"></i>
+                                    <strong>{{ total_voters }}</strong> people have voted
+                                </li>
+                                <li class="mb-1">
+                                    <i class="bi bi-heart-fill text-danger me-2"></i>
+                                    <strong>{{ total_votes }}</strong> total team selections
+                                </li>
+                                <li class="mb-1">
+                                    <i class="bi bi-bar-chart-fill text-success me-2"></i>
+                                    <strong>{{ avg_votes_per_team }}</strong> average votes per team
+                                </li>
+                            </ul>
                         </div>
-                    {% endif %}
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
-
-<!-- Updated Voting Guidelines for AIMS Ghana 2025 -->
-{% if teams_data %}
-    <div class="row mt-4">
-        <div class="col-12">
-            <div class="card border-info" style="background: rgba(22, 160, 133, 0.05);">
-                <div class="card-header bg-transparent border-0">
-                    <h5 class="text-info mb-0">
-                        <i class="bi bi-info-circle me-2"></i>About AIMS Ghana Quantathon 2025 Public Voting Results
-                    </h5>
-                </div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-lg-6">
-                            <h6 class="fw-bold">Scoring System (OQI Framework)</h6>
-                            <ul class="list-unstyled mb-0">
-                                <li class="mb-2">
-                                    <span class="badge bg-primary me-2">35%</span>
-                                    <strong>Quantum Computing Relevance</strong>
-                                    <div class="small text-muted">Is QC essential? Well-justified? Real-world application?</div>
-                                </li>
-                                <li class="mb-2">
-                                    <span class="badge bg-success me-2">25%</span>
-                                    <strong>Quantum Computing Quality</strong>
-                                    <div class="small text-muted">Appropriate algorithms? Functional code? Creative implementation?</div>
-                                </li>
-                                <li class="mb-2">
-                                    <span class="badge bg-info me-2">25%</span>
-                                    <strong>Social Impact Based on SDGs</strong>
-                                    <div class="small text-muted">Addresses UN SDGs? Scalable impact? Practical potential?</div>
-                                </li>
-                                <li>
-                                    <span class="badge bg-warning me-2">15%</span>
-                                    <strong>Presentation and Originality</strong>
-                                    <div class="small text-muted">Clear presentation? Compelling pitch? Original thinking?</div>
-                                </li>
-                            </ul>
-                        </div>
-                        <div class="col-lg-6">
-                            <h6 class="fw-bold">How It Works</h6>
-                            <p class="mb-2">Public votes are collected from community members who evaluate teams using the Open Quantum Institute (OQI) framework.</p>
-                            <p class="mb-2">Scores are weighted according to the importance of each criterion and averaged to create fair rankings.</p>
-                            <p class="mb-3">Results update in real-time as new votes are submitted.</p>
-                            
-                            <div class="alert alert-light border">
-                                <h6 class="fw-bold">
-                                    <i class="bi bi-target me-1"></i>Competition Theme
-                                </h6>
-                                <p class="mb-1"><strong>"Accelerating Capacity Building to Advance Quantum Science & Technology"</strong></p>
-                                <p class="mb-0 small text-muted">Teams develop quantum computing solutions addressing real-world challenges aligned with UN Sustainable Development Goals.</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-{% endif %}
 {% endblock %}
 
 {% block extra_js %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
     let charts = {};
-    const chartData = {{ vote_distribution_json|safe }};
+    const votingData = {{ voting_data_json|safe }};
+    const maxVotes = {{ max_votes|default:1 }};
 
     function refreshResults() {
         location.reload();
-    }
-
-    function showCardsView() {
-        document.getElementById('cardsView').style.display = 'block';
-        document.getElementById('tableView').style.display = 'none';
-        
-        // Update button states
-        document.querySelectorAll('.btn-group .btn').forEach(btn => btn.classList.remove('active'));
-        event.target.classList.add('active');
-    }
-
-    function showTableView() {
-        document.getElementById('cardsView').style.display = 'none';
-        document.getElementById('tableView').style.display = 'block';
-        
-        // Update button states
-        document.querySelectorAll('.btn-group .btn').forEach(btn => btn.classList.remove('active'));
-        event.target.classList.add('active');
     }
 
     function toggleSection(sectionId) {
         const section = document.getElementById(sectionId);
         if (section.style.display === 'none') {
             section.style.display = 'block';
-            setTimeout(() => initializeCharts(), 100);
+            if (sectionId === 'chartsSection') {
+                setTimeout(() => initializeCharts(), 100);
+            }
         } else {
             section.style.display = 'none';
         }
     }
 
     function initializeCharts() {
-        // Overview Chart
-        createOverviewChart();
-        
-        // Initialize other charts when their tabs are clicked
-        document.querySelectorAll('#chartTabs .nav-link').forEach(tab => {
-            tab.addEventListener('shown.bs.tab', function(e) {
-                const target = e.target.getAttribute('href');
-                if (target === '#criteriaChart') createCriteriaChart();
-                if (target === '#comparisonChart') createComparisonChart();
-                if (target === '#votingChart') createVotingChart();
-            });
-        });
+        createTopTeamsChart();
+        createDistributionChart();
     }
 
-    function createOverviewChart() {
-        if (charts.overview) charts.overview.destroy();
+    function createTopTeamsChart() {
+        if (charts.topTeams) charts.topTeams.destroy();
         
-        const ctx = document.getElementById('overviewCanvas').getContext('2d');
-        charts.overview = new Chart(ctx, {
-            type: 'bar',
+        const ctx = document.getElementById('topTeamsChart').getContext('2d');
+        const top10Teams = votingData.slice(0, 10);
+        
+        charts.topTeams = new Chart(ctx, {
+            type: 'horizontalBar',
             data: {
-                labels: chartData.map(item => item.team_name),
-                datasets: [
-                    {
-                        label: 'Vote Count',
-                        data: chartData.map(item => item.vote_count),
-                        backgroundColor: 'rgba(22, 160, 133, 0.8)',
-                        borderColor: 'rgba(22, 160, 133, 1)',
-                        borderWidth: 1,
-                        yAxisID: 'y'
-                    },
-                    {
-                        label: 'Weighted Score',
-                        data: chartData.map(item => item.weighted_score),
-                        backgroundColor: 'rgba(244, 208, 63, 0.8)',
-                        borderColor: 'rgba(244, 208, 63, 1)',
-                        borderWidth: 2,
-                        type: 'line',
-                        yAxisID: 'y1'
-                    }
-                ]
+                labels: top10Teams.map(team => team.team_name),
+                datasets: [{
+                    label: 'Votes Received',
+                    data: top10Teams.map(team => team.vote_count),
+                    backgroundColor: top10Teams.map((_, index) => {
+                        if (index === 0) return 'rgba(255, 215, 0, 0.8)'; // Gold
+                        if (index === 1) return 'rgba(192, 192, 192, 0.8)'; // Silver
+                        if (index === 2) return 'rgba(205, 127, 50, 0.8)'; // Bronze
+                        return 'rgba(22, 160, 133, 0.8)'; // Default
+                    }),
+                    borderColor: top10Teams.map((_, index) => {
+                        if (index === 0) return 'rgba(255, 215, 0, 1)';
+                        if (index === 1) return 'rgba(192, 192, 192, 1)';
+                        if (index === 2) return 'rgba(205, 127, 50, 1)';
+                        return 'rgba(22, 160, 133, 1)';
+                    }),
+                    borderWidth: 2
+                }]
             },
             options: {
                 responsive: true,
@@ -641,109 +517,42 @@
                 plugins: {
                     title: {
                         display: true,
-                        text: 'AIMS Ghana Quantathon 2025 - Team Performance Overview'
+                        text: 'Top 10 Teams by Community Votes'
+                    },
+                    legend: {
+                        display: false
                     }
                 },
                 scales: {
                     x: {
-                        title: { display: true, text: 'Teams' }
+                        beginAtZero: true,
+                        title: { display: true, text: 'Number of Votes' }
                     },
                     y: {
-                        type: 'linear',
-                        display: true,
-                        position: 'left',
-                        title: { display: true, text: 'Vote Count' }
-                    },
-                    y1: {
-                        type: 'linear',
-                        display: true,
-                        position: 'right',
-                        title: { display: true, text: 'Weighted Score' },
-                        grid: { drawOnChartArea: false }
+                        title: { display: true, text: 'Teams' }
                     }
                 }
             }
         });
     }
 
-    function createCriteriaChart() {
-        if (charts.criteria) charts.criteria.destroy();
+    function createDistributionChart() {
+        if (charts.distribution) charts.distribution.destroy();
         
-        const ctx = document.getElementById('criteriaCanvas').getContext('2d');
-        charts.criteria = new Chart(ctx, {
-            type: 'radar',
-            data: {
-                labels: ['QC Relevance', 'QC Quality', 'Social Impact (SDGs)', 'Presentation & Originality'],
-                datasets: chartData.slice(0, 5).map((team, index) => ({
-                    label: team.team_name,
-                    data: [4.2, 3.8, 4.0, 3.5], // Sample data - replace with actual criteria scores
-                    borderColor: `hsl(${index * 72}, 70%, 50%)`,
-                    backgroundColor: `hsla(${index * 72}, 70%, 50%, 0.2)`,
-                    borderWidth: 2
-                }))
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    title: { display: true, text: 'Top 5 Teams - AIMS Ghana 2025 Criteria Breakdown' }
-                },
-                scales: {
-                    r: {
-                        beginAtZero: true,
-                        max: 5
-                    }
-                }
-            }
-        });
-    }
-
-    function createComparisonChart() {
-        if (charts.comparison) charts.comparison.destroy();
+        const ctx = document.getElementById('distributionChart').getContext('2d');
         
-        const ctx = document.getElementById('comparisonCanvas').getContext('2d');
-        charts.comparison = new Chart(ctx, {
-            type: 'polarArea',
-            data: {
-                labels: chartData.map(item => item.team_name),
-                datasets: [{
-                    label: 'Weighted Scores',
-                    data: chartData.map(item => item.weighted_score),
-                    backgroundColor: chartData.map((_, index) => 
-                        `hsla(${index * 360 / chartData.length}, 70%, 60%, 0.8)`
-                    ),
-                    borderColor: chartData.map((_, index) => 
-                        `hsl(${index * 360 / chartData.length}, 70%, 50%)`
-                    ),
-                    borderWidth: 2
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    title: { display: true, text: 'Team Score Distribution - AIMS Ghana 2025' }
-                }
-            }
-        });
-    }
-
-    function createVotingChart() {
-        if (charts.voting) charts.voting.destroy();
-        
-        const ctx = document.getElementById('votingCanvas').getContext('2d');
-        charts.voting = new Chart(ctx, {
+        charts.distribution = new Chart(ctx, {
             type: 'doughnut',
             data: {
-                labels: chartData.map(item => item.team_name),
+                labels: votingData.slice(0, 8).map(team => team.team_name),
                 datasets: [{
-                    label: 'Vote Distribution',
-                    data: chartData.map(item => item.vote_count),
-                    backgroundColor: chartData.map((_, index) => 
-                        `hsla(${index * 360 / chartData.length}, 70%, 60%, 0.8)`
+                    label: 'Vote Share',
+                    data: votingData.slice(0, 8).map(team => team.vote_count),
+                    backgroundColor: votingData.slice(0, 8).map((_, index) => 
+                        `hsla(${index * 45}, 70%, 60%, 0.8)`
                     ),
-                    borderColor: chartData.map((_, index) => 
-                        `hsl(${index * 360 / chartData.length}, 70%, 50%)`
+                    borderColor: votingData.slice(0, 8).map((_, index) => 
+                        `hsl(${index * 45}, 70%, 50%)`
                     ),
                     borderWidth: 2
                 }]
@@ -752,9 +561,9 @@
                 responsive: true,
                 maintainAspectRatio: false,
                 plugins: {
-                    title: { 
-                        display: true, 
-                        text: 'Public Vote Distribution - AIMS Ghana 2025' 
+                    title: {
+                        display: true,
+                        text: 'Vote Distribution (Top 8 Teams)'
                     },
                     legend: {
                         position: 'right'
@@ -764,26 +573,45 @@
         });
     }
 
-    // Auto-refresh every 30 seconds
-    setInterval(refreshResults, 30000);
+    // Auto-refresh every 60 seconds
+    setInterval(refreshResults, 60000);
 
-    // Animate score bars on load
+    // Animate vote bars on load
     document.addEventListener('DOMContentLoaded', function() {
         setTimeout(() => {
-            document.querySelectorAll('.score-fill').forEach(bar => {
-                bar.style.width = bar.style.width;
+            document.querySelectorAll('.vote-fill').forEach(bar => {
+                const width = bar.style.width;
+                bar.style.width = '0%';
+                setTimeout(() => {
+                    bar.style.width = width;
+                }, 100);
             });
         }, 500);
-        
-        // Enable Bootstrap tabs
-        var triggerTabList = [].slice.call(document.querySelectorAll('#chartTabs a'));
-        triggerTabList.forEach(function (triggerEl) {
-            triggerEl.addEventListener('click', function (event) {
-                event.preventDefault();
-                var tab = new bootstrap.Tab(triggerEl);
-                tab.show();
-            });
-        });
     });
+
+    // Show loading toast for refreshes
+    function showLoadingToast() {
+        const toast = document.createElement('div');
+        toast.className = 'alert alert-info position-fixed';
+        toast.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+        toast.innerHTML = `
+            <div class="d-flex align-items-center">
+                <div class="spinner-border spinner-border-sm me-2" role="status"></div>
+                <div>Refreshing results...</div>
+            </div>
+        `;
+        document.body.appendChild(toast);
+        
+        setTimeout(() => {
+            if (toast.parentElement) toast.remove();
+        }, 2000);
+    }
+
+    // Add refresh loading indicator
+    const originalRefresh = refreshResults;
+    refreshResults = function() {
+        showLoadingToast();
+        originalRefresh();
+    };
 </script>
 {% endblock %}

@@ -51,5 +51,8 @@ urlpatterns = [
     
     # Admin public voting results
     path('admin/public-results/', views.admin_public_voting_results, name='admin_public_voting_results'),
+    # Add this to your urlpatterns
+path('public-judge-simple/', views.public_judge_simple_access, name='public_judge_simple_access'),
+path('public-judge-simple/team/<int:team_id>/', views.public_judge_simple_team, name='public_judge_simple_team'),
     
 ]

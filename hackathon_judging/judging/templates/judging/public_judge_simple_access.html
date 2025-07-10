@@ -1,0 +1,263 @@
+{% extends 'judging/base.html' %}
+
+{% block title %}Simple Public Judge Dashboard - AIMS Ghana Quantathon 2025{% endblock %}
+
+{% block content %}
+<!-- Header Section -->
+<div class="row">
+    <div class="col-12 mb-4">
+        <div class="card border-0" style="background: #340a37 !important; backdrop-filter: none !important; color: white; overflow: hidden; position: relative; min-height: 160px; box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3) !important;">
+            <div class="card-body p-4" style="position: relative; z-index: 3; background: transparent !important;">
+                <div class="row align-items-center">
+                    <div class="col-lg-8">
+                        <h1 class="display-6 fw-bold mb-3" style="color: white !important;">
+                            <i class="bi bi-heart me-3" style="color: white !important;"></i>
+                            Welcome, Community Judge!
+                        </h1>
+                        <p class="lead mb-0" style="color: white !important; opacity: 0.9;">
+                            Help us evaluate teams on what matters most - impact and communication
+                        </p>
+                    </div>
+                    <div class="col-lg-4 text-lg-end">
+                        <div class="quantum-logo" style="font-size: 4rem; opacity: 0.6; color: white !important;">
+                            <i class="bi bi-people-fill" style="color: white !important;"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div style="position: absolute; bottom: 0; left: 0; right: 0; height: 4px; background: linear-gradient(90deg, #6B46C1, #EC4899, #06B6D4); z-index: 4;"></div>
+        </div>
+    </div>
+</div>
+
+<!-- Instructions -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="alert alert-info border-0" style="background: rgba(52, 152, 219, 0.1);">
+            <div class="d-flex align-items-start">
+                <div class="me-3">
+                    <i class="bi bi-info-circle-fill fs-4 text-info"></i>
+                </div>
+                <div>
+                    <h5 class="fw-bold text-info mb-2">Simple Evaluation - No Technical Background Required!</h5>
+                    <p class="mb-2">
+                        You'll evaluate teams on just <strong>2 simple criteria</strong> that anyone can understand:
+                    </p>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="d-flex align-items-center mb-2">
+                                <span class="badge bg-info me-2">📈</span>
+                                <strong>Social Impact:</strong> <span class="small text-muted">How well does this help people?</span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="d-flex align-items-center mb-2">
+                                <span class="badge bg-primary me-2">🎤</span>
+                                <strong>Presentation:</strong> <span class="small text-muted">How clearly did they explain it?</span>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="mb-0 small text-muted">• No technical knowledge needed • Judge each team once • Your voice matters!</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Statistics Dashboard -->
+<div class="row mb-4">
+    <div class="col-lg-4 mb-4">
+        <div class="stat-card h-100" style="background: rgba(52, 152, 219, 0.05); border: 1px solid rgba(52, 152, 219, 0.2); border-radius: 12px; padding: 1.5rem; text-align: center;">
+            <div class="position-relative d-inline-block mb-3">
+                <svg width="120" height="120" class="progress-ring">
+                    <circle cx="60" cy="60" r="54" stroke="#e5e7eb" stroke-width="8" fill="transparent"/>
+                    <circle cx="60" cy="60" r="54" stroke="url(#publicGradient)" stroke-width="8" fill="transparent"
+                            stroke-dasharray="339.292" 
+                            stroke-dashoffset="{% widthratio remaining_teams total_teams 339.292 %}"
+                            stroke-linecap="round"
+                            style="transform: rotate(-90deg); transform-origin: center;"
+                            id="progress-circle"/>
+                   <defs>
+                        <linearGradient id="publicGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" style="stop-color:var(--quantum-purple)"/>
+                            <stop offset="100%" style="stop-color:var(--quantum-pink)"/>
+                        </linearGradient>
+                   </defs>
+                </svg>
+                </svg>
+                <div class="position-absolute top-50 start-50 translate-middle text-center">
+                    <div class="stat-number" style="font-size: 2rem; font-weight: bold;">{{ completed_judgments }}</div>
+                    <small class="text-muted">of {{ total_teams }}</small>
+                </div>
+            </div>
+            <h6 class="fw-bold text-center">Your Progress</h6>
+            <div class="progress mt-2" style="height: 8px;">
+                <div class="progress-bar" style="width: {% widthratio completed_judgments total_teams 100 %}%"></div>
+            </div>
+            <p class="text-center mt-2 mb-0">
+                <small class="text-muted">{% widthratio completed_judgments total_teams 100 %}% Complete</small>
+            </p>
+        </div>
+    </div>
+
+    <div class="col-lg-8">
+        <div class="row h-100">
+            <div class="col-md-4 mb-3">
+                <div class="stat-card h-100 d-flex flex-column justify-content-center" style="background: rgba(52, 152, 219, 0.05); border: 1px solid rgba(52, 152, 219, 0.2); border-radius: 12px; padding: 1.5rem; text-align: center;">
+                    <div class="stat-number text-primary" style="font-size: 2.5rem; font-weight: bold;">{{ total_teams }}</div>
+                    <div class="stat-label">Total Teams</div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-3">
+                <div class="stat-card h-100 d-flex flex-column justify-content-center" style="background: rgba(52, 152, 219, 0.05); border: 1px solid rgba(52, 152, 219, 0.2); border-radius: 12px; padding: 1.5rem; text-align: center;">
+                    <div class="stat-number text-success" style="font-size: 2.5rem; font-weight: bold;">{{ completed_judgments }}</div>
+                    <div class="stat-label">Judged by You</div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-3">
+                <div class="stat-card h-100 d-flex flex-column justify-content-center" style="background: rgba(52, 152, 219, 0.05); border: 1px solid rgba(52, 152, 219, 0.2); border-radius: 12px; padding: 1.5rem; text-align: center;">
+                    <div class="stat-number text-warning" style="font-size: 2.5rem; font-weight: bold;">{{ remaining_teams|default:0 }}</div>
+                    <div class="stat-label">Remaining</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Teams Section -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <div>
+                    <i class="bi bi-people-fill me-2"></i>
+                    Innovation Teams - Community Evaluation
+                </div>
+                <div class="d-flex gap-2">
+                    <span class="badge bg-quantum-gradient d-flex align-items-center justify-content-center px-4 py-2">
+                        {{ teams.count }} Teams
+                    </span>
+                </div>
+            </div>
+            <div class="card-body p-0">
+                {% if teams %}
+                    <div class="row g-0">
+                        {% for team in teams %}
+                            <div class="col-12 team-item">
+                                <div class="team-card p-4 m-3" style="border-radius: 12px; transition: all 0.3s ease;">
+                                    <div class="row align-items-center">
+                                        <div class="col-lg-1 text-center">
+                                            {% if team.id in judged_teams %}
+                                                <div class="badge bg-success p-3 rounded-circle">
+                                                    <i class="bi bi-check-circle-fill fs-4"></i>
+                                                </div>
+                                            {% else %}
+                                                <div class="badge bg-warning p-3 rounded-circle">
+                                                    <i class="bi bi-clock-fill fs-4"></i>
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                        
+                                        <div class="col-lg-6">
+                                            <h5 class="fw-bold text-dark mb-2">{{ team.name }}</h5>
+                                            <p class="text-secondary mb-2">
+                                                <i class="bi bi-people me-1"></i>{{ team.members }}
+                                            </p>
+                                            <p class="text-dark mb-0">{{ team.description|truncatewords:20 }}</p>
+                                        </div>
+                                        
+                                        <div class="col-lg-2 text-center">
+                                            <div class="small text-muted mb-1">You'll evaluate:</div>
+                                            <span class="badge bg-info me-1 mb-1 px-2 py-1">📈 Impact</span>
+                                            <span class="badge bg-primary mb-1 px-2 py-1">🎤 Presentation</span>
+                                        </div>
+                                        
+                                        <div class="col-lg-3 text-end">
+                                            {% if team.id in judged_teams %}
+                                                <span class="badge bg-success-subtle text-success px-4 py-3" style="border-radius: 25px;">
+                                                    <i class="bi bi-check-circle me-1"></i>You Judged This
+                                                </span>
+                                            {% else %}
+                                                <a href="{% url 'public_judge_simple_team' team.id %}" 
+                                                class="btn btn-primary" style="border-radius: 25px; padding: 12px 24px;">
+                                                    <i class="bi bi-heart me-1"></i>Evaluate Team
+                                                </a>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="text-center py-5">
+                        <div class="mb-4" style="font-size: 4rem; color: var(--quantum-purple); opacity: 0.5;">
+                            <i class="bi bi-people"></i>
+                        </div>
+                        <h4 class="text-muted">No Teams Available</h4>
+                        <p class="text-muted">Teams will appear here once they're added to the competition.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Guide -->
+{% if completed_judgments < total_teams %}
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card border-info" style="background: rgba(59, 130, 246, 0.05);">
+                <div class="card-header bg-transparent border-0">
+                    <h5 class="text-info mb-0">
+                        <i class="bi bi-lightbulb-fill me-2"></i>Quick Evaluation Guide
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-lg-6">
+                            <h6 class="fw-bold">📈 Social Impact & Real-World Value</h6>
+                            <p class="small mb-3">Think about: <em>Does this solution address important problems? Could it help improve people's lives? Is the impact realistic?</em></p>
+                            
+                            <h6 class="fw-bold">🎤 Presentation & Communication</h6>
+                            <p class="small mb-3">Think about: <em>Did they explain their solution clearly? Was it well-organized? Could you understand what they're trying to do?</em></p>
+                        </div>
+                        
+                        <div class="col-lg-6">
+                            <h6 class="fw-bold">Rating Scale</h6>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span class="badge bg-danger">1</span>
+                                <span class="badge" style="background: #ff6600;">2</span>
+                                <span class="badge bg-warning">3</span>
+                                <span class="badge bg-primary">4</span>
+                                <span class="badge bg-success">5</span>
+                            </div>
+                            <div class="small text-muted text-center">
+                                Poor → Fair → Good → Very Good → Excellent
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endif %}
+
+<!-- Completion Message -->
+{% if completed_judgments == total_teams %}
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card border-success" style="background: rgba(16, 185, 129, 0.05);">
+                <div class="card-body text-center py-4">
+                    <div class="mb-3" style="font-size: 3rem; color: var(--quantum-purple);">
+                        <i class="bi bi-heart-fill"></i>
+                    </div>
+                    <h3 class="text-success">Thank You!</h3>
+                    <p class="lead">You have successfully evaluated all teams from a community perspective.</p>
+                    <p class="text-muted">Your input helps ensure these innovations are not just technically sound, but also meaningful to real people!</p>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endif %}
+{% endblock %}

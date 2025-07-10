@@ -36,7 +36,7 @@
         </div>
     </div>
 
-    <div class="card mb-4">
+    <!-- <div class="card mb-4">
         <div class="card-header bg-success text-white">
             <h5 class="mb-0">
                 <i class="bi bi-bar-chart-fill me-2"></i>
@@ -55,8 +55,52 @@
                 </a>
             </div>
         </div>
+    </div> -->
+    <!-- Technical Public Judge Link -->
+<div class="card mb-4">
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0">
+            <i class="bi bi-cpu-fill me-2"></i>
+            Technical Public Judge Link (4 Criteria)
+        </h5>
     </div>
-    
+    <div class="card-body">
+        <p class="mb-2">Share this link with technical judges who can evaluate all criteria:</p>
+        <div class="input-group">
+            <input type="text" class="form-control" value="{{ public_judge_url }}" readonly>
+            <button class="btn btn-outline-secondary" onclick="copyToClipboard('{{ public_judge_url }}')">
+                <i class="bi bi-clipboard"></i> Copy
+            </button>
+            <a href="{{ public_judge_url }}" target="_blank" class="btn btn-outline-primary">
+                <i class="bi bi-box-arrow-up-right"></i> Open
+            </a>
+        </div>
+        <small class="text-muted">Evaluates: Quantum Relevance, Quantum Quality, Social Impact, Presentation</small>
+    </div>
+</div>
+
+<!-- Community Public Judge Link -->
+<div class="card mb-4">
+    <div class="card-header bg-info text-white">
+        <h5 class="mb-0">
+            <i class="bi bi-heart me-2"></i>
+            Community Public Judge Link (2 Criteria)
+        </h5>
+    </div>
+    <div class="card-body">
+        <p class="mb-2">Share this link with community members (no technical background needed):</p>
+        <div class="input-group">
+            <input type="text" class="form-control" value="{{ public_judge_simple_url }}" readonly>
+            <button class="btn btn-outline-secondary" onclick="copyToClipboard('{{ public_judge_simple_url }}')">
+                <i class="bi bi-clipboard"></i> Copy
+            </button>
+            <a href="{{ public_judge_simple_url }}" target="_blank" class="btn btn-outline-info">
+                <i class="bi bi-box-arrow-up-right"></i> Open
+            </a>
+        </div>
+        <small class="text-muted">Evaluates: Social Impact, Presentation (simplified for general public)</small>
+    </div>
+</div>
     <!-- Individual Judge Links -->
     <div class="card">
         <div class="card-header">
