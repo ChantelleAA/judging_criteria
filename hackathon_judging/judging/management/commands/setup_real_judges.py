@@ -147,6 +147,16 @@ class Command(BaseCommand):
                 'name': 'Elsie Kaufmann',
                 'email': 'elsie.kaufmann@judges.hackathon.com',
                 'expertise': ['Engineering & Applied Sciences', 'Education & Outreach']
+            },
+            {
+                'name': 'David',
+                'email': 'david@judges.hackathon.com',
+                'expertise': ['Business & Innovation', 'Education & Outreach']
+            },
+            {
+                'name': 'Yaw Frimpong',
+                'email': 'yaw@judges.hackathon.com',
+                'expertise': ['Business & Innovation', 'Education & Outreach']
             }
         ]
 
